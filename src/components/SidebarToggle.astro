@@ -1,0 +1,58 @@
+---
+// src/components/SidebarToggle.astro
+
+interface Props {
+  /**
+   * Si el sidebar está abierto
+   */
+  isOpen?: boolean;
+}
+
+const { isOpen = false } = Astro.props;
+---
+
+<button
+  id="sidebar-toggle"
+  type="button"
+  class="fixed top-4 right-4 z-50 p-3 rounded-full bg-neutral-800/90 backdrop-blur-sm hover:bg-neutral-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-neutral-500 shadow-lg hover:shadow-xl"
+  aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
+  aria-expanded={isOpen}
+  aria-controls="sidebar"
+>
+  <!-- Icono hamburguesa / X animado -->
+  <svg
+    id="toggle-icon"
+    class="w-5 h-5 text-neutral-100"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <line id="line-top" x1="4" y1="6" x2="20" y2="6" />
+    <line id="line-middle" x1="4" y1="12" x2="20" y2="12" />
+    <line id="line-bottom" x1="4" y1="18" x2="20" y2="18" />
+  </svg>
+</button>
+
+<style>
+  /* Estados del icono para animación hamburguesa → X */
+  #toggle-icon line {
+    transition: transform 0.3s ease, opacity 0.2s ease;
+    transform-origin: center;
+  }
+
+  #toggle-icon.is-open #line-top {
+    transform: translateX(-5px) translateY(10.5px) rotate(45deg);
+  }
+
+  #toggle-icon.is-open #line-middle {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  #toggle-icon.is-open #line-bottom {
+    transform: translate(-5px) translateY(-10.5px) rotate(-45deg);
+  }
+</style>

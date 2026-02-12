@@ -1,43 +1,106 @@
-# Astro Starter Kit: Minimal
+# RoncalPhoto
 
-```sh
-bun create astro@latest -- --template minimal
+Portfolio web para fotógrafo profesional construido con Astro.
+
+## Stack Técnico
+
+- **Framework**: Astro 5
+- **Runtime**: Bun
+- **Lenguaje**: TypeScript (modo estricto)
+- **Estilos**: Tailwind CSS 4
+- **Animaciones**: GSAP
+- **Iconos**: @tabler/icons
+- **Transiciones**: View Transitions API (ClientRouter)
+- **Hosting**: Cloudflare Workers (futuro)
+
+## Estructura del Proyecto
+
 ```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
+roncalphoto/
 ├── src/
-│   └── pages/
-│       └── index.astro
+│   ├── components/       # Componentes Astro
+│   ├── layouts/
+│   │   └── BaseLayout.astro
+│   ├── pages/
+│   │   ├── index.astro
+│   │   └── [category]/[session].astro
+│   ├── lib/
+│   │   ├── data.ts       # Datos JSON hardcoded
+│   │   ├── types.ts      # Tipos TypeScript
+│   │   └── animations.ts # Utilidades GSAP
+│   ├── utils/
+│   │   └── helpers.ts    # Funciones auxiliares
+│   └── styles/
+│       └── global.css    # Estilos Tailwind
+├── public/
 └── package.json
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Comandos
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Todos los comandos se ejecutan desde la raíz del proyecto:
 
-Any static assets, like images, can be placed in the `public/` directory.
+| Comando             | Acción                                    |
+| :------------------ | :---------------------------------------- |
+| `bun install`       | Instala dependencias                      |
+| `bun dev`           | Inicia servidor de desarrollo en :4321    |
+| `bun build`         | Genera sitio de producción en `./dist/`   |
+| `bun preview`       | Previsualiza el build localmente          |
+| `bun astro check`   | Verifica tipos TypeScript                 |
 
-## 🧞 Commands
+## Desarrollo
 
-All commands are run from the root of the project, from a terminal:
+```bash
+# Instalar dependencias
+bun install
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+# Iniciar servidor de desarrollo
+bun dev
 
-## 👀 Want to learn more?
+# Verificar tipos
+bun astro check
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+# Build de producción
+bun build
+```
+
+## Datos de Ejemplo
+
+El proyecto incluye datos de ejemplo con imágenes de Pexels:
+
+- **Arquitectura**: 2 sesiones (Estructuras Modernas, Patrimonio Urbano)
+- **Naturaleza**: 2 sesiones (Paisajes del Norte, Flora Silvestre)
+- **Retratos**: Categoría vacía (placeholder)
+
+Cada sesión contiene 5 fotos con metadatos completos (ISO, apertura, velocidad, lente, cámara).
+
+## Fases del Proyecto
+
+- [x] **Fase 1**: Configuración inicial y estructura base
+- [x] **Fase 2**: Layout base y Sidebar
+- [ ] **Fase 3**: Galería principal y scroll sincronizado
+- [ ] **Fase 4**: Información de sesión y metadatos
+- [ ] **Fase 5**: Fullscreen y navegación por teclado
+- [ ] **Fase 6**: View Transitions y optimización
+- [ ] **Fase 7**: Preparación para base de datos
+
+## Componentes
+
+### Sidebar (`src/components/Sidebar.astro`)
+- **Desktop**: 25vw fijo a la izquierda, abierto por defecto
+- **Mobile**: Fullscreen overlay, cerrado por defecto
+- Estado persistente con localStorage
+- Animaciones GSAP para apertura/cierre
+- Gestión de foco accesible (Escape para cerrar)
+
+### SidebarToggle (`src/components/SidebarToggle.astro`)
+- Botón hamburguesa con animación a X
+- Siempre visible en la esquina superior izquierda
+
+### CategoryMenu (`src/components/CategoryMenu.astro`)
+- Modo navegación: lista completa de categorías y sesiones
+- Modo sesión: dropdown compacto con categoría activa
+
+### SessionInfo (`src/components/SessionInfo.astro`)
+- Lista de sesiones de la categoría
+- Información detallada de la sesión activa (título, descripción HTML)

@@ -1,16 +1,24 @@
 ---
+// src/pages/index.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { getCategories } from '../lib/api';
 
+const categories = await getCategories();
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Portfolio">
+  <div class="flex h-full">
+    <Sidebar categories={categories} />
+
+    <!-- Main content (el margin se gestiona dinámicamente con GSAP) -->
+    <main class="flex-1 flex items-center justify-center bg-neutral-950">
+      <div class="text-center px-8">
+        <h2 class="text-4xl font-light tracking-wide mb-4">Bienvenido</h2>
+        <p class="text-neutral-400 max-w-md mx-auto">
+          Selecciona una categoría o sesión para explorar el portfolio.
+        </p>
+      </div>
+    </main>
+  </div>
+</BaseLayout>
