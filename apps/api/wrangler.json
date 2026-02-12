@@ -1,0 +1,19 @@
+{
+  "compatibility_date": "2025-10-08",
+  "main": "src/index.ts",
+  "name": "d1-roncalphoto",
+  "upload_source_maps": true,
+  "d1_databases": [
+    {
+      "binding": "DB_RONCALPHOTO",
+      "database_id": "94ca923e-89fb-4fea-a2d5-b7cef1e71cf6",
+      "database_name": "roncalphoto"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "*,http://localhost:4321,http://localhost:3000"
+  }
+}

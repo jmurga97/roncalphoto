@@ -1,106 +1,121 @@
 # RoncalPhoto
 
-Portfolio web para fotógrafo profesional construido con Astro.
+Portfolio web para fotógrafo profesional. Monorepo con Turborepo, Bun workspaces y paquete de tipos compartido.
 
 ## Stack Técnico
 
-- **Framework**: Astro 5
+- **Monorepo**: Turborepo + Bun workspaces
+- **Frontend** (`apps/web`): Astro 5, React 19, Tailwind CSS 4, GSAP
+- **API** (`apps/api`): Hono, Cloudflare Workers, D1
+- **Shared** (`packages/shared`): TypeScript domain types
+- **Linting/Formatting**: Biome
 - **Runtime**: Bun
 - **Lenguaje**: TypeScript (modo estricto)
-- **Estilos**: Tailwind CSS 4
-- **Animaciones**: GSAP
-- **Iconos**: @tabler/icons
-- **Transiciones**: View Transitions API (ClientRouter)
-- **Hosting**: Cloudflare Workers (futuro)
 
 ## Estructura del Proyecto
 
 ```
 roncalphoto/
-├── src/
-│   ├── components/       # Componentes Astro
-│   ├── layouts/
-│   │   └── BaseLayout.astro
-│   ├── pages/
-│   │   ├── index.astro
-│   │   └── [category]/[session].astro
-│   ├── lib/
-│   │   ├── data.ts       # Datos JSON hardcoded
-│   │   ├── types.ts      # Tipos TypeScript
-│   │   └── animations.ts # Utilidades GSAP
-│   ├── utils/
-│   │   └── helpers.ts    # Funciones auxiliares
-│   └── styles/
-│       └── global.css    # Estilos Tailwind
-├── public/
-└── package.json
+├── apps/
+│   ├── web/                  # Astro frontend (@roncal/web)
+│   │   ├── src/
+│   │   │   ├── components/   # Astro + React components
+│   │   │   ├── layouts/
+│   │   │   ├── pages/
+│   │   │   ├── lib/          # API client, animations
+│   │   │   ├── utils/        # Helper functions
+│   │   │   └── styles/       # Tailwind global.css
+│   │   ├── public/
+│   │   ├── astro.config.mjs
+│   │   └── wrangler.toml
+│   └── api/                  # Hono API (@roncal/api)
+│       ├── src/
+│       │   ├── db/           # D1 queries
+│       │   ├── middleware/   # Auth, CORS
+│       │   ├── routes/       # Category, session, photo routes
+│       │   └── types/        # DB rows, DTOs, Env
+│       ├── migrations/       # D1 SQL migrations
+│       └── wrangler.json
+├── packages/
+│   └── shared/               # Shared types (@roncal/shared)
+│       └── src/
+│           ├── types.ts      # Domain types (Photo, Session, Category, etc.)
+│           └── index.ts      # Barrel export
+├── package.json              # Root workspace config
+├── turbo.json                # Turborepo pipeline
+├── tsconfig.json             # Base TypeScript config
+├── biome.json                # Biome linter/formatter
+└── .env.example              # Environment template
 ```
 
 ## Comandos
 
-Todos los comandos se ejecutan desde la raíz del proyecto:
+Todos los comandos se ejecutan desde la raíz del monorepo:
 
-| Comando             | Acción                                    |
-| :------------------ | :---------------------------------------- |
-| `bun install`       | Instala dependencias                      |
-| `bun dev`           | Inicia servidor de desarrollo en :4321    |
-| `bun build`         | Genera sitio de producción en `./dist/`   |
-| `bun preview`       | Previsualiza el build localmente          |
-| `bun astro check`   | Verifica tipos TypeScript                 |
+| Comando               | Accion                                              |
+| :-------------------- | :-------------------------------------------------- |
+| `bun install`         | Instala dependencias y enlaza workspaces             |
+| `bun run dev`         | Inicia ambos servidores de desarrollo (turbo)        |
+| `bun run build`       | Build de produccion de todos los paquetes            |
+| `bun run check`       | Verifica tipos TypeScript en todos los paquetes      |
+| `bun run lint`        | Lint con Biome                                       |
+| `bun run lint:fix`    | Auto-fix Biome issues                                |
+| `bun run format`      | Formatea con Biome                                   |
+
+### Comandos por paquete
+
+```bash
+# Frontend (Astro)
+bunx turbo dev --filter=@roncal/web
+bunx turbo build --filter=@roncal/web
+bunx turbo check --filter=@roncal/web
+
+# API (Hono/Workers)
+bunx turbo dev --filter=@roncal/api        # Runs wrangler dev (migrates D1 local first)
+bunx turbo build --filter=@roncal/api      # Dry-run deploy
+bun run --filter=@roncal/api deploy        # Deploy to Cloudflare
+
+# D1 Database
+bun run --filter=@roncal/api db:migrate:local
+bun run --filter=@roncal/api db:migrate:remote
+```
 
 ## Desarrollo
 
 ```bash
-# Instalar dependencias
+# 1. Instalar dependencias
 bun install
 
-# Iniciar servidor de desarrollo
-bun dev
+# 2. Configurar variables de entorno
+cp .env.example apps/web/.env
+# Edit apps/web/.env with API_URL and API_KEY
+# For api, create apps/api/.dev.vars with API_KEY and ALLOWED_ORIGINS
 
-# Verificar tipos
-bun astro check
+# 3. Start API first (needed for web build)
+bunx turbo dev --filter=@roncal/api
 
-# Build de producción
-bun build
+# 4. In another terminal, start web
+bunx turbo dev --filter=@roncal/web
+
+# Or run both:
+bun run dev
 ```
 
-## Datos de Ejemplo
+## Paquete Compartido (@roncal/shared)
 
-El proyecto incluye datos de ejemplo con imágenes de Pexels:
+El paquete `@roncal/shared` contiene los tipos de dominio canonicos compartidos entre frontend y API:
 
-- **Arquitectura**: 2 sesiones (Estructuras Modernas, Patrimonio Urbano)
-- **Naturaleza**: 2 sesiones (Paisajes del Norte, Flora Silvestre)
-- **Retratos**: Categoría vacía (placeholder)
+- `PhotoMetadata`, `PhotoSummary`, `Photo`
+- `SessionSummary`, `Session`
+- `CategorySummary`, `Category`
+- `ApiResponse<T>`, `PaginatedResponse<T>`
 
-Cada sesión contiene 5 fotos con metadatos completos (ISO, apertura, velocidad, lente, cámara).
+**Convencion**: Todos los campos son non-nullable. La API transforma nulls de D1 a valores por defecto.
 
-## Fases del Proyecto
+No tiene paso de build — ambos bundlers (Astro/Vite y Wrangler) consumen TypeScript source directamente via el campo `exports` en package.json.
 
-- [x] **Fase 1**: Configuración inicial y estructura base
-- [x] **Fase 2**: Layout base y Sidebar
-- [ ] **Fase 3**: Galería principal y scroll sincronizado
-- [ ] **Fase 4**: Información de sesión y metadatos
-- [ ] **Fase 5**: Fullscreen y navegación por teclado
-- [ ] **Fase 6**: View Transitions y optimización
-- [ ] **Fase 7**: Preparación para base de datos
+## Notas
 
-## Componentes
-
-### Sidebar (`src/components/Sidebar.astro`)
-- **Desktop**: 25vw fijo a la izquierda, abierto por defecto
-- **Mobile**: Fullscreen overlay, cerrado por defecto
-- Estado persistente con localStorage
-- Animaciones GSAP para apertura/cierre
-- Gestión de foco accesible (Escape para cerrar)
-
-### SidebarToggle (`src/components/SidebarToggle.astro`)
-- Botón hamburguesa con animación a X
-- Siempre visible en la esquina superior izquierda
-
-### CategoryMenu (`src/components/CategoryMenu.astro`)
-- Modo navegación: lista completa de categorías y sesiones
-- Modo sesión: dropdown compacto con categoría activa
-
-### SessionInfo (`src/components/SessionInfo.astro`)
-- Lista de sesiones de la categoría
-- Información detallada de la sesión activa (título, descripción HTML)
+- **Web build**: Requiere que la API este corriendo (hace fetch en build-time para `getStaticPaths`)
+- **API build**: `wrangler deploy --dry-run` — no requiere red
+- **worker-configuration.d.ts**: Auto-generado con `bun run --filter=@roncal/api cf-typegen`, gitignored

@@ -5,22 +5,21 @@
 
 ## Contexto del Proyecto
 
-Portfolio web para fotógrafo profesional construido con Astro, desplegado en Cloudflare Workers. La aplicación presenta sesiones fotográficas organizadas por categorías con énfasis en una experiencia visual limpia y fluida, donde las fotografías son el elemento protagonista.
+Monorepo para portfolio web de fotógrafo profesional. Frontend con Astro desplegado en Cloudflare Pages, API con Hono desplegada en Cloudflare Workers con D1. Paquete de tipos compartido entre ambos. La aplicación presenta sesiones fotográficas organizadas por categorías con énfasis en una experiencia visual limpia y fluida, donde las fotografías son el elemento protagonista.
 
 ---
 
 ## Stack Técnico
 
-- **Framework**: Astro (última versión)
+- **Monorepo**: Turborepo + Bun workspaces
+- **Frontend** (`apps/web`): Astro 5, React 19, Tailwind CSS 4, GSAP, View Transitions API
+- **API** (`apps/api`): Hono, Cloudflare Workers, D1
+- **Shared** (`packages/shared`): TypeScript domain types (raw source, no build step)
+- **Linting/Formatting**: Biome (no ESLint/Prettier)
 - **Runtime**: Bun
 - **Lenguaje**: TypeScript (modo estricto)
-- **Estilos**: Tailwind CSS 4 (configuración moderna con global.css)
-- **Animaciones**: GSAP
-- **Iconos**: @tabler/icons (importación explícita, no barrels)
-- **Transiciones**: View Transitions API de Astro
-- **Hosting**: Cloudflare Workers
-- **Base de datos (futuro)**: Cloudflare D1 (solo lectura)
-- **Almacenamiento (futuro)**: Cloudflare R2
+- **Hosting**: Cloudflare (Pages para web, Workers para API)
+- **Base de datos**: Cloudflare D1
 - **Imágenes placeholder**: Pexels
 
 ---
@@ -59,31 +58,56 @@ Portfolio web para fotógrafo profesional construido con Astro, desplegado en Cl
 
 ```
 roncalphoto/
-├── src/
-│   ├── components/
-│   │   ├── Sidebar.astro
-│   │   ├── SidebarToggle.astro
-│   │   ├── CategoryMenu.astro
-│   │   ├── SessionInfo.astro
-│   │   ├── MainGallery.astro
-│   │   ├── PhotoCarousel.astro
-│   │   ├── FullscreenViewer.astro
-│   │   └── PhotoMetadata.astro
-│   ├── layouts/
-│   │   └── BaseLayout.astro
-│   ├── pages/
-│   │   ├── index.astro
-│   │   └── [category]/[session].astro
-│   ├── lib/
-│   │   ├── data.ts (JSON hardcoded inicial)
-│   │   ├── types.ts
-│   │   └── animations.ts (utilidades GSAP)
-│   ├── utils/
-│   │   └── helpers.ts
-│   └── styles/
-│       └── global.css
-├── public/
-└── package.json
+├── apps/
+│   ├── web/                    # @roncal/web - Astro frontend
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── Sidebar.astro
+│   │   │   │   ├── SidebarToggle.astro
+│   │   │   │   ├── CategoryMenu.astro
+│   │   │   │   ├── SessionInfo.astro
+│   │   │   │   └── react/gallery/  # React gallery components
+│   │   │   ├── layouts/
+│   │   │   │   └── BaseLayout.astro
+│   │   │   ├── pages/
+│   │   │   │   ├── index.astro
+│   │   │   │   └── [category]/[session].astro
+│   │   │   ├── lib/
+│   │   │   │   ├── api.ts          # API client (build-time fetch)
+│   │   │   │   └── animations.ts   # GSAP utilities
+│   │   │   ├── utils/
+│   │   │   │   └── helpers.ts
+│   │   │   └── styles/
+│   │   │       └── global.css
+│   │   ├── public/
+│   │   ├── astro.config.mjs
+│   │   └── wrangler.toml
+│   └── api/                    # @roncal/api - Hono REST API
+│       ├── src/
+│       │   ├── db/
+│       │   │   └── queries.ts  # D1 database queries
+│       │   ├── middleware/
+│       │   │   ├── auth.ts     # API key authentication
+│       │   │   └── cors.ts     # CORS middleware
+│       │   ├── routes/
+│       │   │   ├── categories.ts
+│       │   │   ├── sessions.ts
+│       │   │   └── photos.ts
+│       │   ├── types/
+│       │   │   └── index.ts    # DB rows, DTOs, Env (imports shared types)
+│       │   └── index.ts        # Hono app entry
+│       ├── migrations/         # D1 SQL migrations
+│       └── wrangler.json
+├── packages/
+│   └── shared/                 # @roncal/shared - Domain types
+│       └── src/
+│           ├── types.ts        # PhotoMetadata, Photo, Session, Category, etc.
+│           └── index.ts        # Barrel export
+├── package.json                # Root workspace config
+├── turbo.json                  # Turborepo pipeline
+├── tsconfig.json               # Base TypeScript config
+├── biome.json                  # Biome linter/formatter
+└── .env.example
 ```
 
 ---
@@ -93,7 +117,7 @@ roncalphoto/
 ### Tipos TypeScript
 
 ```typescript
-// src/lib/types.ts
+// packages/shared/src/types.ts - Canonical domain types
 
 export interface PhotoMetadata {
   iso: number;
@@ -103,13 +127,25 @@ export interface PhotoMetadata {
   camera: string; // ej: "Canon EOS R5"
 }
 
-export interface Photo {
+export interface PhotoSummary {
   id: string;
-  url: string; // URL de Pexels (futuro: R2)
-  miniature: string; // URL de miniatura. Usar la misma de Pexels
+  miniature: string; // Thumbnail URL (R2)
   alt: string;
+}
+
+export interface Photo extends PhotoSummary {
+  url: string; // Full-size image URL (R2)
   about: string; // Texto adicional relacionado con la foto
   metadata: PhotoMetadata;
+}
+
+export interface SessionSummary {
+  id: string;
+  title: string;
+  description: string; // Texto enriquecido (HTML)
+  category: string;
+  photoCount: number;
+  coverPhoto: PhotoSummary;
 }
 
 export interface Session {
@@ -120,13 +156,39 @@ export interface Session {
   photos: Photo[];
 }
 
+export interface CategorySummary {
+  id: string;
+  name: string;
+  slug: string;
+  sessionCount: number;
+}
+
 export interface Category {
   id: string;
   name: string;
   slug: string;
   sessions: Session[];
 }
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    hasMore: boolean;
+  };
+}
 ```
+
+**Convención**: Los tipos compartidos usan campos non-nullable. La API transforma nulls de D1 a valores por defecto.
 
 ### Estructura JSON Inicial
 
@@ -281,7 +343,7 @@ export const categories: Category[] = [
 
 ### Librería GSAP
 - Instalar solo el core de GSAP (no plugins innecesarios)
-- Utilidades compartidas en `src/lib/animations.ts`
+- Utilidades compartidas en `apps/web/src/lib/animations.ts`
 
 ---
 
@@ -296,8 +358,22 @@ bun test
 # Ejecutar Vitest específico
 bun vitest run -t "<nombre del test>"
 
-# Lint tras cambios de imports
-bun lint
+# Lint y formato (Biome)
+bun run lint
+bun run lint:fix
+
+# TypeScript check (todos los paquetes)
+bun run check
+
+# Build (todos los paquetes)
+bun run build
+
+# Dev (todos los paquetes)
+bun run dev
+
+# Dev (solo web o api)
+bunx turbo dev --filter=@roncal/web
+bunx turbo dev --filter=@roncal/api
 ```
 
 ### Reglas
@@ -543,8 +619,9 @@ bun lint
 ## Notas Finales
 
 - **Imágenes de Pexels**: Usar API gratuita o URLs directas. Documentar atribución si es necesaria.
-- **Cloudflare Workers**: El output de Astro debe ser compatible. Configurar `output: 'server'` y adaptador `@astrojs/cloudflare`.
-- **D1/R2 Futuro**: Mantener estructura JSON igual que schema futuro de DB para facilitar migración.
+- **Cloudflare**: Frontend en Cloudflare Pages (output estático con adaptador), API en Workers. Configuración en `apps/web/wrangler.toml` y `apps/api/wrangler.json`.
+- **D1/R2**: API ya usa D1 para datos. Mantener estructura de tipos alineada entre frontend y API.
+- **@roncal/shared**: Raw TypeScript source (no build step). Ambos bundlers (Vite y Wrangler) consumen `.ts` directamente.
 - **Accesibilidad**: No es opcional. Validar con herramientas (axe DevTools, Lighthouse).
 - **Performance**: Medir antes de optimizar. Usar `bun build` y analizar bundle.
 
