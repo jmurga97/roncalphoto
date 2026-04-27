@@ -10,17 +10,16 @@ interface GallerySlideProps {
   isActive: boolean;
   isWarm: boolean;
   photo: GalleryPhotoViewModel;
-  slideRef: (element: HTMLElement | null) => void;
 }
 
-export function GallerySlide({ isActive, isWarm, photo, slideRef }: GallerySlideProps) {
+export function GallerySlide({ isActive, isWarm, photo }: GallerySlideProps) {
   const imageQuery = useQuery({
     ...imageResourceQueryOptions(photo.imageSrc),
     enabled: !isActive && isWarm,
   });
 
   return (
-    <GalleryCard slideRef={slideRef}>
+    <GalleryCard photoId={photo.id}>
       {isActive ? (
         <Suspense fallback={<GalleryPhotoLoader />}>
           <GalleryPhotoImage alt={photo.alt} imageSrc={photo.imageSrc} />

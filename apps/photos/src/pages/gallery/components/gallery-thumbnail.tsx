@@ -4,18 +4,17 @@ import type { GalleryPhotoViewModel } from "../types";
 import { GalleryPhotoLoader } from "./gallery-photo-loader";
 
 interface GalleryThumbnailProps {
-  buttonRef: (element: HTMLButtonElement | null) => void;
   isActive: boolean;
   onSelect: () => void;
   photo: GalleryPhotoViewModel;
 }
 
-export function GalleryThumbnail({ buttonRef, isActive, onSelect, photo }: GalleryThumbnailProps) {
+export function GalleryThumbnail({ isActive, onSelect, photo }: GalleryThumbnailProps) {
   const thumbnailQuery = useQuery(imageResourceQueryOptions(photo.thumbnailSrc));
 
   return (
     <button
-      ref={buttonRef}
+      data-gallery-thumbnail-id={photo.id}
       type="button"
       onClick={onSelect}
       className={[

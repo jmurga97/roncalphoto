@@ -2,13 +2,13 @@ import type { ReactNode } from "react";
 
 interface GalleryCardProps {
   children: ReactNode;
-  slideRef: (element: HTMLElement | null) => void;
+  photoId: string;
 }
 
-export function GalleryCard({ children, slideRef }: GalleryCardProps) {
+export function GalleryCard({ children, photoId }: GalleryCardProps) {
   return (
     <section
-      ref={slideRef}
+      data-gallery-photo-id={photoId}
       className="relative flex h-full w-full snap-start snap-always items-center justify-center p-4"
     >
       {children}

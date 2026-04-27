@@ -14,5 +14,6 @@ export interface GallerySelection {
 export interface GalleryData {
   photos: GalleryPhotoViewModel[];
   selection: GallerySelection;
+  setPhotoId: (photoId?: string) => void;
   sessionSlug: string;
 }
