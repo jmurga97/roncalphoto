@@ -1,5 +1,5 @@
-import { findGalleryRoot } from "./find-gallery-root";
 import { findGalleryElement } from "./find-gallery-element";
+import { findGalleryRoot } from "./find-gallery-root";
 
 function scrollThumbnailIntoView(thumbnail: HTMLElement | null, behavior: ScrollBehavior) {
   if (!thumbnail) {

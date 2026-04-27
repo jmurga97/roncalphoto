@@ -13,15 +13,18 @@ export function GalleryView() {
   const screenMode = useScreenMode();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasInitialScrollAlignedRef = useRef(false);
+  const pendingProgrammaticPhotoIdRef = useRef<string | undefined>(undefined);
   const sessionSlugRef = useRef(galleryData.sessionSlug);
 
   if (sessionSlugRef.current !== galleryData.sessionSlug) {
     sessionSlugRef.current = galleryData.sessionSlug;
     hasInitialScrollAlignedRef.current = false;
+    pendingProgrammaticPhotoIdRef.current = undefined;
   }
 
   function selectPhoto(photoId: string, options: { behavior?: ScrollBehavior; scroll: boolean }) {
     if (options.scroll) {
+      pendingProgrammaticPhotoIdRef.current = photoId;
       scrollPhotoIntoView(
         containerRef.current,
         photoId,
@@ -42,6 +45,7 @@ export function GalleryView() {
       return;
     }
 
+    pendingProgrammaticPhotoIdRef.current = galleryData.selection.normalizedPhotoId;
     scrollPhotoIntoView(containerRef.current, galleryData.selection.normalizedPhotoId, "auto");
     hasInitialScrollAlignedRef.current = true;
   }, [
@@ -58,7 +62,11 @@ export function GalleryView() {
 
   useVisibleSlideObserver({
     containerRef,
+    onProgrammaticTargetReached: () => {
+      pendingProgrammaticPhotoIdRef.current = undefined;
+    },
     onVisibleChange: (photoId) => selectPhoto(photoId, { scroll: false }),
+    pendingProgrammaticPhotoIdRef,
     photos: galleryData.photos,
     selectedPhotoId: galleryData.selection.normalizedPhotoId,
   });

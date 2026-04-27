@@ -1,27 +1,35 @@
 import { useEffect, useRef } from "react";
-import type { RefObject } from "react";
+import type { MutableRefObject, RefObject } from "react";
 import type { GalleryPhotoViewModel } from "../types";
 
 interface UseVisibleSlideObserverOptions {
   containerRef: RefObject<HTMLDivElement | null>;
+  onProgrammaticTargetReached: () => void;
   onVisibleChange: (photoId: string) => void;
+  pendingProgrammaticPhotoIdRef: MutableRefObject<string | undefined>;
   photos: GalleryPhotoViewModel[];
   selectedPhotoId?: string;
 }
 
 export function useVisibleSlideObserver({
   containerRef,
+  onProgrammaticTargetReached,
   onVisibleChange,
+  pendingProgrammaticPhotoIdRef,
   photos,
   selectedPhotoId,
 }: UseVisibleSlideObserverOptions) {
   const stateRef = useRef({
+    onProgrammaticTargetReached,
     onVisibleChange,
+    pendingProgrammaticPhotoIdRef,
     selectedPhotoId,
   });
 
   stateRef.current = {
+    onProgrammaticTargetReached,
     onVisibleChange,
+    pendingProgrammaticPhotoIdRef,
     selectedPhotoId,
   };
 
@@ -59,7 +67,21 @@ export function useVisibleSlideObserver({
 
         const visiblePhotoId = bestSlide?.dataset.galleryPhotoId;
 
-        if (!visiblePhotoId || visiblePhotoId === stateRef.current.selectedPhotoId) {
+        if (!visiblePhotoId) {
+          return;
+        }
+
+        const pendingProgrammaticPhotoId = stateRef.current.pendingProgrammaticPhotoIdRef.current;
+
+        if (pendingProgrammaticPhotoId) {
+          if (visiblePhotoId !== pendingProgrammaticPhotoId) {
+            return;
+          }
+
+          stateRef.current.onProgrammaticTargetReached();
+        }
+
+        if (visiblePhotoId === stateRef.current.selectedPhotoId) {
           return;
         }
 

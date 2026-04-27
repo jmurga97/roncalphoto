@@ -27,7 +27,7 @@ export function GalleryGrid({
         {photos.map((photo, index) => (
           <GallerySlide
             isActive={index === currentIndex}
-            isWarm={Math.abs(index - currentIndex) <= 1}
+            isWarm={index === currentIndex + 1}
             key={photo.id}
             photo={photo}
           />

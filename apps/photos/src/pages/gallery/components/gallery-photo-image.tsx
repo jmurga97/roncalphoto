@@ -7,6 +7,7 @@ interface GalleryPhotoImageProps {
 }
 
 export function GalleryPhotoImage({ alt, imageSrc }: GalleryPhotoImageProps) {
+  // This query is only here to suspend until preloadImage resolves for the active photo.
   useSuspenseQuery(imageResourceQueryOptions(imageSrc));
 
   return (

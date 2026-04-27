@@ -1,7 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { imageResourceQueryOptions } from "../image-query-options";
 import type { GalleryPhotoViewModel } from "../types";
-import { GalleryPhotoLoader } from "./gallery-photo-loader";
 
 interface GalleryThumbnailProps {
   isActive: boolean;
@@ -10,8 +7,6 @@ interface GalleryThumbnailProps {
 }
 
 export function GalleryThumbnail({ isActive, onSelect, photo }: GalleryThumbnailProps) {
-  const thumbnailQuery = useQuery(imageResourceQueryOptions(photo.thumbnailSrc));
-
   return (
     <button
       data-gallery-thumbnail-id={photo.id}
@@ -34,16 +29,13 @@ export function GalleryThumbnail({ isActive, onSelect, photo }: GalleryThumbnail
       aria-label={`Ver foto: ${photo.alt}`}
       aria-current={isActive ? "true" : undefined}
     >
-      {thumbnailQuery.isSuccess ? (
-        <img
-          alt=""
-          className="h-full w-full object-cover"
-          loading="lazy"
-          src={photo.thumbnailSrc}
-        />
-      ) : (
-        <GalleryPhotoLoader size="md" />
-      )}
+      <img
+        alt=""
+        className="h-full w-full object-cover"
+        decoding="async"
+        loading="eager"
+        src={photo.thumbnailSrc}
+      />
     </button>
   );
 }
