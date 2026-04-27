@@ -38,14 +38,25 @@ export interface Photo extends PhotoSummary {
 }
 
 /**
+ * Reusable session tag.
+ */
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
  * Session summary for listing.
  * Contains photo summaries instead of full photos.
  */
 export interface SessionSummary {
   id: string;
+  slug: string;
   title: string;
   description: string; // Rich text (HTML)
-  category: string;
+  createdAt: string;
+  tags: Tag[];
   photoCount: number;
   coverPhoto: PhotoSummary; // First photo as cover
 }
@@ -55,30 +66,36 @@ export interface SessionSummary {
  */
 export interface Session {
   id: string;
+  slug: string;
   title: string;
   description: string; // Rich text (HTML)
-  category: string;
+  createdAt: string;
+  tags: Tag[];
   photos: Photo[];
 }
 
 /**
- * Category with session summaries (for navigation).
+ * API wire contracts
+ * These are the public payloads exchanged with /api/* endpoints.
  */
-export interface CategorySummary {
-  id: string;
-  name: string;
-  slug: string;
-  sessionCount: number;
+export interface ApiPhoto extends Photo {
+  sessionId: string;
+  sortOrder: number;
 }
 
-/**
- * Full category with all sessions.
- */
-export interface Category {
+export interface ApiSession {
   id: string;
-  name: string;
   slug: string;
-  sessions: Session[];
+  title: string;
+  description: string;
+  createdAt: string;
+  tags: Tag[];
+  photos?: ApiPhoto[];
+}
+
+export interface ApiTagWithSessions {
+  tag: Tag;
+  sessions: ApiSession[];
 }
 
 /**

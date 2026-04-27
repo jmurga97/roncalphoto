@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "types": ["./worker-configuration.d.ts"],
-    "lib": ["esnext"]
+    "lib": ["esnext"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["dist"]

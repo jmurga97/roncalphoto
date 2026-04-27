@@ -1,121 +1,99 @@
 # RoncalPhoto
 
-Portfolio web para fotógrafo profesional. Monorepo con Turborepo, Bun workspaces y paquete de tipos compartido.
+Portfolio web para fotografo profesional. Monorepo con Bun workspaces, frontend en `apps/photos`, API en `apps/api` y tipos compartidos en `packages/shared`.
 
-## Stack Técnico
+## Stack tecnico
 
-- **Monorepo**: Turborepo + Bun workspaces
-- **Frontend** (`apps/web`): Astro 5, React 19, Tailwind CSS 4, GSAP
-- **API** (`apps/api`): Hono, Cloudflare Workers, D1
-- **Shared** (`packages/shared`): TypeScript domain types
-- **Linting/Formatting**: Biome
-- **Runtime**: Bun
-- **Lenguaje**: TypeScript (modo estricto)
+- Monorepo: Turborepo + Bun workspaces
+- Frontend (`apps/photos`): Vite, React 19, TanStack Router, Tailwind CSS 4
+- API (`apps/api`): Hono, Cloudflare Workers, D1
+- Shared (`packages/shared`): TypeScript domain types y mappers
+- Lint/format: Biome
+- Runtime: Bun
 
-## Estructura del Proyecto
+## Modelo de dominio
 
-```
+- La entidad principal es `Session`.
+- Cada sesion tiene `1..n` tags.
+- La ruta publica de sesion es `/session/:slug`.
+- La API publica expone `sessions`, `tags` y `photos`.
+- `GET /api/sessions` soporta `?include=photos` para hidratacion completa en una sola llamada.
+
+## Estructura
+
+```text
 roncalphoto/
 ├── apps/
-│   ├── web/                  # Astro frontend (@roncal/web)
+│   ├── photos/
 │   │   ├── src/
-│   │   │   ├── components/   # Astro + React components
-│   │   │   ├── layouts/
-│   │   │   ├── pages/
-│   │   │   ├── lib/          # API client, animations
-│   │   │   ├── utils/        # Helper functions
-│   │   │   └── styles/       # Tailwind global.css
+│   │   │   ├── app/
+│   │   │   │   ├── routes/
+│   │   │   │   └── styles/
+│   │   │   ├── components/
+│   │   │   ├── lib/
+│   │   │   ├── modules/
+│   │   │   └── utils/
 │   │   ├── public/
-│   │   ├── astro.config.mjs
+│   │   ├── vite.config.ts
 │   │   └── wrangler.toml
-│   └── api/                  # Hono API (@roncal/api)
+│   └── api/
 │       ├── src/
-│       │   ├── db/           # D1 queries
-│       │   ├── middleware/   # Auth, CORS
-│       │   ├── routes/       # Category, session, photo routes
-│       │   └── types/        # DB rows, DTOs, Env
-│       ├── migrations/       # D1 SQL migrations
+│       │   ├── app/
+│       │   ├── config/
+│       │   ├── db/
+│       │   ├── modules/
+│       │   └── shared/
+│       ├── drizzle.config.ts
 │       └── wrangler.json
 ├── packages/
-│   └── shared/               # Shared types (@roncal/shared)
+│   └── shared/
 │       └── src/
-│           ├── types.ts      # Domain types (Photo, Session, Category, etc.)
-│           └── index.ts      # Barrel export
-├── package.json              # Root workspace config
-├── turbo.json                # Turborepo pipeline
-├── tsconfig.json             # Base TypeScript config
-├── biome.json                # Biome linter/formatter
-└── .env.example              # Environment template
+├── package.json
+├── turbo.json
+├── tsconfig.json
+└── biome.json
 ```
 
 ## Comandos
 
-Todos los comandos se ejecutan desde la raíz del monorepo:
+Desde la raiz del repo:
 
-| Comando               | Accion                                              |
-| :-------------------- | :-------------------------------------------------- |
-| `bun install`         | Instala dependencias y enlaza workspaces             |
-| `bun run dev`         | Inicia ambos servidores de desarrollo (turbo)        |
-| `bun run build`       | Build de produccion de todos los paquetes            |
-| `bun run check`       | Verifica tipos TypeScript en todos los paquetes      |
-| `bun run lint`        | Lint con Biome                                       |
-| `bun run lint:fix`    | Auto-fix Biome issues                                |
-| `bun run format`      | Formatea con Biome                                   |
+- `bun install`
+- `bun run dev`
+- `bun run build`
+- `bun run check`
+- `bun run lint`
+- `bun run lint:fix`
 
-### Comandos por paquete
+Por paquete:
 
 ```bash
-# Frontend (Astro)
-bunx turbo dev --filter=@roncal/web
-bunx turbo build --filter=@roncal/web
-bunx turbo check --filter=@roncal/web
+# Photos app
+bunx turbo dev --filter=@roncal/photos-app
+bunx turbo build --filter=@roncal/photos-app
+bunx turbo check --filter=@roncal/photos-app
 
-# API (Hono/Workers)
-bunx turbo dev --filter=@roncal/api        # Runs wrangler dev (migrates D1 local first)
-bunx turbo build --filter=@roncal/api      # Dry-run deploy
-bun run --filter=@roncal/api deploy        # Deploy to Cloudflare
+# API
+bunx turbo dev --filter=@roncal/api
+bunx turbo build --filter=@roncal/api
+bun run --filter=@roncal/api deploy
 
-# D1 Database
+# D1
 bun run --filter=@roncal/api db:migrate:local
 bun run --filter=@roncal/api db:migrate:remote
 ```
 
-## Desarrollo
+## Entorno
 
-```bash
-# 1. Instalar dependencias
-bun install
-
-# 2. Configurar variables de entorno
-cp .env.example apps/web/.env
-# Edit apps/web/.env with API_URL and API_KEY
-# For api, create apps/api/.dev.vars with API_KEY and ALLOWED_ORIGINS
-
-# 3. Start API first (needed for web build)
-bunx turbo dev --filter=@roncal/api
-
-# 4. In another terminal, start web
-bunx turbo dev --filter=@roncal/web
-
-# Or run both:
-bun run dev
-```
-
-## Paquete Compartido (@roncal/shared)
-
-El paquete `@roncal/shared` contiene los tipos de dominio canonicos compartidos entre frontend y API:
-
-- `PhotoMetadata`, `PhotoSummary`, `Photo`
-- `SessionSummary`, `Session`
-- `CategorySummary`, `Category`
-- `ApiResponse<T>`, `PaginatedResponse<T>`
-
-**Convencion**: Todos los campos son non-nullable. La API transforma nulls de D1 a valores por defecto.
-
-No tiene paso de build — ambos bundlers (Astro/Vite y Wrangler) consumen TypeScript source directamente via el campo `exports` en package.json.
+1. Instalar dependencias: `bun install`
+2. Crear variables de entorno en la raiz del repo porque `apps/photos/vite.config.ts` usa `envDir` apuntando a `../..`
+3. Definir `API_URL` o `VITE_API_URL` para la API
+4. Definir `API_KEY` o `VITE_API_KEY` si el frontend debe inyectar `X-API-Key`
+5. Para API local crear `apps/api/.dev.vars` con `API_KEY` y `ALLOWED_ORIGINS` incluyendo los hosts de frontend local que uses, por ejemplo `http://localhost:5173`
 
 ## Notas
 
-- **Web build**: Requiere que la API este corriendo (hace fetch en build-time para `getStaticPaths`)
-- **API build**: `wrangler deploy --dry-run` — no requiere red
-- **worker-configuration.d.ts**: Auto-generado con `bun run --filter=@roncal/api cf-typegen`, gitignored
+- `@roncal/shared` se consume como TypeScript source, sin build step propio.
+- `apps/photos` usa TanStack Router y genera `src/app/route-tree.gen.ts` desde `src/app/routes`.
+- La normalizacion de metadata de fotos ocurre en API/shared, no en UI.
+- `worker-configuration.d.ts` se regenera con `bun run --filter=@roncal/api cf-typegen`.
