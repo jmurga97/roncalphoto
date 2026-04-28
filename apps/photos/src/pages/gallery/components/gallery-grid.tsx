@@ -25,12 +25,7 @@ export function GalleryGrid({
         className="scrollbar-hide h-full w-full flex-1 overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
       >
         {photos.map((photo, index) => (
-          <GallerySlide
-            isActive={index === currentIndex}
-            isWarm={index === currentIndex + 1}
-            key={photo.id}
-            photo={photo}
-          />
+          <GallerySlide key={photo.id} loading={index === 0 ? undefined : "lazy"} photo={photo} />
         ))}
       </div>
 
