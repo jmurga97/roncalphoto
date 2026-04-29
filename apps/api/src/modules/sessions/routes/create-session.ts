@@ -2,7 +2,6 @@ import { createRouter } from "@/app/create-app";
 import { apiKeyHeaderSchema } from "@/config/required-headers";
 import { CREATED } from "@/config/status-codes";
 import type { AppRouteHandler } from "@/config/types";
-import { createDb } from "@/db";
 import {
   badRequestResponse,
   forbiddenResponse,
@@ -11,9 +10,8 @@ import {
   unauthorizedResponse,
 } from "@/shared/lib/http";
 import { createRoute } from "@hono/zod-openapi";
-import { SessionsRepository } from "../repositories/sessions.repository";
 import { createSessionBodySchema, sessionResponseSchema } from "../schemas/sessions.schema";
-import { SessionsService } from "../services/sessions.service";
+import { getSessionsService } from "../services/sessions.service";
 
 const route = createRoute({
   method: "post",
@@ -48,7 +46,7 @@ const route = createRoute({
 
 const handler: AppRouteHandler<typeof route> = async (c) => {
   const input = c.req.valid("json");
-  const service = new SessionsService(new SessionsRepository(createDb(c.env.DB_RONCALPHOTO)));
+  const service = getSessionsService(c.env.DB_RONCALPHOTO);
   const session = await service.createSession(input);
 
   return jsonSuccess(c, session, CREATED);

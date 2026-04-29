@@ -2,7 +2,10 @@ import { HttpError } from "@/shared/errors";
 import { generateId } from "@/shared/utils/id";
 import { pickNextAvailableSlug, slugify } from "@/shared/utils/slug";
 import type { ApiSession } from "@roncal/shared";
-import type { SessionsRepository } from "../repositories/sessions.repository";
+import {
+  getSessionsRepository,
+  type SessionsRepository,
+} from "../repositories/sessions.repository";
 import { toApiSession } from "../utils/sessions.mapper";
 
 interface HydrateOptions {
@@ -154,4 +157,19 @@ export class SessionsService {
     const existingSlugs = await this.repository.listMatchingSlugs(baseSlug, excludeSessionId);
     return pickNextAvailableSlug(baseSlug, existingSlugs);
   }
+}
+
+const sessionsServiceInstances = new WeakMap<D1Database, SessionsService>();
+
+export function getSessionsService(client: D1Database): SessionsService {
+  const existingService = sessionsServiceInstances.get(client);
+
+  if (existingService) {
+    return existingService;
+  }
+
+  const service = new SessionsService(getSessionsRepository(client));
+  sessionsServiceInstances.set(client, service);
+
+  return service;
 }

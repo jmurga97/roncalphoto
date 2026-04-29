@@ -2,7 +2,6 @@ import { createRouter } from "@/app/create-app";
 import { apiKeyHeaderSchema } from "@/config/required-headers";
 import { OK } from "@/config/status-codes";
 import type { AppRouteHandler } from "@/config/types";
-import { createDb } from "@/db";
 import {
   badRequestResponse,
   forbiddenResponse,
@@ -12,7 +11,7 @@ import {
 } from "@/shared/lib/http";
 import { createRoute } from "@hono/zod-openapi";
 import { listPhotosQuerySchema, photosPaginatedResponseSchema } from "../schemas/photos.schema";
-import { PhotosService } from "../services/photos.service";
+import { getPhotosService } from "../services/photos.service";
 
 const route = createRoute({
   method: "get",
@@ -40,7 +39,7 @@ const route = createRoute({
 
 const handler: AppRouteHandler<typeof route> = async (c) => {
   const query = c.req.valid("query");
-  const service = new PhotosService(createDb(c.env.DB_RONCALPHOTO));
+  const service = getPhotosService(c.env.DB_RONCALPHOTO);
   const result = await service.listPhotos(query);
 
   return jsonPaginated(c, result.data, result.pagination);

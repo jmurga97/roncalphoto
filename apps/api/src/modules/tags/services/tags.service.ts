@@ -1,5 +1,5 @@
 import type { AppDb } from "@/db";
-import { sessionTags, sessions, tags } from "@/db";
+import { getDb, sessionTags, sessions, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
 import type { ApiSession, ApiTagWithSessions, Tag } from "@roncal/shared";
 import { asc, desc, eq, inArray } from "drizzle-orm";
@@ -88,4 +88,19 @@ export class TagsService {
 
     return tagsBySessionId;
   }
+}
+
+const tagsServiceInstances = new WeakMap<D1Database, TagsService>();
+
+export function getTagsService(client: D1Database): TagsService {
+  const existingService = tagsServiceInstances.get(client);
+
+  if (existingService) {
+    return existingService;
+  }
+
+  const service = new TagsService(getDb(client));
+  tagsServiceInstances.set(client, service);
+
+  return service;
 }

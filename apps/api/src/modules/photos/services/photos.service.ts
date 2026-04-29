@@ -1,5 +1,5 @@
 import type { AppDb } from "@/db";
-import { photos } from "@/db";
+import { getDb, photos } from "@/db";
 import { HttpError } from "@/shared/errors";
 import { generateId } from "@/shared/utils/id";
 import type { ApiPhoto, PhotoMetadata } from "@roncal/shared";
@@ -163,4 +163,19 @@ export class PhotosService {
       deleted: true as const,
     };
   }
+}
+
+const photosServiceInstances = new WeakMap<D1Database, PhotosService>();
+
+export function getPhotosService(client: D1Database): PhotosService {
+  const existingService = photosServiceInstances.get(client);
+
+  if (existingService) {
+    return existingService;
+  }
+
+  const service = new PhotosService(getDb(client));
+  photosServiceInstances.set(client, service);
+
+  return service;
 }

@@ -2,7 +2,6 @@ import { createRouter } from "@/app/create-app";
 import { apiKeyHeaderSchema } from "@/config/required-headers";
 import { NOT_FOUND, OK } from "@/config/status-codes";
 import type { AppRouteHandler } from "@/config/types";
-import { createDb } from "@/db";
 import {
   badRequestResponse,
   forbiddenResponse,
@@ -12,9 +11,8 @@ import {
   unauthorizedResponse,
 } from "@/shared/lib/http";
 import { createRoute } from "@hono/zod-openapi";
-import { SessionsRepository } from "../repositories/sessions.repository";
 import { sessionResponseSchema, sessionSlugParamsSchema } from "../schemas/sessions.schema";
-import { SessionsService } from "../services/sessions.service";
+import { getSessionsService } from "../services/sessions.service";
 
 const route = createRoute({
   method: "get",
@@ -43,7 +41,7 @@ const route = createRoute({
 
 const handler: AppRouteHandler<typeof route> = async (c) => {
   const { slug } = c.req.valid("param");
-  const service = new SessionsService(new SessionsRepository(createDb(c.env.DB_RONCALPHOTO)));
+  const service = getSessionsService(c.env.DB_RONCALPHOTO);
   const session = await service.getSessionBySlug(slug, {
     includePhotos: true,
   });

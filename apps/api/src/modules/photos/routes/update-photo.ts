@@ -2,7 +2,6 @@ import { createRouter } from "@/app/create-app";
 import { apiKeyHeaderSchema } from "@/config/required-headers";
 import { NOT_FOUND, OK } from "@/config/status-codes";
 import type { AppRouteHandler } from "@/config/types";
-import { createDb } from "@/db";
 import {
   badRequestResponse,
   forbiddenResponse,
@@ -17,7 +16,7 @@ import {
   photoResponseSchema,
   updatePhotoBodySchema,
 } from "../schemas/photos.schema";
-import { PhotosService } from "../services/photos.service";
+import { getPhotosService } from "../services/photos.service";
 
 const route = createRoute({
   method: "put",
@@ -55,7 +54,7 @@ const route = createRoute({
 const handler: AppRouteHandler<typeof route> = async (c) => {
   const { id } = c.req.valid("param");
   const input = c.req.valid("json");
-  const service = new PhotosService(createDb(c.env.DB_RONCALPHOTO));
+  const service = getPhotosService(c.env.DB_RONCALPHOTO);
   const photo = await service.updatePhoto(id, input);
 
   return jsonSuccess(c, photo, OK);

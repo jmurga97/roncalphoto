@@ -1,5 +1,5 @@
 import type { AppDb, AppTransaction, DbExecutor } from "@/db";
-import { photos, sessionTags, sessions, tags } from "@/db";
+import { getDb, photos, sessionTags, sessions, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
 import type { ApiPhoto, Tag } from "@roncal/shared";
 import { and, asc, desc, eq, inArray, like, ne, or } from "drizzle-orm";
@@ -172,4 +172,19 @@ export class SessionsRepository {
   async transaction<T>(callback: (transaction: AppTransaction) => Promise<T>) {
     return this.db.transaction(callback);
   }
+}
+
+const sessionsRepositoryInstances = new WeakMap<D1Database, SessionsRepository>();
+
+export function getSessionsRepository(client: D1Database): SessionsRepository {
+  const existingRepository = sessionsRepositoryInstances.get(client);
+
+  if (existingRepository) {
+    return existingRepository;
+  }
+
+  const repository = new SessionsRepository(getDb(client));
+  sessionsRepositoryInstances.set(client, repository);
+
+  return repository;
 }
