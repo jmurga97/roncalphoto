@@ -1,0 +1,24 @@
+{
+  "name": "@murga/components",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "sideEffects": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lit": "^3.3.1"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
