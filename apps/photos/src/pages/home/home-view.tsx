@@ -1,11 +1,26 @@
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { HomeEmptyState } from "./components/home-empty-state";
+import { HomeSessionCard } from "./components/home-session-card";
+
 export function HomeView() {
+  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
+  const visibleSessions = sessions.filter((session) =>
+    session.photos.some(
+      (photo) => photo.miniature.trim().length > 0 || photo.url.trim().length > 0,
+    ),
+  );
+
+  if (visibleSessions.length === 0) {
+    return <HomeEmptyState />;
+  }
+
   return (
-    <div className="flex h-full items-center justify-center">
-      <div className="px-8 text-center">
-        <h2 className="editorial-title mb-4">Bienvenido</h2>
-        <p className="ui-muted mx-auto max-w-md">
-          Selecciona una sesión para explorar el portfolio.
-        </p>
+    <div className="gallery-enter h-full overflow-y-auto px-1 py-1 sm:px-1.5 sm:py-1.5">
+      <div className="mx-auto columns-1 gap-2 sm:columns-2 xl:columns-3">
+        {visibleSessions.map((session) => (
+          <HomeSessionCard key={session.id} session={session} />
+        ))}
       </div>
     </div>
   );

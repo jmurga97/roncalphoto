@@ -9,7 +9,7 @@ export const sessionsService = {
     return apiSessionToSession(session);
   },
   async getSessions(): Promise<Session[]> {
-    const response = await httpClient("/api/sessions");
+    const response = await httpClient("/api/sessions?include=photos");
     const sessions = await readApiResponse<ApiSession[]>(response);
 
     return sessions.map(apiSessionToSession);

@@ -58,19 +58,27 @@ export function useTheme() {
   return useAppStore((state) => state.theme);
 }
 
+export function useSidebarAboutOpen() {
+  return useAppStore((state) => state.isAboutOpen);
+}
+
 export function useSidebarActions() {
   const isMobile = useSidebarMobile();
   const {
+    isAboutOpen,
     isSidebarOpenDesktop,
     isSidebarOpenMobile,
     resetMobileSidebarState,
+    setAboutOpen,
     setSidebarOpenDesktop,
     setSidebarOpenMobile,
   } = useAppStore(
     useShallow((state) => ({
+      isAboutOpen: state.isAboutOpen,
       isSidebarOpenDesktop: state.isSidebarOpenDesktop,
       isSidebarOpenMobile: state.isSidebarOpenMobile,
       resetMobileSidebarState: state.resetMobileSidebarState,
+      setAboutOpen: state.setAboutOpen,
       setSidebarOpenDesktop: state.setSidebarOpenDesktop,
       setSidebarOpenMobile: state.setSidebarOpenMobile,
     })),
@@ -78,6 +86,9 @@ export function useSidebarActions() {
 
   return useMemo(
     () => ({
+      closeAbout: () => {
+        setAboutOpen(false);
+      },
       closeSidebar: () => {
         if (isMobile) {
           setSidebarOpenMobile(false);
@@ -88,15 +99,42 @@ export function useSidebarActions() {
       },
       openSidebar: () => {
         if (isMobile) {
+          if (isAboutOpen) {
+            setAboutOpen(false);
+          }
+
           setSidebarOpenMobile(true);
           return;
         }
 
         setSidebarOpenDesktop(true);
       },
+      openAbout: () => {
+        if (isMobile) {
+          setSidebarOpenMobile(false);
+        }
+
+        setAboutOpen(true);
+      },
       resetMobileSidebarState,
+      toggleAbout: () => {
+        if (isAboutOpen) {
+          setAboutOpen(false);
+          return;
+        }
+
+        if (isMobile) {
+          setSidebarOpenMobile(false);
+        }
+
+        setAboutOpen(true);
+      },
       toggleSidebar: () => {
         if (isMobile) {
+          if (!isSidebarOpenMobile && isAboutOpen) {
+            setAboutOpen(false);
+          }
+
           setSidebarOpenMobile(!isSidebarOpenMobile);
           return;
         }
@@ -106,9 +144,11 @@ export function useSidebarActions() {
     }),
     [
       isMobile,
+      isAboutOpen,
       isSidebarOpenDesktop,
       isSidebarOpenMobile,
       resetMobileSidebarState,
+      setAboutOpen,
       setSidebarOpenDesktop,
       setSidebarOpenMobile,
     ],

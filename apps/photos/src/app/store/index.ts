@@ -1,5 +1,6 @@
 export {
   useAppStore,
+  useSidebarAboutOpen,
   useSidebarActions,
   useSidebarMobile,
   useSidebarOpen,

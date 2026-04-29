@@ -47,21 +47,6 @@ export interface Tag {
 }
 
 /**
- * Session summary for listing.
- * Contains photo summaries instead of full photos.
- */
-export interface SessionSummary {
-  id: string;
-  slug: string;
-  title: string;
-  description: string; // Rich text (HTML)
-  createdAt: string;
-  tags: Tag[];
-  photoCount: number;
-  coverPhoto: PhotoSummary; // First photo as cover
-}
-
-/**
  * Full session data with all photos.
  */
 export interface Session {

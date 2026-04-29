@@ -3,7 +3,6 @@ export type {
   PhotoSummary,
   Photo,
   Tag,
-  SessionSummary,
   Session,
   ApiPhoto,
   ApiSession,

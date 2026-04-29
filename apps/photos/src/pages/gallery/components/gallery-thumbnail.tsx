@@ -31,7 +31,10 @@ export function GalleryThumbnail({ isActive, onSelect, photo }: GalleryThumbnail
     >
       <img
         alt=""
-        className="h-full w-full object-cover"
+        className={[
+          "h-full w-full object-cover transition-[filter] duration-200",
+          isActive ? "grayscale-0" : "grayscale",
+        ].join(" ")}
         decoding="async"
         loading="eager"
         src={photo.thumbnailSrc}
