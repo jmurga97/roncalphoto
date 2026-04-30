@@ -1,4 +1,4 @@
-import { SuspenseWrapper } from "@components/suspense-wrapper";
+import { SuspenseWrapper } from "@roncal/ui";
 import { useSidebarData } from "../../hooks/use-sidebar-data";
 import { SidebarHeaderError } from "./sidebar-header-error";
 import { SidebarHeaderLoading } from "./sidebar-header-loading";
@@ -16,7 +16,7 @@ export function SidebarHeader() {
     <SuspenseWrapper
       errorFallback={<SidebarHeaderError />}
       fallback={<SidebarHeaderLoading />}
-      slug={slug}
+      resetKey={slug}
     >
       <SidebarHeaderQueryContent />
     </SuspenseWrapper>

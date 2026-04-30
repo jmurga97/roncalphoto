@@ -10,6 +10,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
+    "@roncal/ui": "workspace:*",
     "@roncal/shared": "workspace:*",
     "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-router": "^1.139.3",

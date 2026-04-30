@@ -3,13 +3,14 @@ import type { Context } from "hono";
 import type { AppBindings } from "./types";
 
 const DEFAULT_ALLOWED_ORIGINS = [
-  "*",
   "http://localhost:4321",
   "http://localhost:3000",
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://127.0.0.1:4321",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
 ] as const;
 
 const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal"]);

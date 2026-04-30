@@ -87,8 +87,8 @@ bun run --filter=@roncal/api db:migrate:remote
 
 1. Instalar dependencias: `bun install`
 2. Crear variables de entorno en la raiz del repo porque `apps/photos/vite.config.ts` usa `envDir` apuntando a `../..`
-3. Definir `API_URL` o `VITE_API_URL` para la API
-4. Para API local crear `apps/api/.dev.vars` con `ALLOWED_ORIGINS` incluyendo los hosts de frontend local que uses, por ejemplo `http://localhost:5173`
+3. Definir `API_URL` o `VITE_API_URL` para preview/build; en desarrollo Vite usa proxy local a `/api`
+4. Para API local crear `apps/api/.dev.vars` con `ALLOWED_ORIGINS` incluyendo los hosts de frontend local que uses, por ejemplo `http://localhost:5173` o `http://localhost:5174`
 
 ## Notas
 

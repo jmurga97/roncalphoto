@@ -1,9 +1,8 @@
 import type { ApiResponse } from "@roncal/shared";
 
-const API_URL =
-  import.meta.env.API_URL ??
-  import.meta.env.VITE_API_URL ??
-  (import.meta.env.DEV ? "" : "http://localhost:8787");
+const API_URL = import.meta.env.DEV
+  ? ""
+  : (import.meta.env.API_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8787");
 
 export class ApiRequestError extends Error {
   readonly status: number;
@@ -13,6 +12,21 @@ export class ApiRequestError extends Error {
     this.name = "ApiRequestError";
     this.status = status;
   }
+}
+
+function shouldSetJsonContentType(body: BodyInit | null | undefined): boolean {
+  if (body == null) {
+    return false;
+  }
+
+  return !(
+    body instanceof FormData ||
+    body instanceof URLSearchParams ||
+    body instanceof Blob ||
+    body instanceof ArrayBuffer ||
+    ArrayBuffer.isView(body) ||
+    body instanceof ReadableStream
+  );
 }
 
 function resolveRequestInput(input: RequestInfo | URL): RequestInfo | URL {
@@ -26,7 +40,7 @@ function resolveRequestInput(input: RequestInfo | URL): RequestInfo | URL {
 export const httpClient: typeof fetch = (input, init) => {
   const headers = new Headers(init?.headers);
 
-  if (!headers.has("Content-Type")) {
+  if (!headers.has("Content-Type") && shouldSetJsonContentType(init?.body)) {
     headers.set("Content-Type", "application/json");
   }
 

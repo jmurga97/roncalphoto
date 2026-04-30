@@ -45,6 +45,7 @@
       ".astro",
       ".wrangler",
       "apps/photos/src/app/route-tree.gen.ts",
+      "apps/photos-admin/src/app/route-tree.gen.ts",
       "worker-configuration.d.ts",
       "bun.lock"
     ]

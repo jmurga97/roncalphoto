@@ -34,10 +34,39 @@
       "version": "0.0.1",
       "dependencies": {
         "@roncal/shared": "workspace:*",
+        "@roncal/ui": "workspace:*",
         "@tanstack/react-query": "^5.90.2",
         "@tanstack/react-router": "^1.139.3",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",
+        "tailwindcss": "^4.1.18",
+        "zod": "^4.3.6",
+        "zustand": "^5.0.12",
+      },
+      "devDependencies": {
+        "@tailwindcss/vite": "^4.1.18",
+        "@tanstack/router-plugin": "^1.167.23",
+        "@types/react": "^19.2.9",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^5.0.4",
+        "typescript": "^5.9.3",
+        "vite": "^7.1.12",
+        "wrangler": "^4.60.0",
+      },
+    },
+    "apps/photos-admin": {
+      "name": "@roncal/photos-admin",
+      "version": "0.0.1",
+      "dependencies": {
+        "@hookform/resolvers": "^5.2.2",
+        "@murga/components": "workspace:*",
+        "@roncal/shared": "workspace:*",
+        "@roncal/ui": "workspace:*",
+        "@tanstack/react-query": "^5.90.2",
+        "@tanstack/react-router": "^1.139.3",
+        "react": "^19.2.3",
+        "react-dom": "^19.2.3",
+        "react-hook-form": "^7.66.1",
         "tailwindcss": "^4.1.18",
         "zod": "^4.3.6",
         "zustand": "^5.0.12",
@@ -76,6 +105,24 @@
       "version": "0.0.1",
       "devDependencies": {
         "typescript": "^5.9.3",
+      },
+    },
+    "packages/ui": {
+      "name": "@roncal/ui",
+      "version": "0.0.1",
+      "devDependencies": {
+        "@tanstack/react-query": "^5.90.2",
+        "@types/react": "^19.2.9",
+        "@types/react-dom": "^19.2.3",
+        "jsdom": "^26.1.0",
+        "react": "^19.2.3",
+        "react-dom": "^19.2.3",
+        "typescript": "^5.9.3",
+        "vitest": "^3.2.4",
+      },
+      "peerDependencies": {
+        "@tanstack/react-query": "^5.90.2",
+        "react": "^19.0.0",
       },
     },
   },
@@ -236,6 +283,8 @@
 
     "@hono/zod-validator": ["@hono/zod-validator@0.7.6", "", { "peerDependencies": { "hono": ">=3.9.0", "zod": "^3.25.0 || ^4.0.0" } }, "sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw=="],
 
+    "@hookform/resolvers": ["@hookform/resolvers@5.2.2", "", { "dependencies": { "@standard-schema/utils": "^0.3.0" }, "peerDependencies": { "react-hook-form": "^7.55.0" } }, "sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA=="],
+
     "@img/colour": ["@img/colour@1.0.0", "", {}, "sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw=="],
 
     "@img/sharp-darwin-arm64": ["@img/sharp-darwin-arm64@0.34.5", "", { "optionalDependencies": { "@img/sharp-libvips-darwin-arm64": "1.2.4" }, "os": "darwin", "cpu": "arm64" }, "sha512-imtQ3WMJXbMY4fxb/Ndp6HBTNVtWCUI0WdobyheGf5+ad6xX8VIDO8u2xE4qc/fr08CKG/7dDseFtn6M6g/r3w=="],
@@ -364,13 +413,19 @@
 
     "@roncal/api": ["@roncal/api@workspace:apps/api"],
 
+    "@roncal/photos-admin": ["@roncal/photos-admin@workspace:apps/photos-admin"],
+
     "@roncal/photos-app": ["@roncal/photos-app@workspace:apps/photos"],
 
     "@roncal/shared": ["@roncal/shared@workspace:packages/shared"],
 
+    "@roncal/ui": ["@roncal/ui@workspace:packages/ui"],
+
     "@sindresorhus/is": ["@sindresorhus/is@7.2.0", "", {}, "sha512-P1Cz1dWaFfR4IR+U13mqqiGsLFf1KbayybWwdd2vfctdV6hDpUkgCY0nKOLLTMSoRd/jJNjtbqzf13K8DCCXQw=="],
 
     "@speed-highlight/core": ["@speed-highlight/core@1.2.14", "", {}, "sha512-G4ewlBNhUtlLvrJTb88d2mdy2KRijzs4UhnlrOSRT4bmjh/IqNElZa3zkrZ+TC47TwtlDWzVLFADljF1Ijp5hA=="],
+
+    "@standard-schema/utils": ["@standard-schema/utils@0.3.0", "", {}, "sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g=="],
 
     "@tailwindcss/node": ["@tailwindcss/node@4.1.18", "", { "dependencies": { "@jridgewell/remapping": "^2.3.4", "enhanced-resolve": "^5.18.3", "jiti": "^2.6.1", "lightningcss": "1.30.2", "magic-string": "^0.30.21", "source-map-js": "^1.2.1", "tailwindcss": "4.1.18" } }, "sha512-DoR7U1P7iYhw16qJ49fgXUlry1t4CpXeErJHnQ44JgTSKMaZUdf17cfn5mHchfJ4KRBZRFA/Coo+MUF5+gOaCQ=="],
 
@@ -685,6 +740,8 @@
     "react": ["react@19.2.3", "", {}, "sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA=="],
 
     "react-dom": ["react-dom@19.2.3", "", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.3" } }, "sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg=="],
+
+    "react-hook-form": ["react-hook-form@7.74.0", "", { "peerDependencies": { "react": "^16.8.0 || ^17 || ^18 || ^19" } }, "sha512-yR6wHr99p9wFv686jhRWVSFhUvDvNbdUf2dKlbno8/VKOCuoNobDGC6S+M2dua9A9Yo8vpcrp8assIYbsZCQ9g=="],
 
     "react-refresh": ["react-refresh@0.18.0", "", {}, "sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw=="],
 

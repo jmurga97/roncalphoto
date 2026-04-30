@@ -1,0 +1,36 @@
+{
+  "name": "@roncal/photos-admin",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "wrangler pages dev dist",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@murga/components": "workspace:*",
+    "@roncal/shared": "workspace:*",
+    "@roncal/ui": "workspace:*",
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-router": "^1.139.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-hook-form": "^7.66.1",
+    "tailwindcss": "^4.1.18",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/router-plugin": "^1.167.23",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "wrangler": "^4.60.0"
+  }
+}

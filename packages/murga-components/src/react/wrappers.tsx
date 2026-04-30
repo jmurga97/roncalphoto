@@ -1,15 +1,27 @@
+import type { McAppShell as McAppShellElement } from "../components/mc-app-shell";
+import type { McButton as McButtonElement } from "../components/mc-button";
+import type { McConfirmAction as McConfirmActionElement } from "../components/mc-confirm-action";
+import type { McField as McFieldElement } from "../components/mc-field";
+import type { McInlineMessage as McInlineMessageElement } from "../components/mc-inline-message";
+import type { McInput as McInputElement } from "../components/mc-input";
 import type { McMediaBrowser as McMediaBrowserElement } from "../components/mc-media-browser";
 import type { McNavList as McNavListElement } from "../components/mc-nav-list";
 import type { McOverviewPanel as McOverviewPanelElement } from "../components/mc-overview-panel";
+import type { McPagination as McPaginationElement } from "../components/mc-pagination";
 import type { McRelationshipPanel as McRelationshipPanelElement } from "../components/mc-relationship-panel";
+import type { McResourceEditor as McResourceEditorElement } from "../components/mc-resource-editor";
 import type { McResourceTable as McResourceTableElement } from "../components/mc-resource-table";
+import type { McSearchField as McSearchFieldElement } from "../components/mc-search-field";
 import type { McSelect as McSelectElement } from "../components/mc-select";
 import type { McSidebarNav as McSidebarNavElement } from "../components/mc-sidebar-nav";
+import type { McStatusText as McStatusTextElement } from "../components/mc-status-text";
 import type { McTagList as McTagListElement } from "../components/mc-tag-list";
 import type { McTagPicker as McTagPickerElement } from "../components/mc-tag-picker";
+import type { McTextarea as McTextareaElement } from "../components/mc-textarea";
 import type { McThumbnailRail as McThumbnailRailElement } from "../components/mc-thumbnail-rail";
 import { type ReactWrapperProps, createReactWrapper } from "./create-react-wrapper";
 
+type ChangeHandler = (event: CustomEvent<{ value: string }>) => void;
 type OpenChangeHandler = (event: CustomEvent<{ open: boolean }>) => void;
 type SelectChangeHandler = (event: CustomEvent<{ selectedId: string | null }>) => void;
 type MultiSelectChangeHandler = (event: CustomEvent<{ selectedIds: string[] }>) => void;
@@ -17,6 +29,311 @@ type TagSelectHandler = (event: CustomEvent<{ itemId: string; selectedIds: strin
 type SimpleSelectHandler = (event: CustomEvent<{ selectedId: string }>) => void;
 type SortHandler = (event: CustomEvent<{ columnId: string }>) => void;
 type RowSelectHandler = (event: CustomEvent<{ selectedId: string }>) => void;
+type ConfirmHandler = (event: CustomEvent<{ confirmed: boolean }>) => void;
+type PageChangeHandler = (event: CustomEvent<{ page: number }>) => void;
+type ActionHandler = (event: CustomEvent<{ action: "save" | "cancel" | "delete" }>) => void;
+
+type McAppShellPropertyProps = Partial<Pick<McAppShellElement, "sidebarOpen" | "mobileOverlay">>;
+type McAppShellEventProps = {
+  onMcSidebarOpenChange?: OpenChangeHandler;
+};
+export type McAppShellProps = ReactWrapperProps<
+  McAppShellElement,
+  McAppShellPropertyProps,
+  McAppShellEventProps
+>;
+export const McAppShell = createReactWrapper<
+  McAppShellElement,
+  McAppShellPropertyProps,
+  McAppShellEventProps
+>({
+  tagName: "mc-app-shell",
+  propertyKeys: ["sidebarOpen", "mobileOverlay"],
+  eventMap: {
+    onMcSidebarOpenChange: "mc-sidebar-open-change",
+  },
+});
+
+type McButtonPropertyProps = Partial<
+  Pick<McButtonElement, "variant" | "size" | "type" | "disabled" | "pending" | "ariaLabel">
+>;
+type McButtonEventProps = {};
+export type McButtonProps = ReactWrapperProps<
+  McButtonElement,
+  McButtonPropertyProps,
+  McButtonEventProps
+>;
+export const McButton = createReactWrapper<
+  McButtonElement,
+  McButtonPropertyProps,
+  McButtonEventProps
+>({
+  tagName: "mc-button",
+  propertyKeys: ["variant", "size", "type", "disabled", "pending", "ariaLabel"],
+  eventMap: {},
+});
+
+type McFieldPropertyProps = Partial<
+  Pick<McFieldElement, "inputId" | "label" | "hint" | "error" | "required" | "optional" | "invalid">
+>;
+type McFieldEventProps = {};
+export type McFieldProps = ReactWrapperProps<
+  McFieldElement,
+  McFieldPropertyProps,
+  McFieldEventProps
+>;
+export const McField = createReactWrapper<McFieldElement, McFieldPropertyProps, McFieldEventProps>(
+  {
+    tagName: "mc-field",
+    propertyKeys: ["inputId", "label", "hint", "error", "required", "optional", "invalid"],
+    eventMap: {},
+  },
+);
+
+type McInputPropertyProps = Partial<
+  Pick<
+    McInputElement,
+    | "value"
+    | "inputId"
+    | "name"
+    | "type"
+    | "placeholder"
+    | "autocomplete"
+    | "disabled"
+    | "required"
+    | "readonly"
+    | "maxlength"
+    | "invalid"
+    | "ariaLabel"
+  >
+>;
+type McInputEventProps = {
+  onMcInput?: ChangeHandler;
+  onMcChange?: ChangeHandler;
+};
+export type McInputProps = ReactWrapperProps<
+  McInputElement,
+  McInputPropertyProps,
+  McInputEventProps
+>;
+export const McInput = createReactWrapper<
+  McInputElement,
+  McInputPropertyProps,
+  McInputEventProps
+>({
+  tagName: "mc-input",
+  propertyKeys: [
+    "value",
+    "inputId",
+    "name",
+    "type",
+    "placeholder",
+    "autocomplete",
+    "disabled",
+    "required",
+    "readonly",
+    "maxlength",
+    "invalid",
+    "ariaLabel",
+  ],
+  eventMap: {
+    onMcInput: "mc-input",
+    onMcChange: "mc-change",
+  },
+});
+
+type McTextareaPropertyProps = Partial<
+  Pick<
+    McTextareaElement,
+    | "value"
+    | "inputId"
+    | "name"
+    | "rows"
+    | "placeholder"
+    | "disabled"
+    | "required"
+    | "readonly"
+    | "maxlength"
+    | "invalid"
+    | "ariaLabel"
+  >
+>;
+type McTextareaEventProps = {
+  onMcInput?: ChangeHandler;
+  onMcChange?: ChangeHandler;
+};
+export type McTextareaProps = ReactWrapperProps<
+  McTextareaElement,
+  McTextareaPropertyProps,
+  McTextareaEventProps
+>;
+export const McTextarea = createReactWrapper<
+  McTextareaElement,
+  McTextareaPropertyProps,
+  McTextareaEventProps
+>({
+  tagName: "mc-textarea",
+  propertyKeys: [
+    "value",
+    "inputId",
+    "name",
+    "rows",
+    "placeholder",
+    "disabled",
+    "required",
+    "readonly",
+    "maxlength",
+    "invalid",
+    "ariaLabel",
+  ],
+  eventMap: {
+    onMcInput: "mc-input",
+    onMcChange: "mc-change",
+  },
+});
+
+type McSearchFieldPropertyProps = Partial<
+  Pick<McSearchFieldElement, "value" | "inputId" | "name" | "placeholder" | "disabled" | "pending">
+>;
+type McSearchFieldEventProps = {
+  onMcInput?: ChangeHandler;
+  onMcChange?: ChangeHandler;
+  onMcClear?: ChangeHandler;
+};
+export type McSearchFieldProps = ReactWrapperProps<
+  McSearchFieldElement,
+  McSearchFieldPropertyProps,
+  McSearchFieldEventProps
+>;
+export const McSearchField = createReactWrapper<
+  McSearchFieldElement,
+  McSearchFieldPropertyProps,
+  McSearchFieldEventProps
+>({
+  tagName: "mc-search-field",
+  propertyKeys: ["value", "inputId", "name", "placeholder", "disabled", "pending"],
+  eventMap: {
+    onMcInput: "mc-input",
+    onMcChange: "mc-change",
+    onMcClear: "mc-clear",
+  },
+});
+
+type McInlineMessagePropertyProps = Partial<
+  Pick<McInlineMessageElement, "tone" | "title" | "message">
+>;
+type McInlineMessageEventProps = {};
+export type McInlineMessageProps = ReactWrapperProps<
+  McInlineMessageElement,
+  McInlineMessagePropertyProps,
+  McInlineMessageEventProps
+>;
+export const McInlineMessage = createReactWrapper<
+  McInlineMessageElement,
+  McInlineMessagePropertyProps,
+  McInlineMessageEventProps
+>({
+  tagName: "mc-inline-message",
+  propertyKeys: ["tone", "title", "message"],
+  eventMap: {},
+});
+
+type McStatusTextPropertyProps = Partial<Pick<McStatusTextElement, "tone" | "label" | "polite">>;
+type McStatusTextEventProps = {};
+export type McStatusTextProps = ReactWrapperProps<
+  McStatusTextElement,
+  McStatusTextPropertyProps,
+  McStatusTextEventProps
+>;
+export const McStatusText = createReactWrapper<
+  McStatusTextElement,
+  McStatusTextPropertyProps,
+  McStatusTextEventProps
+>({
+  tagName: "mc-status-text",
+  propertyKeys: ["tone", "label", "polite"],
+  eventMap: {},
+});
+
+type McConfirmActionPropertyProps = Partial<
+  Pick<
+    McConfirmActionElement,
+    "open" | "tone" | "message" | "confirmLabel" | "cancelLabel" | "disabled" | "pending"
+  >
+>;
+type McConfirmActionEventProps = {
+  onMcConfirm?: ConfirmHandler;
+  onMcCancel?: OpenChangeHandler;
+  onMcOpenChange?: OpenChangeHandler;
+};
+export type McConfirmActionProps = ReactWrapperProps<
+  McConfirmActionElement,
+  McConfirmActionPropertyProps,
+  McConfirmActionEventProps
+>;
+export const McConfirmAction = createReactWrapper<
+  McConfirmActionElement,
+  McConfirmActionPropertyProps,
+  McConfirmActionEventProps
+>({
+  tagName: "mc-confirm-action",
+  propertyKeys: ["open", "tone", "message", "confirmLabel", "cancelLabel", "disabled", "pending"],
+  eventMap: {
+    onMcConfirm: "mc-confirm",
+    onMcCancel: "mc-cancel",
+    onMcOpenChange: "mc-open-change",
+  },
+});
+
+type McPaginationPropertyProps = Partial<
+  Pick<McPaginationElement, "page" | "pageSize" | "total" | "hasMore" | "disabled">
+>;
+type McPaginationEventProps = {
+  onMcPageChange?: PageChangeHandler;
+};
+export type McPaginationProps = ReactWrapperProps<
+  McPaginationElement,
+  McPaginationPropertyProps,
+  McPaginationEventProps
+>;
+export const McPagination = createReactWrapper<
+  McPaginationElement,
+  McPaginationPropertyProps,
+  McPaginationEventProps
+>({
+  tagName: "mc-pagination",
+  propertyKeys: ["page", "pageSize", "total", "hasMore", "disabled"],
+  eventMap: {
+    onMcPageChange: "mc-page-change",
+  },
+});
+
+type McResourceEditorPropertyProps = Partial<
+  Pick<McResourceEditorElement, "resourceTitle" | "status" | "dirty" | "saving" | "deleting">
+>;
+type McResourceEditorEventProps = {
+  onMcSave?: ActionHandler;
+  onMcCancel?: ActionHandler;
+  onMcDelete?: ActionHandler;
+};
+export type McResourceEditorProps = ReactWrapperProps<
+  McResourceEditorElement,
+  McResourceEditorPropertyProps,
+  McResourceEditorEventProps
+>;
+export const McResourceEditor = createReactWrapper<
+  McResourceEditorElement,
+  McResourceEditorPropertyProps,
+  McResourceEditorEventProps
+>({
+  tagName: "mc-resource-editor",
+  propertyKeys: ["resourceTitle", "status", "dirty", "saving", "deleting"],
+  eventMap: {
+    onMcSave: "mc-save",
+    onMcCancel: "mc-cancel",
+    onMcDelete: "mc-delete",
+  },
+});
 
 type McSelectPropertyProps = Partial<
   Pick<
@@ -184,7 +501,7 @@ export const McSidebarNav = createReactWrapper<
 type McOverviewPanelPropertyProps = Partial<
   Pick<McOverviewPanelElement, "title" | "description" | "stats" | "status">
 >;
-type McOverviewPanelEventProps = Record<string, never>;
+type McOverviewPanelEventProps = {};
 export type McOverviewPanelProps = ReactWrapperProps<
   McOverviewPanelElement,
   McOverviewPanelPropertyProps,
