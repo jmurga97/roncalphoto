@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
+import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import * as schema from "./schema";
 
 export * from "./schema";
@@ -11,16 +12,7 @@ export type AppDb = ReturnType<typeof createDb>;
 const dbInstances = new WeakMap<D1Database, AppDb>();
 
 export function getDb(client: D1Database): AppDb {
-  const existingDb = dbInstances.get(client);
-
-  if (existingDb) {
-    return existingDb;
-  }
-
-  const db = createDb(client);
-  dbInstances.set(client, db);
-
-  return db;
+  return getOrCreateInstance(dbInstances, client, () => createDb(client));
 }
 
 export type AppTransaction = Parameters<AppDb["transaction"]>[0] extends (

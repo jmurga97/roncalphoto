@@ -1,24 +1,14 @@
-import { createRouter } from "@/app/create-app";
-import { apiKeyHeaderSchema } from "@/config/required-headers";
 import { CREATED } from "@/config/status-codes";
-import type { AppRouteHandler } from "@/config/types";
-import {
-  badRequestResponse,
-  forbiddenResponse,
-  internalServerErrorResponse,
-  jsonSuccess,
-  unauthorizedResponse,
-} from "@/shared/lib/http";
-import { createRoute } from "@hono/zod-openapi";
+import { jsonSuccess } from "@/shared/lib/http";
+import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
 import { createPhotoBodySchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
-const route = createRoute({
+const route = createProtectedRoute({
   method: "post",
   path: "/",
   tags: ["Photos"],
   request: {
-    headers: apiKeyHeaderSchema,
     body: {
       required: true,
       content: {
@@ -37,21 +27,13 @@ const route = createRoute({
         },
       },
     },
-    400: badRequestResponse,
-    401: unauthorizedResponse,
-    403: forbiddenResponse,
-    500: internalServerErrorResponse,
   },
 });
 
-const handler: AppRouteHandler<typeof route> = async (c) => {
+export default createOpenApiRouter(route, async (c) => {
   const input = c.req.valid("json");
   const service = getPhotosService(c.env.DB_RONCALPHOTO);
   const photo = await service.createPhoto(input);
 
   return jsonSuccess(c, photo, CREATED);
-};
-
-const router = createRouter().openapi(route, handler);
-
-export default router;
+});

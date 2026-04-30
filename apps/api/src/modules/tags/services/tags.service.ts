@@ -1,12 +1,11 @@
 import type { AppDb } from "@/db";
 import { getDb, sessionTags, sessions, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
+import { toApiSession, toTag, type SessionRecord } from "@/shared/lib/api-mappers";
+import { getOrCreateInstance } from "@/shared/lib/instance-cache";
+import { listTagsBySessionIds } from "@/shared/lib/session-relations";
 import type { ApiSession, ApiTagWithSessions, Tag } from "@roncal/shared";
-import { asc, desc, eq, inArray } from "drizzle-orm";
-import { alias } from "drizzle-orm/sqlite-core";
-import { toApiSession, toTag } from "../utils/tags.mapper";
-
-type SessionRow = typeof sessions.$inferSelect;
+import { asc, desc, eq } from "drizzle-orm";
 
 export class TagsService {
   constructor(private readonly db: AppDb) {}
@@ -23,84 +22,40 @@ export class TagsService {
       throw new HttpError(404, "Tag not found");
     }
 
-    const sessionIds = await this.db
-      .select({ sessionId: sessionTags.session_id })
-      .from(sessionTags)
-      .innerJoin(tags, eq(tags.id, sessionTags.tag_id))
-      .innerJoin(sessions, eq(sessions.id, sessionTags.session_id))
-      .where(eq(tags.slug, slug))
+    const sessionRows = await this.db
+      .select({
+        id: sessions.id,
+        slug: sessions.slug,
+        title: sessions.title,
+        description: sessions.description,
+        created_at: sessions.created_at,
+      })
+      .from(sessions)
+      .innerJoin(sessionTags, eq(sessionTags.session_id, sessions.id))
+      .where(eq(sessionTags.tag_id, tag.id))
       .orderBy(desc(sessions.created_at), desc(sessions.id))
       .all();
 
-    const sessionRows = await Promise.all(
-      sessionIds.map(({ sessionId }) =>
-        this.db.select().from(sessions).where(eq(sessions.id, sessionId)).get(),
-      ),
-    );
-
-    const hydratedSessions = await this.hydrateSessions(
-      sessionRows.filter((row): row is SessionRow => Boolean(row)),
-    );
-
     return {
       tag: toTag(tag),
-      sessions: hydratedSessions,
+      sessions: await this.hydrateSessions(sessionRows),
     };
   }
 
-  private async hydrateSessions(rows: SessionRow[]): Promise<ApiSession[]> {
+  private async hydrateSessions(rows: SessionRecord[]): Promise<ApiSession[]> {
     if (rows.length === 0) {
       return [];
     }
 
     const sessionIds = rows.map((row) => row.id);
-    const tagsBySessionId = await this.listTagsBySessionIds(sessionIds);
+    const tagsBySessionId = await listTagsBySessionIds(this.db, sessionIds);
 
     return rows.map((row) => toApiSession(row, tagsBySessionId.get(row.id) ?? []));
-  }
-
-  private async listTagsBySessionIds(sessionIds: string[]): Promise<Map<string, Tag[]>> {
-    const tagsBySessionId = new Map<string, Tag[]>();
-
-    if (sessionIds.length === 0) {
-      return tagsBySessionId;
-    }
-
-    const tagLookup = alias(tags, "tag_lookup");
-    const rows = await this.db
-      .select({
-        sessionId: sessionTags.session_id,
-        id: tagLookup.id,
-        name: tagLookup.name,
-        slug: tagLookup.slug,
-      })
-      .from(sessionTags)
-      .innerJoin(tagLookup, eq(tagLookup.id, sessionTags.tag_id))
-      .where(inArray(sessionTags.session_id, sessionIds))
-      .orderBy(asc(tagLookup.name))
-      .all();
-
-    for (const row of rows) {
-      const currentTags = tagsBySessionId.get(row.sessionId) ?? [];
-      currentTags.push(toTag(row));
-      tagsBySessionId.set(row.sessionId, currentTags);
-    }
-
-    return tagsBySessionId;
   }
 }
 
 const tagsServiceInstances = new WeakMap<D1Database, TagsService>();
 
 export function getTagsService(client: D1Database): TagsService {
-  const existingService = tagsServiceInstances.get(client);
-
-  if (existingService) {
-    return existingService;
-  }
-
-  const service = new TagsService(getDb(client));
-  tagsServiceInstances.set(client, service);
-
-  return service;
+  return getOrCreateInstance(tagsServiceInstances, client, () => new TagsService(getDb(client)));
 }

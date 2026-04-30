@@ -1,26 +1,10 @@
 import { toHttpError } from "@/shared/errors";
+import { formatValidationMessage } from "@/shared/lib/validation";
 import type { OpenAPIHonoOptions } from "@hono/zod-openapi";
 import type { Context, ErrorHandler, NotFoundHandler } from "hono";
 import { isProductionEnv } from "./env";
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } from "./status-codes";
 import type { AppBindings } from "./types";
-
-function formatValidationMessage(error: {
-  issues: {
-    path: PropertyKey[];
-    message: string;
-  }[];
-}): string {
-  const details = error.issues
-    .slice(0, 3)
-    .map((issue) => {
-      const path = issue.path.join(".");
-      return path ? `${path}: ${issue.message}` : issue.message;
-    })
-    .join(", ");
-
-  return details ? `Invalid request: ${details}` : "Invalid request";
-}
 
 function isProductionContext(c: Context<AppBindings>): boolean {
   const runtimeEnv = c.var.runtimeEnv;

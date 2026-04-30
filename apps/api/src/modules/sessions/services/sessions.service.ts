@@ -1,4 +1,6 @@
 import { HttpError } from "@/shared/errors";
+import { getOrCreateInstance } from "@/shared/lib/instance-cache";
+import { toApiSession } from "@/shared/lib/api-mappers";
 import { generateId } from "@/shared/utils/id";
 import { pickNextAvailableSlug, slugify } from "@/shared/utils/slug";
 import type { ApiSession } from "@roncal/shared";
@@ -6,7 +8,6 @@ import {
   getSessionsRepository,
   type SessionsRepository,
 } from "../repositories/sessions.repository";
-import { toApiSession } from "../utils/sessions.mapper";
 
 interface HydrateOptions {
   includePhotos?: boolean;
@@ -162,14 +163,9 @@ export class SessionsService {
 const sessionsServiceInstances = new WeakMap<D1Database, SessionsService>();
 
 export function getSessionsService(client: D1Database): SessionsService {
-  const existingService = sessionsServiceInstances.get(client);
-
-  if (existingService) {
-    return existingService;
-  }
-
-  const service = new SessionsService(getSessionsRepository(client));
-  sessionsServiceInstances.set(client, service);
-
-  return service;
+  return getOrCreateInstance(
+    sessionsServiceInstances,
+    client,
+    () => new SessionsService(getSessionsRepository(client)),
+  );
 }

@@ -42,15 +42,15 @@ export function HomeSessionCard({ session }: HomeSessionCardProps) {
     "editorial-heading overflow-hidden text-ellipsis whitespace-nowrap text-lg",
     previewPhoto
       ? "text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
-      : "text-[var(--color-text)]",
+      : "text-(--color-text-welcome)",
   ].join(" ");
 
   return (
-    <article className="mb-2 [break-inside:avoid]">
+    <article className="mb-2 break-inside:avoid">
       <Link
         aria-label={`Abrir sesión ${session.title}`}
         className={[
-          "group relative block overflow-hidden rounded-[1.35rem] border ui-divider shadow-[var(--shadow-soft)]",
+          "group relative block overflow-hidden rounded-sm border ui-divider shadow-md",
           "transition-transform duration-300 ease-out motion-reduce:transition-none",
           "focus-visible:-translate-y-1 hover:-translate-y-1",
           getCardHeightClass(session.slug),
@@ -59,7 +59,7 @@ export function HomeSessionCard({ session }: HomeSessionCardProps) {
         search={() => ({})}
         to="/session/$slug"
       >
-        {previewPhoto ? (
+        {previewPhoto && (
           <>
             <img
               alt={previewPhoto.alt || session.title}
@@ -72,16 +72,8 @@ export function HomeSessionCard({ session }: HomeSessionCardProps) {
               src={previewPhoto.miniature}
             />
             <div className="absolute inset-0 bg-black/10 transition-colors duration-300 group-hover:bg-black/0 group-focus-visible:bg-black/0 motion-reduce:transition-none" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/82 via-black/38 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black/82 via-black/38 to-transparent" />
           </>
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, var(--color-surface-2) 0%, var(--color-surface) 100%)",
-            }}
-          />
         )}
 
         <div className="absolute inset-x-0 bottom-0 p-2 sm:p-2.5">

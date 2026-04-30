@@ -1,16 +1,9 @@
-import { createRouter } from "@/app/create-app";
-import { apiKeyHeaderSchema } from "@/config/required-headers";
-import { NOT_FOUND, OK } from "@/config/status-codes";
-import type { AppRouteHandler } from "@/config/types";
+import { OK } from "@/config/status-codes";
 import {
-  badRequestResponse,
-  forbiddenResponse,
-  internalServerErrorResponse,
   jsonSuccess,
-  notFoundResponse,
-  unauthorizedResponse,
+  protectedRouteNotFoundErrorResponses,
 } from "@/shared/lib/http";
-import { createRoute } from "@hono/zod-openapi";
+import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
 import {
   photoIdParamsSchema,
   photoResponseSchema,
@@ -18,12 +11,11 @@ import {
 } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
-const route = createRoute({
+const route = createProtectedRoute({
   method: "put",
   path: "/{id}",
   tags: ["Photos"],
   request: {
-    headers: apiKeyHeaderSchema,
     params: photoIdParamsSchema,
     body: {
       required: true,
@@ -34,6 +26,7 @@ const route = createRoute({
       },
     },
   },
+  errorResponses: protectedRouteNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Update a photo",
@@ -43,23 +36,14 @@ const route = createRoute({
         },
       },
     },
-    400: badRequestResponse,
-    401: unauthorizedResponse,
-    403: forbiddenResponse,
-    [NOT_FOUND]: notFoundResponse,
-    500: internalServerErrorResponse,
   },
 });
 
-const handler: AppRouteHandler<typeof route> = async (c) => {
+export default createOpenApiRouter(route, async (c) => {
   const { id } = c.req.valid("param");
   const input = c.req.valid("json");
   const service = getPhotosService(c.env.DB_RONCALPHOTO);
   const photo = await service.updatePhoto(id, input);
 
   return jsonSuccess(c, photo, OK);
-};
-
-const router = createRouter().openapi(route, handler);
-
-export default router;
+});

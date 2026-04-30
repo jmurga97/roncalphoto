@@ -1,10 +1,10 @@
 import type { AppDb, AppTransaction, DbExecutor } from "@/db";
-import { getDb, photos, sessionTags, sessions, tags } from "@/db";
+import { getDb, sessionTags, sessions, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
-import type { ApiPhoto, Tag } from "@roncal/shared";
-import { and, asc, desc, eq, inArray, like, ne, or } from "drizzle-orm";
-import { alias } from "drizzle-orm/sqlite-core";
-import { toApiPhoto, toTag } from "../utils/sessions.mapper";
+import { getOrCreateInstance } from "@/shared/lib/instance-cache";
+import { listPhotosBySessionIds, listTagsBySessionIds } from "@/shared/lib/session-relations";
+import type { Tag } from "@roncal/shared";
+import { and, desc, eq, inArray, like, ne, or } from "drizzle-orm";
 
 function uniqueTagIds(tagIds: string[]): string[] {
   return Array.from(new Set(tagIds));
@@ -117,56 +117,11 @@ export class SessionsRepository {
   }
 
   async listTagsBySessionIds(sessionIds: string[]): Promise<Map<string, Tag[]>> {
-    const tagsBySessionId = new Map<string, Tag[]>();
-
-    if (sessionIds.length === 0) {
-      return tagsBySessionId;
-    }
-
-    const tagLookup = alias(tags, "tag_lookup");
-    const rows = await this.db
-      .select({
-        sessionId: sessionTags.session_id,
-        id: tagLookup.id,
-        name: tagLookup.name,
-        slug: tagLookup.slug,
-      })
-      .from(sessionTags)
-      .innerJoin(tagLookup, eq(tagLookup.id, sessionTags.tag_id))
-      .where(inArray(sessionTags.session_id, sessionIds))
-      .orderBy(asc(tagLookup.name))
-      .all();
-
-    for (const row of rows) {
-      const currentTags = tagsBySessionId.get(row.sessionId) ?? [];
-      currentTags.push(toTag(row));
-      tagsBySessionId.set(row.sessionId, currentTags);
-    }
-
-    return tagsBySessionId;
+    return listTagsBySessionIds(this.db, sessionIds);
   }
 
-  async listPhotosBySessionIds(sessionIds: string[]): Promise<Map<string, ApiPhoto[]>> {
-    const photosBySessionId = new Map<string, ApiPhoto[]>();
-
-    if (sessionIds.length === 0) {
-      return photosBySessionId;
-    }
-
-    const rows = await this.db
-      .select()
-      .from(photos)
-      .where(inArray(photos.session_id, sessionIds))
-      .orderBy(asc(photos.session_id), asc(photos.sort_order), asc(photos.id))
-      .all();
-
-    for (const row of rows) {
-      const currentPhotos = photosBySessionId.get(row.session_id) ?? [];
-      currentPhotos.push(toApiPhoto(row));
-      photosBySessionId.set(row.session_id, currentPhotos);
-    }
-
-    return photosBySessionId;
+  async listPhotosBySessionIds(sessionIds: string[]) {
+    return listPhotosBySessionIds(this.db, sessionIds);
   }
 
   async transaction<T>(callback: (transaction: AppTransaction) => Promise<T>) {
@@ -177,14 +132,9 @@ export class SessionsRepository {
 const sessionsRepositoryInstances = new WeakMap<D1Database, SessionsRepository>();
 
 export function getSessionsRepository(client: D1Database): SessionsRepository {
-  const existingRepository = sessionsRepositoryInstances.get(client);
-
-  if (existingRepository) {
-    return existingRepository;
-  }
-
-  const repository = new SessionsRepository(getDb(client));
-  sessionsRepositoryInstances.set(client, repository);
-
-  return repository;
+  return getOrCreateInstance(
+    sessionsRepositoryInstances,
+    client,
+    () => new SessionsRepository(getDb(client)),
+  );
 }

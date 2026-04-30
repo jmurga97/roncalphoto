@@ -1,27 +1,20 @@
-import { createRouter } from "@/app/create-app";
-import { apiKeyHeaderSchema } from "@/config/required-headers";
-import { NOT_FOUND, OK } from "@/config/status-codes";
-import type { AppRouteHandler } from "@/config/types";
+import { OK } from "@/config/status-codes";
 import {
-  badRequestResponse,
-  forbiddenResponse,
-  internalServerErrorResponse,
   jsonSuccess,
-  notFoundResponse,
-  unauthorizedResponse,
+  protectedRouteNotFoundErrorResponses,
 } from "@/shared/lib/http";
-import { createRoute } from "@hono/zod-openapi";
+import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
 import { sessionResponseSchema, sessionSlugParamsSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
 
-const route = createRoute({
+const route = createProtectedRoute({
   method: "get",
   path: "/{slug}",
   tags: ["Sessions"],
   request: {
-    headers: apiKeyHeaderSchema,
     params: sessionSlugParamsSchema,
   },
+  errorResponses: protectedRouteNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Get session detail",
@@ -31,15 +24,10 @@ const route = createRoute({
         },
       },
     },
-    400: badRequestResponse,
-    401: unauthorizedResponse,
-    403: forbiddenResponse,
-    [NOT_FOUND]: notFoundResponse,
-    500: internalServerErrorResponse,
   },
 });
 
-const handler: AppRouteHandler<typeof route> = async (c) => {
+export default createOpenApiRouter(route, async (c) => {
   const { slug } = c.req.valid("param");
   const service = getSessionsService(c.env.DB_RONCALPHOTO);
   const session = await service.getSessionBySlug(slug, {
@@ -47,8 +35,4 @@ const handler: AppRouteHandler<typeof route> = async (c) => {
   });
 
   return jsonSuccess(c, session, OK);
-};
-
-const router = createRouter().openapi(route, handler);
-
-export default router;
+});

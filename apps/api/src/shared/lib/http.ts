@@ -1,4 +1,12 @@
-import { BAD_REQUEST, type CREATED, OK } from "@/config/status-codes";
+import {
+  BAD_REQUEST,
+  FORBIDDEN,
+  INTERNAL_SERVER_ERROR,
+  NOT_FOUND,
+  type CREATED,
+  OK,
+  UNAUTHORIZED,
+} from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
 import { z } from "@hono/zod-openapi";
 import type { Context } from "hono";
@@ -46,6 +54,22 @@ export const unauthorizedResponse = createErrorResponse("Missing API Key");
 export const forbiddenResponse = createErrorResponse("Invalid API Key");
 export const notFoundResponse = createErrorResponse("Resource not found");
 export const internalServerErrorResponse = createErrorResponse("Internal server error");
+
+export const protectedRouteAuthErrorResponses = {
+  [UNAUTHORIZED]: unauthorizedResponse,
+  [FORBIDDEN]: forbiddenResponse,
+  [INTERNAL_SERVER_ERROR]: internalServerErrorResponse,
+} as const;
+
+export const protectedRouteErrorResponses = {
+  [BAD_REQUEST]: badRequestResponse,
+  ...protectedRouteAuthErrorResponses,
+} as const;
+
+export const protectedRouteNotFoundErrorResponses = {
+  ...protectedRouteErrorResponses,
+  [NOT_FOUND]: notFoundResponse,
+} as const;
 
 export function jsonSuccess<Data, Status extends typeof OK | typeof CREATED>(
   c: Context<AppBindings>,

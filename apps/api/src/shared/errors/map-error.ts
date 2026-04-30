@@ -1,4 +1,5 @@
 import { ZodError } from "zod";
+import { formatValidationMessage } from "@/shared/lib/validation";
 import { DomainError, type DomainErrorCode, isDomainError } from "./domain-error";
 import { HttpError, isHttpError } from "./http-error";
 
@@ -15,15 +16,7 @@ export function toHttpError(error: unknown, fallbackMessage = "Internal server e
   }
 
   if (error instanceof ZodError) {
-    const details = error.issues
-      .slice(0, 3)
-      .map((issue) => {
-        const path = issue.path.join(".");
-        return path ? `${path}: ${issue.message}` : issue.message;
-      })
-      .join(", ");
-
-    return new HttpError(400, details ? `Invalid request: ${details}` : "Invalid request");
+    return new HttpError(400, formatValidationMessage(error));
   }
 
   if (isDomainError(error)) {

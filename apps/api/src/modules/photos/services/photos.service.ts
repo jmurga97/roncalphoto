@@ -1,10 +1,16 @@
 import type { AppDb } from "@/db";
 import { getDb, photos } from "@/db";
 import { HttpError } from "@/shared/errors";
+import {
+  toApiPhoto,
+  toPhotoRecord,
+  toPhotoUpdateRecord,
+  type PhotoRecord,
+} from "@/shared/lib/api-mappers";
+import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { generateId } from "@/shared/utils/id";
-import type { ApiPhoto, PhotoMetadata } from "@roncal/shared";
+import { normalizePhotoMetadata, type ApiPhoto, type PhotoMetadata } from "@roncal/shared";
 import { asc, eq, sql } from "drizzle-orm";
-import { normalizeMetadata, toApiPhoto } from "../utils/photos.mapper";
 
 interface ListPhotosOptions {
   page: number;
@@ -30,6 +36,41 @@ interface UpdatePhotoInput {
   about?: string;
   sortOrder?: number;
   metadata?: Partial<PhotoMetadata>;
+}
+
+function normalizeMetadata(metadata?: Partial<PhotoMetadata>) {
+  return normalizePhotoMetadata(metadata);
+}
+
+function createPhotoEntity(input: CreatePhotoInput): ApiPhoto {
+  return {
+    id: input.id ?? generateId(),
+    sessionId: input.sessionId,
+    url: input.url,
+    miniature: input.miniature,
+    alt: input.alt,
+    about: input.about,
+    sortOrder: input.sortOrder ?? 0,
+    metadata: normalizeMetadata(input.metadata),
+  };
+}
+
+function mergePhotoEntity(existing: PhotoRecord, input: UpdatePhotoInput): ApiPhoto {
+  const currentPhoto = toApiPhoto(existing);
+
+  return {
+    ...currentPhoto,
+    sessionId: input.sessionId ?? currentPhoto.sessionId,
+    url: input.url ?? currentPhoto.url,
+    miniature: input.miniature ?? currentPhoto.miniature,
+    alt: input.alt ?? currentPhoto.alt,
+    about: input.about ?? currentPhoto.about,
+    sortOrder: input.sortOrder ?? currentPhoto.sortOrder,
+    metadata: normalizeMetadata({
+      ...currentPhoto.metadata,
+      ...input.metadata,
+    }),
+  };
 }
 
 export class PhotosService {
@@ -72,32 +113,9 @@ export class PhotosService {
   }
 
   async createPhoto(input: CreatePhotoInput): Promise<ApiPhoto> {
-    const metadata = normalizeMetadata(input.metadata);
-    const photo: ApiPhoto = {
-      id: input.id ?? generateId(),
-      sessionId: input.sessionId,
-      url: input.url,
-      miniature: input.miniature,
-      alt: input.alt,
-      about: input.about,
-      sortOrder: input.sortOrder ?? 0,
-      metadata,
-    };
+    const photo = createPhotoEntity(input);
 
-    await this.db.insert(photos).values({
-      id: photo.id,
-      session_id: photo.sessionId,
-      url: photo.url,
-      miniature: photo.miniature,
-      alt: photo.alt,
-      about: photo.about,
-      sort_order: photo.sortOrder,
-      iso: photo.metadata.iso,
-      aperture: photo.metadata.aperture,
-      shutter_speed: photo.metadata.shutterSpeed,
-      lens: photo.metadata.lens,
-      camera: photo.metadata.camera,
-    });
+    await this.db.insert(photos).values(toPhotoRecord(photo));
 
     return photo;
   }
@@ -109,41 +127,14 @@ export class PhotosService {
       throw new HttpError(404, "Photo not found");
     }
 
-    const metadata = normalizeMetadata({
-      iso: input.metadata?.iso ?? existing.iso ?? undefined,
-      aperture: input.metadata?.aperture ?? existing.aperture ?? undefined,
-      shutterSpeed: input.metadata?.shutterSpeed ?? existing.shutter_speed ?? undefined,
-      lens: input.metadata?.lens ?? existing.lens ?? undefined,
-      camera: input.metadata?.camera ?? existing.camera ?? undefined,
-    });
+    const photo = mergePhotoEntity(existing, input);
 
     await this.db
       .update(photos)
-      .set({
-        session_id: input.sessionId ?? existing.session_id,
-        url: input.url ?? existing.url,
-        miniature: input.miniature ?? existing.miniature,
-        alt: input.alt ?? existing.alt,
-        about: input.about ?? existing.about,
-        sort_order: input.sortOrder ?? existing.sort_order,
-        iso: metadata.iso,
-        aperture: metadata.aperture,
-        shutter_speed: metadata.shutterSpeed,
-        lens: metadata.lens,
-        camera: metadata.camera,
-      })
+      .set(toPhotoUpdateRecord(photo))
       .where(eq(photos.id, id));
 
-    return {
-      id,
-      sessionId: input.sessionId ?? existing.session_id,
-      url: input.url ?? existing.url,
-      miniature: input.miniature ?? existing.miniature,
-      alt: input.alt ?? existing.alt,
-      about: input.about ?? existing.about,
-      sortOrder: input.sortOrder ?? existing.sort_order,
-      metadata,
-    };
+    return photo;
   }
 
   async deletePhoto(id: string) {
@@ -168,14 +159,9 @@ export class PhotosService {
 const photosServiceInstances = new WeakMap<D1Database, PhotosService>();
 
 export function getPhotosService(client: D1Database): PhotosService {
-  const existingService = photosServiceInstances.get(client);
-
-  if (existingService) {
-    return existingService;
-  }
-
-  const service = new PhotosService(getDb(client));
-  photosServiceInstances.set(client, service);
-
-  return service;
+  return getOrCreateInstance(
+    photosServiceInstances,
+    client,
+    () => new PhotosService(getDb(client)),
+  );
 }

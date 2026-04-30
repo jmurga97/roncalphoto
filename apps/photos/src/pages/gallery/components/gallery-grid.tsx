@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { GalleryPhotoViewModel } from "../types";
+import { GalleryScrollHint } from "./gallery-scroll-hint";
 import { GallerySlide } from "./gallery-slide";
 import { GalleryThumbnail } from "./gallery-thumbnail";
 
@@ -20,13 +21,17 @@ export function GalleryGrid({
 }: GalleryGridProps) {
   return (
     <div data-gallery-root className="photo-stage gallery-enter flex h-full flex-col">
-      <div
-        ref={containerRef}
-        className="scrollbar-hide h-full w-full flex-1 overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
-      >
-        {photos.map((photo, index) => (
-          <GallerySlide key={photo.id} loading={index === 0 ? undefined : "lazy"} photo={photo} />
-        ))}
+      <div className="relative min-h-0 w-full flex-1">
+        <div
+          ref={containerRef}
+          className="scrollbar-hide h-full w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
+        >
+          {photos.map((photo, index) => (
+            <GallerySlide key={photo.id} loading={index === 0 ? undefined : "lazy"} photo={photo} />
+          ))}
+        </div>
+
+        <GalleryScrollHint photoCount={photos.length} />
       </div>
 
       {showThumbnails ? (
