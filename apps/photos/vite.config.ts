@@ -9,7 +9,6 @@ export default defineConfig(({ mode }) => {
   const envDir = path.resolve(__dirname, "../..");
   const env = loadEnv(mode, envDir, "");
   const apiUrl = env.VITE_API_URL || env.API_URL || "http://localhost:8787";
-  const apiKey = env.VITE_API_KEY || env.API_KEY || "";
 
   return {
     envDir,
@@ -40,13 +39,6 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "/api": {
           changeOrigin: true,
-          configure(proxy) {
-            proxy.on("proxyReq", (proxyRequest) => {
-              if (apiKey) {
-                proxyRequest.setHeader("X-API-Key", apiKey);
-              }
-            });
-          },
           target: apiUrl,
         },
         "/health": {

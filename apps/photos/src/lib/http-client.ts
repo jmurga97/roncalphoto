@@ -4,7 +4,6 @@ const API_URL =
   import.meta.env.API_URL ??
   import.meta.env.VITE_API_URL ??
   (import.meta.env.DEV ? "" : "http://localhost:8787");
-const API_KEY = import.meta.env.API_KEY ?? import.meta.env.VITE_API_KEY ?? "";
 
 export class ApiRequestError extends Error {
   readonly status: number;
@@ -29,10 +28,6 @@ export const httpClient: typeof fetch = (input, init) => {
 
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
-  }
-
-  if (!headers.has("X-API-Key")) {
-    headers.set("X-API-Key", API_KEY);
   }
 
   return fetch(resolveRequestInput(input), {

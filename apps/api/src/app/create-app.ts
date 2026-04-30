@@ -3,7 +3,6 @@ import { defaultValidationHook, notFoundHandler, onErrorHandler } from "@/config
 import { createPinoLogger } from "@/config/pino-logger";
 import type { AppBindings } from "@/config/types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { authMiddleware } from "./middlewares/auth";
 import { corsMiddleware } from "./middlewares/cors";
 import { registerRoutes } from "./routes";
 
@@ -56,7 +55,6 @@ export function createApp() {
     ),
   );
 
-  app.use("/api/*", authMiddleware);
   registerRoutes(app);
 
   app.notFound(notFoundHandler);

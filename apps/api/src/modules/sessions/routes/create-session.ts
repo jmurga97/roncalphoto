@@ -1,10 +1,10 @@
 import { CREATED } from "@/config/status-codes";
 import { jsonSuccess } from "@/shared/lib/http";
-import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
+import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { createSessionBodySchema, sessionResponseSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
 
-const route = createProtectedRoute({
+const route = createApiRoute({
   method: "post",
   path: "/",
   tags: ["Sessions"],

@@ -1,369 +1,213 @@
 # `@murga/components`
 
-## Estructura del package
+`@murga/components` es la libreria UI de RoncalPhoto para Custom Elements basados en Lit. Este README es la fuente canonica para los proximos prompts de implementacion dentro del package.
 
-```text
-packages/murga-components/
-├── README.md
-├── package.json
-├── tsconfig.json
-└── src/
-    ├── components/
-    │   └── mc-placeholder.ts
-    ├── index.ts
-    ├── react.ts
-    └── types.ts
-```
+## Objetivo
 
-## Recursos y operaciones actuales
+- Construir Custom Elements reutilizables y wrappers de React solo cuando hagan falta.
+- Centralizar tokens, patrones de interaccion y primitives accesibles.
+- Mantener la libreria desacoplada del dominio y del backend.
 
-### Sessions
+## No objetivos
 
-| Método | Ruta | Operación | Input | Respuesta | Errores típicos | Implicación UI |
-| --- | --- | --- | --- | --- | --- | --- |
-| `GET` | `/api/sessions` | Listado de sesiones | Query opcional `include=photos` | `ApiResponse<ApiSession[]>` | `401`, `403`, `500` | Tabla/lista con variante resumida o hidratada |
-| `GET` | `/api/sessions/{slug}` | Detalle de sesión | `slug` en path | `ApiResponse<ApiSession>` | `400`, `401`, `403`, `404`, `500` | Vista de detalle con fotos incluidas |
-| `POST` | `/api/sessions` | Crear sesión | `id?`, `slug?`, `title`, `description`, `tagIds[]` | `ApiResponse<ApiSession>` | `400`, `401`, `403`, `500` | Formulario con rich text y selector múltiple de tags |
-| `PUT` | `/api/sessions/{slug}` | Actualizar sesión | `slug?`, `title?`, `description?`, `tagIds?` | `ApiResponse<ApiSession>` | `400`, `401`, `403`, `404`, `500` | Formulario con edición parcial |
-| `DELETE` | `/api/sessions/{slug}` | Borrar sesión | `slug` en path | `ApiResponse<{ deleted: true }>` | `400`, `401`, `403`, `404`, `500` | Confirmación fuerte por borrado en cascada |
+- No hacer `fetch`.
+- No resolver persistencia ni mutaciones remotas.
+- No incluir routing.
+- No normalizar datos de `@roncal/shared`.
+- No acoplar componentes a `Session`, `Photo` o `Tag`.
 
-### Photos
+## Superficie publica actual
 
-| Método | Ruta | Operación | Input | Respuesta | Errores típicos | Implicación UI |
-| --- | --- | --- | --- | --- | --- | --- |
-| `GET` | `/api/photos` | Listado paginado de fotos | Query `page`, `pageSize` | `PaginatedResponse<ApiPhoto>` | `400`, `401`, `403`, `500` | Grid/lista con paginador y estado vacío |
-| `GET` | `/api/photos/{id}` | Detalle de foto | `id` en path | `ApiResponse<ApiPhoto>` | `400`, `401`, `403`, `404`, `500` | Preview detallada con metadata |
-| `POST` | `/api/photos` | Crear foto | `id?`, `sessionId`, `url`, `miniature`, `alt`, `about`, `sortOrder?`, `metadata?` | `ApiResponse<ApiPhoto>` | `400`, `401`, `403`, `500` | Formulario con URLs y bloque de metadata |
-| `PUT` | `/api/photos/{id}` | Actualizar foto | Cualquier campo editable opcional | `ApiResponse<ApiPhoto>` | `400`, `401`, `403`, `404`, `500` | Formulario con patch parcial |
-| `DELETE` | `/api/photos/{id}` | Borrar foto | `id` en path | `ApiResponse<{ deleted: true }>` | `400`, `401`, `403`, `404`, `500` | Acción destructiva con confirmación |
-
-### Tags
-
-| Método | Ruta | Operación | Input | Respuesta | Errores típicos | Implicación UI |
-| --- | --- | --- | --- | --- | --- | --- |
-| `GET` | `/api/tags` | Listado de tags | Sin body | `ApiResponse<Tag[]>` | `401`, `403`, `500` | Fuente de opciones para filtros y selección |
-| `GET` | `/api/tags/{slug}` | Detalle de tag + sesiones | `slug` en path | `ApiResponse<ApiTagWithSessions>` | `400`, `401`, `403`, `404`, `500` | Vista maestra para navegación temática |
-
-## Contratos por recurso
-
-### `ApiSession`
-
-```ts
-interface ApiSession {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  tags: Tag[];
-  photos?: ApiPhoto[];
-}
-```
-
-Notas de UI:
-
-- `description` requiere un editor o una entrada compatible con HTML string.
-- `photos` es opcional en el listado, pero obligatoria en la práctica para el detalle.
-- `tagIds` no forma parte de la respuesta; solo del payload de escritura.
-
-### `ApiPhoto`
-
-```ts
-interface ApiPhoto {
-  id: string;
-  sessionId: string;
-  url: string;
-  miniature: string;
-  alt: string;
-  about: string;
-  sortOrder: number;
-  metadata: {
-    iso: number;
-    aperture: string;
-    shutterSpeed: string;
-    lens: string;
-    camera: string;
-  };
-}
-```
-
-Notas de UI:
-
-- `metadata` está normalizada hacia valores no nullables en respuestas.
-- En escritura, `metadata` puede ser parcial.
-- `sortOrder` necesita control numérico y quizá affordance de reordenación en una fase futura.
-
-### `ApiTagWithSessions`
-
-```ts
-interface ApiTagWithSessions {
-  tag: Tag;
-  sessions: ApiSession[];
-}
-```
-
-Notas de UI:
-
-- Este recurso alimenta exploración, filtrado y selección.
-- No exige edición directa de tags en la versión actual del sistema.
-
-## Catálogo de componentes atómicos propuesto
-
-La librería debe separar átomos de UI, átomos headless y piezas híbridas que ya entiendan el shape de la API.
-
-### Componentes conectados a API
-
-| Custom element | Wrapper React | Tipo | Propósito | Props/attributes clave | Eventos | Endpoints relacionados |
-| --- | --- | --- | --- | --- | --- | --- |
-| `mc-api-provider` | `McApiProvider` | Headless | Centraliza `baseUrl`, `apiKey`, headers y fetcher | `baseUrl`, `apiKey`, `headers` | `mc-change` | Todos |
-| `mc-collection-view` | `McCollectionView` | Híbrido | Ejecuta listados `GET` y maneja loading, error y empty | `resource`, `query`, `loading`, `emptyMessage` | `mc-success`, `mc-error`, `mc-page-change` | `GET /sessions`, `GET /photos`, `GET /tags` |
-| `mc-record-view` | `McRecordView` | Híbrido | Ejecuta detalle `GET` por identificador | `resource`, `params`, `loading` | `mc-success`, `mc-error` | `GET /sessions/{slug}`, `GET /photos/{id}`, `GET /tags/{slug}` |
-| `mc-form-submit` | `McFormSubmit` | Headless | Orquesta `POST` y `PUT`, serialización y ciclo de submit | `resource`, `method`, `params`, `value`, `disabled` | `mc-submit`, `mc-success`, `mc-error` | Create/update de sessions y photos |
-| `mc-delete-action` | `McDeleteAction` | Híbrido | Ejecuta `DELETE` con confirmación integrada o delegada | `resource`, `params`, `confirm`, `disabled` | `mc-delete`, `mc-success`, `mc-error` | Delete de sessions y photos |
-| `mc-tag-picker` | `McTagPicker` | Híbrido | Carga tags y expone selección múltiple de `tagIds` | `value`, `required`, `disabled` | `mc-change`, `mc-error` | `GET /tags` |
-
-### Átomos de flujo y feedback
-
-| Custom element | Wrapper React | Tipo | Propósito | Props/attributes clave | Eventos | Endpoints relacionados |
-| --- | --- | --- | --- | --- | --- | --- |
-| `mc-pagination` | `McPagination` | Visual | Controla `page`, `pageSize`, `hasMore`, `total` | `page`, `pageSize`, `total`, `hasMore` | `mc-page-change` | `GET /photos` |
-| `mc-status-message` | `McStatusMessage` | Visual | Muestra éxito, error o info | `status`, `message` | `mc-change` | Todos |
-| `mc-spinner` | `McSpinner` | Visual | Estado de carga reusable | `label` | Ninguno | Todos |
-| `mc-empty-state` | `McEmptyState` | Visual | Estado vacío reusable | `title`, `description` | Ninguno | Todos |
-| `mc-confirm-dialog` | `McConfirmDialog` | Visual | Confirmación accesible para acciones destructivas | `open`, `title`, `description`, `confirmText` | `mc-submit`, `mc-change` | Deletes |
-| `mc-button` | `McButton` | Visual | Botón base para acción primaria, secundaria o destructiva | `variant`, `disabled`, `loading`, `type` | `mc-click` o evento nativo `click` | Todos |
-
-### Átomos de formularios
-
-| Custom element | Wrapper React | Tipo | Propósito | Props/attributes clave | Eventos | Endpoints relacionados |
-| --- | --- | --- | --- | --- | --- | --- |
-| `mc-field` | `McField` | Visual | Shell accesible con label, help text y error | `label`, `hint`, `error`, `required` | `mc-change` | Todos los formularios |
-| `mc-text-input` | `McTextInput` | Visual | Texto corto para `title`, `alt`, `lens`, `camera` | `name`, `value`, `placeholder`, `required` | `mc-change` | Create/update sessions y photos |
-| `mc-slug-input` | `McSlugInput` | Híbrido | Entrada para `slug` con modo manual o derivado | `value`, `sourceValue`, `autoGenerate` | `mc-change` | Create/update sessions |
-| `mc-textarea` | `McTextarea` | Visual | Texto largo plano para `about` | `name`, `value`, `rows`, `required` | `mc-change` | Create/update photos |
-| `mc-rich-text-input` | `McRichTextInput` | Híbrido | Entrada de HTML string para `description` | `value`, `toolbar`, `required` | `mc-change` | Create/update sessions |
-| `mc-url-input` | `McUrlInput` | Visual | URLs para `url` y `miniature` | `name`, `value`, `required` | `mc-change` | Create/update photos |
-| `mc-number-input` | `McNumberInput` | Visual | Entrada numérica para `iso`, `sortOrder`, `page`, `pageSize` | `name`, `value`, `min`, `max`, `step` | `mc-change` | Photos y paginación |
-| `mc-multi-select` | `McMultiSelect` | Visual | Selección múltiple genérica para ids o filtros | `value`, `options`, `required` | `mc-change` | Sessions, tags |
-| `mc-thumbnail` | `McThumbnail` | Visual | Preview de miniatura con `alt` | `src`, `alt`, `aspectRatio` | Ninguno | Photos |
-| `mc-photo-metadata-fields` | `McPhotoMetadataFields` | Híbrido | Agrupa inputs de `iso`, `aperture`, `shutterSpeed`, `lens`, `camera` | `value`, `disabled` | `mc-change` | Create/update photos |
-
-## Cómo se componen los CRUD con estos átomos
-
-### CRUD de sesiones
-
-- Listado básico:
-  - `mc-api-provider`
-  - `mc-collection-view`
-  - `mc-status-message`
-  - `mc-spinner`
-  - `mc-empty-state`
-- Alta y edición:
-  - `mc-form-submit`
-  - `mc-field`
-  - `mc-text-input`
-  - `mc-slug-input`
-  - `mc-rich-text-input`
-  - `mc-tag-picker`
-  - `mc-button`
-  - `mc-status-message`
-- Borrado:
-  - `mc-delete-action`
-  - `mc-confirm-dialog`
-  - `mc-button`
-
-### CRUD de fotos
-
-- Listado y navegación:
-  - `mc-collection-view`
-  - `mc-pagination`
-  - `mc-thumbnail`
-  - `mc-spinner`
-  - `mc-empty-state`
-- Alta y edición:
-  - `mc-form-submit`
-  - `mc-text-input`
-  - `mc-url-input`
-  - `mc-textarea`
-  - `mc-number-input`
-  - `mc-photo-metadata-fields`
-  - `mc-button`
-  - `mc-status-message`
-- Borrado:
-  - `mc-delete-action`
-  - `mc-confirm-dialog`
-
-### Lectura y selección de tags
-
-- `mc-collection-view` para listados de tags
-- `mc-record-view` para detalle de tag con sesiones
-- `mc-tag-picker` para `tagIds` en formularios de sesión
-- `mc-multi-select` si se quisiera una variante desacoplada de la carga remota
-
-## API pública propuesta para `@murga/components`
-
-### Export principal
-
-El entry point principal debe terminar exponiendo:
-
-- registro de custom elements;
-- componentes Lit;
-- tipos compartidos de la librería;
-- wrappers React listos para consumo directo.
-
-Objetivo de uso:
+- Entry points: `@murga/components`, `@murga/components/react`
+- Registro real hoy: `mc-button`, `mc-input`, `mc-textarea`, `mc-select`, `mc-checkbox`, `mc-badge`, `mc-status-text`, `mc-thumbnail`, `mc-field`, `mc-search-field`, `mc-tag-list`, `mc-tag-picker`, `mc-inline-message`, `mc-confirm-action`, `mc-pagination`, `mc-nav-list`, `mc-thumbnail-rail`, `mc-app-shell`, `mc-sidebar-nav`, `mc-overview-panel`, `mc-resource-table`, `mc-resource-editor`, `mc-media-browser`, `mc-relationship-panel`
+- Simbolos estables hoy: `registerMurgaComponents()`, `murgaComponentRegistry`, `reactWrapperEntryPoint`
+- Wrappers React implementados hoy: `McSelect`, `McTagList`, `McTagPicker`, `McNavList`, `McThumbnailRail`, `McSidebarNav`, `McOverviewPanel`, `McResourceTable`, `McMediaBrowser`, `McRelationshipPanel`
+- Tipos de API tipo `MurgaApi*` o `MurgaCrudEventDetail` ya no forman parte de la superficie publica
+- Roadmap pendiente hoy: `mc-icon-button`, `mc-stat-card`, `mc-tag-editor`
 
 ```ts
 import "@murga/components";
 import { registerMurgaComponents } from "@murga/components";
-import { McCollectionView } from "@murga/components/react";
+
+registerMurgaComponents();
 ```
 
-En esta v1:
+## Invariantes visuales
 
-- `@murga/components` ya registra un placeholder base;
-- `@murga/components/react` queda reservado como entry point estable;
-- los wrappers React quedan definidos a nivel de contrato, no de implementación final.
+- Cargar `Doto`, `Space Grotesk` y `Space Mono` desde Google Fonts antes de renderizar componentes.
+- Tomar los valores exactos de `docs/nothing-design/references/tokens.md`.
+- Dark-only. No hay theme switching dentro de la libreria.
+- UI monocroma. `#D71921` es el unico acento de chrome; los tonos de exito o warning solo se usan para codificar valores de estado.
+- Solo tres capas de jerarquia visual: primaria, secundaria y terciaria.
+- `Doto` se reserva para display; `Space Grotesk` para UI y copy; `Space Mono` para labels, metadata y estados inline.
+- No usar sombras, skeletons, toasts flotantes ni gradientes decorativos.
+- El feedback vive inline con copy corto: `[LOADING]`, `[SAVED]`, `[ERROR: ...]`.
 
-### Convención React
+## Contrato de implementacion
 
-- Cada custom element tendrá espejo en PascalCase:
-  - `mc-api-provider` -> `McApiProvider`
-  - `mc-collection-view` -> `McCollectionView`
-  - `mc-tag-picker` -> `McTagPicker`
-- Los eventos DOM se mapearán a props tipo callback:
-  - `mc-success` -> `onSuccess`
-  - `mc-error` -> `onError`
-  - `mc-change` -> `onChange`
-  - `mc-submit` -> `onSubmit`
-  - `mc-page-change` -> `onPageChange`
-- Los wrappers deberán encargarse de:
-  - registrar listeners;
-  - transformar `CustomEvent.detail` a argumentos ergonómicos;
-  - evitar que el consumidor de React haga puente manual con `addEventListener`.
+- Cada componente vive en `src/components/<tag>.ts`.
+- Cada componente exporta `TAG_NAME`, la clase del elemento, una funcion `define*()` y un tipo `Args` derivado de la clase con `Pick` y `Partial<Pick>`.
+- Cada elemento nuevo debe registrarse en `src/index.ts`, agregarse a `murgaComponentRegistry` y declararse en `HTMLElementTagNameMap`.
+- Solo crear wrapper React cuando el componente necesite props JS no triviales o puente de eventos.
+- La app consumidora es responsable de mapear `@roncal/shared` a view models UI genericos.
 
-### Convención de configuración
+## Reglas de API y accesibilidad
 
-Props/attributes transversales que deben repetirse de forma consistente:
+- Los atributos HTML estandar se mantienen en lowercase: `maxlength`, `readonly`, `placeholder`, `autocomplete`, `name`.
+- Las props custom usan camelCase.
+- Los controles text-like usan `value`.
+- Los selectores usan `selectedId` o `selectedIds`.
+- Los overlays usan `open`.
+- Las props booleanas que gobiernan estilos o estado accesible usan `reflect: true`.
+- Los componentes son controlados por defecto; no duplicar estado publico internamente.
+- Los elementos interactivos usan controles nativos reales: `button`, `input`, `textarea`, `select`, `dialog` semantico cuando aplique.
+- Si el control nativo vive dentro del shadow DOM, la API publica debe reenviar sus atributos ARIA al control nativo.
+- Los eventos custom usan prefijo `mc-`, `kebab-case` y siempre exponen el siguiente estado esperado en `detail`.
+- No envolver eventos nativos si el evento nativo ya resuelve el caso.
+- Los IDs usados en relaciones ARIA deben venir de props documentadas como `inputId`; no hardcodear IDs reutilizables.
+- Los overlays deben atrapar foco, restaurarlo al cerrar y limpiar listeners en `disconnectedCallback`.
+- Para el shadow DOM usar `@query` o `this.renderRoot.querySelector`; para light DOM usar `this.querySelector`.
+- Nunca consultar internals propios con `document.querySelector`.
+- Nunca estilizar los internals de otro componente; usar slots, CSS parts y custom properties.
+- Preferir slots para contenido composable y props JS para colecciones estructuradas como `items`, `columns`, `rows` o `media`.
 
-- `baseUrl`
-- `apiKey`
-- `resource`
-- `method`
-- `params`
-- `query`
-- `value`
-- `disabled`
-- `loading`
-- `required`
+## Mapa de APIs actual
 
-Reglas esperadas:
+| Recurso | Endpoints disponibles hoy | Implicacion para la libreria |
+| --- | --- | --- |
+| Sessions | `GET /api/sessions`, `GET /api/sessions/{slug}`, `POST /api/sessions`, `PUT /api/sessions/{slug}`, `DELETE /api/sessions/{slug}` | Cubre listados, detalle, formularios de alta/edicion y confirmaciones de borrado. `GET /api/sessions?include=photos` habilita shells editoriales con preview. |
+| Photos | `GET /api/photos`, `GET /api/photos/{id}`, `POST /api/photos`, `PUT /api/photos/{id}`, `DELETE /api/photos/{id}` | Cubre tabla/listado paginado, editor de foto, browser de media y confirmaciones de borrado. |
+| Tags | `GET /api/tags`, `GET /api/tags/{slug}` | Permite lectura, navegacion, seleccion y relaciones. No existe CRUD de tags, asi que `mc-tag-editor` queda diferido. |
 
-- `resource` representa una ruta relativa tipo `/sessions` o `/photos/{id}`.
-- `params` rellena placeholders de ruta.
-- `query` serializa querystring.
-- `value` representa el payload o el estado del input, según el componente.
-- `baseUrl` y `apiKey` pueden venir del provider o sobrescribirse localmente.
+## Contratos UI planeados
 
-### Convención de eventos
-
-Eventos de contrato recomendados:
-
-- `mc-change`
-- `mc-submit`
-- `mc-success`
-- `mc-error`
-- `mc-delete`
-- `mc-page-change`
-
-Payload recomendado para componentes conectados:
+Estos contratos son de referencia documental. No se exportan todavia; sirven para guiar la implementacion de props complejas y wrappers React.
 
 ```ts
-interface MurgaCrudEventDetail<TResponse = unknown> {
-  resource: string;
-  method: "GET" | "POST" | "PUT" | "DELETE";
-  params?: Record<string, string | number>;
-  query?: Record<string, string | number | boolean | undefined>;
-  request?: unknown;
-  response?: TResponse;
-  error?: {
-    success: false;
-    error: string;
-    stack?: string;
-  };
+type McStatusTone = "idle" | "loading" | "success" | "error";
+
+interface McOption {
+  id: string;
+  label: string;
+  description?: string;
+  disabled?: boolean;
+}
+
+interface McNavItem {
+  id: string;
+  label: string;
+  description?: string;
+  current?: boolean;
+  count?: number;
+}
+
+interface McTagItem {
+  id: string;
+  label: string;
+  selected?: boolean;
+}
+
+interface McMediaItem {
+  id: string;
+  src: string;
+  thumbnailSrc?: string;
+  alt: string;
+  caption?: string;
+}
+
+interface McStatItem {
+  id: string;
+  label: string;
+  value: string;
+  status?: McStatusTone;
+}
+
+interface McTableColumn {
+  id: string;
+  label: string;
+  align?: "start" | "center" | "end";
+  width?: string;
+  sortable?: boolean;
+}
+
+interface McTableRow {
+  id: string;
+  cells: Record<string, string | number>;
+  selected?: boolean;
+}
+
+interface McInlineStatus {
+  tone: McStatusTone;
+  label: string;
 }
 ```
 
-## Qué componentes hablan con la API y cuáles no
+## Formato canonico de ficha de componente
 
-### Conectados directamente a API
+Cada componente nuevo documentado aqui debe mantener este orden:
 
-- `mc-api-provider`
-- `mc-collection-view`
-- `mc-record-view`
-- `mc-form-submit`
-- `mc-delete-action`
-- `mc-tag-picker`
+- `tag`
+- `tier`
+- `status`
+- `purpose`
+- `backing API`
+- `properties`
+- `events`
+- `slots`
+- `css parts`
+- `react wrapper`
 
-Todos ellos dependen del shape estándar actual:
+## Catalogo de componentes
 
-- éxito simple `{ success: true, data }`
-- éxito paginado `{ success: true, data, pagination }`
-- error `{ success: false, error, stack? }`
+### Atomos
 
-### Solo UI
+- `mc-button` — `tag: mc-button`; `tier: atom`; `status: implemented`; `purpose: accion primaria, secundaria, ghost o destructiva`; `backing API: none`; `properties: variant, size, type, disabled, pending, ariaLabel`; `events: native click`; `slots: default, icon-start, icon-end`; `css parts: button, label, icon`; `react wrapper: no`.
+- `mc-icon-button` — `tag: mc-icon-button`; `tier: atom`; `status: planned`; `purpose: accion o toggle icon-only`; `backing API: none`; `properties: variant, size, disabled, pressed, ariaLabel`; `events: native click`; `slots: default`; `css parts: button, icon`; `react wrapper: no`.
+- `mc-input` — `tag: mc-input`; `tier: atom`; `status: implemented`; `purpose: campo de texto, slug o URL`; `backing API: sessions create/update, photos create/update`; `properties: value, inputId, name, type, placeholder, autocomplete, disabled, required, readonly, maxlength, invalid, ariaLabel`; `events: mc-input, mc-change`; `slots: none`; `css parts: input`; `react wrapper: no`.
+- `mc-textarea` — `tag: mc-textarea`; `tier: atom`; `status: implemented`; `purpose: descripcion larga`; `backing API: sessions create/update, photos create/update`; `properties: value, inputId, name, rows, placeholder, disabled, required, readonly, maxlength, invalid`; `events: mc-input, mc-change`; `slots: none`; `css parts: textarea`; `react wrapper: no`.
+- `mc-select` — `tag: mc-select`; `tier: atom`; `status: implemented`; `purpose: seleccion simple desde McOption[]`; `backing API: filtros y asociaciones de sesiones/tags`; `properties: options, selectedId, inputId, name, placeholder, disabled, open`; `events: mc-change, mc-open-change`; `slots: none`; `css parts: field, trigger, panel, option`; `react wrapper: yes`.
+- `mc-checkbox` — `tag: mc-checkbox`; `tier: atom`; `status: implemented`; `purpose: seleccion booleana`; `backing API: seleccion local y tablas`; `properties: checked, name, value, disabled, required, ariaLabel`; `events: mc-change`; `slots: none`; `css parts: input, indicator`; `react wrapper: no`.
+- `mc-badge` — `tag: mc-badge`; `tier: atom`; `status: implemented`; `purpose: label corto o categoria`; `backing API: tags y estados visuales`; `properties: tone`; `events: none`; `slots: default`; `css parts: base, label`; `react wrapper: no`.
+- `mc-status-text` — `tag: mc-status-text`; `tier: atom`; `status: implemented`; `purpose: feedback inline operacional`; `backing API: carga, guardado y error`; `properties: tone, label, polite`; `events: none`; `slots: none`; `css parts: text`; `react wrapper: no`.
+- `mc-thumbnail` — `tag: mc-thumbnail`; `tier: atom`; `status: implemented`; `purpose: preview compacto con estado seleccionado`; `backing API: photos list/detail y sessions include=photos`; `properties: itemId, src, alt, selected, disabled, loading, ratio`; `events: mc-select`; `slots: none`; `css parts: button, image`; `react wrapper: no`.
 
-- `mc-pagination`
-- `mc-status-message`
-- `mc-spinner`
-- `mc-empty-state`
-- `mc-field`
-- `mc-text-input`
-- `mc-slug-input`
-- `mc-textarea`
-- `mc-rich-text-input`
-- `mc-url-input`
-- `mc-number-input`
-- `mc-multi-select`
-- `mc-thumbnail`
-- `mc-button`
-- `mc-confirm-dialog`
+### Moleculas
 
-### Híbridos
+- `mc-field` — `tag: mc-field`; `tier: molecule`; `status: implemented`; `purpose: label, hint y error para un control`; `backing API: formularios de sessions, photos y futuras tags`; `properties: inputId, label, hint, error, required, optional, invalid`; `events: none`; `slots: default`; `css parts: label, hint, error, content`; `react wrapper: no`.
+- `mc-search-field` — `tag: mc-search-field`; `tier: molecule`; `status: implemented`; `purpose: busqueda o filtro textual`; `backing API: filtros de listas locales o remotas`; `properties: value, inputId, name, placeholder, disabled, pending`; `events: mc-input, mc-change, mc-clear`; `slots: none`; `css parts: root, input, icon, clear-button`; `react wrapper: no`.
+- `mc-tag-list` — `tag: mc-tag-list`; `tier: molecule`; `status: implemented`; `purpose: tira densa de tags en solo lectura o seleccion`; `backing API: GET /api/tags y detalle de session`; `properties: items, selectedIds, interactive`; `events: mc-select`; `slots: none`; `css parts: list, item`; `react wrapper: yes`.
+- `mc-tag-picker` — `tag: mc-tag-picker`; `tier: molecule`; `status: implemented`; `purpose: seleccion multiple de tags`; `backing API: sessions create/update y futuro tag maintenance`; `properties: options, selectedIds, inputId, disabled, open`; `events: mc-change, mc-open-change`; `slots: none`; `css parts: field, trigger, panel, option`; `react wrapper: yes`.
+- `mc-inline-message` — `tag: mc-inline-message`; `tier: molecule`; `status: implemented`; `purpose: bloque inline de exito, info o error`; `backing API: todos los flujos de mutacion`; `properties: tone, title, message`; `events: none`; `slots: none`; `css parts: root, title, body`; `react wrapper: no`.
+- `mc-confirm-action` — `tag: mc-confirm-action`; `tier: molecule`; `status: implemented`; `purpose: confirmacion embebida para acciones destructivas`; `backing API: delete session, delete photo, futuro delete tag`; `properties: open, tone, message, confirmLabel, cancelLabel, disabled, pending`; `events: mc-confirm, mc-cancel, mc-open-change`; `slots: none`; `css parts: root, message, actions`; `react wrapper: no`.
+- `mc-pagination` — `tag: mc-pagination`; `tier: molecule`; `status: implemented`; `purpose: navegacion paginada`; `backing API: GET /api/photos`; `properties: page, pageSize, total, hasMore, disabled`; `events: mc-page-change`; `slots: none`; `css parts: root, prev-button, next-button, meta`; `react wrapper: no`.
+- `mc-nav-list` — `tag: mc-nav-list`; `tier: molecule`; `status: implemented`; `purpose: lista de navegacion o recursos relacionados`; `backing API: GET /api/sessions, GET /api/tags/:slug`; `properties: items, ariaLabel, orientation`; `events: mc-select`; `slots: none`; `css parts: list, item, label, meta`; `react wrapper: yes`.
+- `mc-stat-card` — `tag: mc-stat-card`; `tier: molecule`; `status: planned`; `purpose: metrica o resumen editorial`; `backing API: agregados de sessions, photos y tags`; `properties: label, value, status, meta`; `events: none`; `slots: footer`; `css parts: root, label, value, meta, footer`; `react wrapper: no`.
+- `mc-thumbnail-rail` — `tag: mc-thumbnail-rail`; `tier: molecule`; `status: implemented`; `purpose: rail horizontal o vertical de seleccion media`; `backing API: sessions include=photos y photo detail`; `properties: items, selectedId, ariaLabel, orientation`; `events: mc-select`; `slots: none`; `css parts: rail, item`; `react wrapper: yes`.
 
-- `mc-photo-metadata-fields`
-  - puede comportarse como puro agrupador visual o como serializador parcial de metadata.
+### Organismos
 
-## Criterios para la futura implementación de componentes
+- `mc-app-shell` — `tag: mc-app-shell`; `tier: organism`; `status: implemented`; `purpose: shell fijo a 100vh con sidebar persistente y overlay mobile`; `backing API: none`; `properties: sidebarOpen, mobileOverlay`; `events: mc-sidebar-open-change`; `slots: sidebar, main, header, footer`; `css parts: root, sidebar, overlay, main`; `react wrapper: no`.
+- `mc-sidebar-nav` — `tag: mc-sidebar-nav`; `tier: organism`; `status: implemented`; `purpose: panel de navegacion principal y contextual`; `backing API: GET /api/sessions, GET /api/tags, GET /api/tags/:slug`; `properties: items, secondaryItems, open, title, subtitle`; `events: mc-select, mc-open-change`; `slots: header, footer`; `css parts: root, overlay, panel, section, item`; `react wrapper: yes`.
+- `mc-overview-panel` — `tag: mc-overview-panel`; `tier: organism`; `status: implemented`; `purpose: bloque de entrada con metrica dominante y secundarios`; `backing API: agregados derivados de sessions, photos y tags`; `properties: title, description, stats, status`; `events: none`; `slots: actions, content`; `css parts: root, header, stats, body`; `react wrapper: yes`.
+- `mc-resource-table` — `tag: mc-resource-table`; `tier: organism`; `status: implemented`; `purpose: listado tabular denso`; `backing API: GET /api/sessions, GET /api/photos, GET /api/tags`; `properties: columns, rows, selectedId, loading, emptyLabel`; `events: mc-row-select, mc-sort`; `slots: empty`; `css parts: root, table, head, body, row, cell`; `react wrapper: yes`.
+- `mc-resource-editor` — `tag: mc-resource-editor`; `tier: organism`; `status: implemented`; `purpose: superficie reutilizable de alta y edicion`; `backing API: session CRUD, photo CRUD, futuro tag CRUD`; `properties: resourceTitle, status, dirty, saving, deleting`; `events: mc-save, mc-cancel, mc-delete`; `slots: fields, actions, aside`; `css parts: root, header, body, footer, aside`; `react wrapper: no`.
+- `mc-media-browser` — `tag: mc-media-browser`; `tier: organism`; `status: implemented`; `purpose: viewport principal de media con rail opcional`; `backing API: GET /api/sessions/{slug}, GET /api/photos/{id}`; `properties: items, selectedId, showRail, emptyLabel`; `events: mc-select`; `slots: meta`; `css parts: root, viewport, media, rail`; `react wrapper: yes`.
+- `mc-relationship-panel` — `tag: mc-relationship-panel`; `tier: organism`; `status: implemented`; `purpose: panel lateral de relaciones entre recursos`; `backing API: GET /api/tags/{slug} y relaciones derivadas de sessions`; `properties: title, items, emptyLabel`; `events: mc-select`; `slots: header, footer`; `css parts: root, header, list, empty`; `react wrapper: yes`.
+- `mc-tag-editor` — `tag: mc-tag-editor`; `tier: organism`; `status: deferred`; `purpose: mantenimiento de tags con crear, renombrar y borrar`; `backing API: bloqueado por ausencia de POST /api/tags, PUT /api/tags/{slug}, DELETE /api/tags/{slug}`; `properties: items, selectedIds, draftLabel, open`; `events: mc-change, mc-create, mc-rename, mc-delete, mc-open-change`; `slots: actions`; `css parts: root, list, form, actions`; `react wrapper: yes`.
 
-- Deben ser accesibles por teclado.
-- Deben funcionar sin depender del sistema visual de `apps/photos`.
-- Deben tolerar composición en React 19.
-- Deben asumir fetch basado en `X-API-Key`.
-- Deben respetar el carácter non-nullable de los tipos compartidos.
-- Deben soportar estados `loading`, `error`, `empty` y `success` sin código adicional del consumidor.
+## Orden de construccion
 
-## Scaffold actual
+1. Completado: soporte base y atomos de formulario/accion.
+2. Completado: moleculas necesarias para edicion y navegacion.
+3. Completado: organismos base del admin.
+4. Pendiente: `mc-icon-button` y `mc-stat-card`.
+5. Diferido por gap de backend: `mc-tag-editor`.
 
-La v1 deja estas piezas mínimas:
+## Criterios de aceptacion para los proximos prompts
 
-- `src/components/mc-placeholder.ts`
-  - custom element Lit registrado como `mc-placeholder`
-- `src/types.ts`
-  - tipos base para envelopes, configuración y eventos
-- `src/index.ts`
-  - registro y exports principales
-- `src/react.ts`
-  - entry point reservado para wrappers React
-
-## Próximo paso natural
-
-La siguiente iteración puede empezar por los componentes con mayor retorno funcional:
-
-1. `mc-api-provider`
-2. `mc-collection-view`
-3. `mc-form-submit`
-4. `mc-tag-picker`
-5. `mc-photo-metadata-fields`
-
-Con esos cinco ya se puede empezar a montar formularios reales de sesiones y fotos encima del CRUD actual.
+- Diferenciar siempre entre superficie implementada y roadmap.
+- No introducir tipos publicos acoplados a `Session`, `Photo` o `Tag`.
+- Mantener el mismo esquema de ficha para cada componente nuevo.
+- Cubrir con componentes o notas explicitas todos los endpoints actuales de `sessions`, `photos` y `tags`.
+- Mantener nombres nuevos con prefijo `Mc`, no `Murga`.
+- Marcar como `deferred` cualquier pieza que dependa de endpoints inexistentes.

@@ -1,20 +1,17 @@
 import { OK } from "@/config/status-codes";
-import {
-  jsonSuccess,
-  protectedRouteNotFoundErrorResponses,
-} from "@/shared/lib/http";
-import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
+import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
+import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { tagDetailResponseSchema, tagSlugParamsSchema } from "../schemas/tags.schema";
 import { getTagsService } from "../services/tags.service";
 
-const route = createProtectedRoute({
+const route = createApiRoute({
   method: "get",
   path: "/{slug}",
   tags: ["Tags"],
   request: {
     params: tagSlugParamsSchema,
   },
-  errorResponses: protectedRouteNotFoundErrorResponses,
+  errorResponses: validationNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Get tag detail",

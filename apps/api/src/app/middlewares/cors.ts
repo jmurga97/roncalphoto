@@ -19,7 +19,7 @@ export async function corsMiddleware(c: import("hono").Context<AppBindings>, nex
       return null;
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "X-API-Key"],
+    allowHeaders: ["Content-Type"],
     exposeHeaders: ["Content-Length"],
     maxAge: 86400,
     credentials: true,

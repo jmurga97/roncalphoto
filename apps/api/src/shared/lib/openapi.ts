@@ -1,41 +1,25 @@
 import { createRouter } from "@/app/create-app";
-import { apiKeyHeaderSchema } from "@/config/required-headers";
 import type { AppRouteHandler } from "@/config/types";
-import {
-  protectedRouteAuthErrorResponses,
-  protectedRouteErrorResponses,
-} from "@/shared/lib/http";
-import { createRoute, type RouteConfig } from "@hono/zod-openapi";
-
-type RouteRequest = NonNullable<RouteConfig["request"]>;
+import { validationErrorResponses } from "@/shared/lib/http";
+import { type RouteConfig, createRoute } from "@hono/zod-openapi";
 type RouteResponses = RouteConfig["responses"];
 
-interface ProtectedRouteOptions extends Omit<RouteConfig, "request" | "responses"> {
-  request?: Omit<RouteRequest, "headers">;
+interface ApiRouteOptions extends Omit<RouteConfig, "responses"> {
   responses: RouteResponses;
   errorResponses?: RouteResponses;
 }
 
-export function createProtectedRoute({
-  request,
+export function createApiRoute({
   responses,
-  errorResponses = protectedRouteErrorResponses,
+  errorResponses = validationErrorResponses,
   ...route
-}: ProtectedRouteOptions) {
+}: ApiRouteOptions) {
   return createRoute({
     ...route,
-    request: request ? { headers: apiKeyHeaderSchema, ...request } : { headers: apiKeyHeaderSchema },
     responses: {
       ...responses,
       ...errorResponses,
     },
-  });
-}
-
-export function createReadOnlyProtectedRoute(options: ProtectedRouteOptions) {
-  return createProtectedRoute({
-    ...options,
-    errorResponses: protectedRouteAuthErrorResponses,
   });
 }
 

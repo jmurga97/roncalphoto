@@ -1,11 +1,9 @@
 import {
   BAD_REQUEST,
-  FORBIDDEN,
+  type CREATED,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
-  type CREATED,
   OK,
-  UNAUTHORIZED,
 } from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
 import { z } from "@hono/zod-openapi";
@@ -50,24 +48,20 @@ export function createErrorResponse(description: string) {
 }
 
 export const badRequestResponse = createErrorResponse("Invalid request");
-export const unauthorizedResponse = createErrorResponse("Missing API Key");
-export const forbiddenResponse = createErrorResponse("Invalid API Key");
 export const notFoundResponse = createErrorResponse("Resource not found");
 export const internalServerErrorResponse = createErrorResponse("Internal server error");
 
-export const protectedRouteAuthErrorResponses = {
-  [UNAUTHORIZED]: unauthorizedResponse,
-  [FORBIDDEN]: forbiddenResponse,
+export const defaultErrorResponses = {
   [INTERNAL_SERVER_ERROR]: internalServerErrorResponse,
 } as const;
 
-export const protectedRouteErrorResponses = {
+export const validationErrorResponses = {
   [BAD_REQUEST]: badRequestResponse,
-  ...protectedRouteAuthErrorResponses,
+  ...defaultErrorResponses,
 } as const;
 
-export const protectedRouteNotFoundErrorResponses = {
-  ...protectedRouteErrorResponses,
+export const validationNotFoundErrorResponses = {
+  ...validationErrorResponses,
   [NOT_FOUND]: notFoundResponse,
 } as const;
 

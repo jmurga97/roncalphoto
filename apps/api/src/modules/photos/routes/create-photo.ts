@@ -1,10 +1,10 @@
 import { CREATED } from "@/config/status-codes";
 import { jsonSuccess } from "@/shared/lib/http";
-import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
+import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { createPhotoBodySchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
-const route = createProtectedRoute({
+const route = createApiRoute({
   method: "post",
   path: "/",
   tags: ["Photos"],

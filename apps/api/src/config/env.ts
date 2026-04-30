@@ -20,7 +20,6 @@ const envSchema = z.object({
     (value) => typeof value === "object" && value !== null,
     "DB_RONCALPHOTO binding is required",
   ),
-  API_KEY: z.string().trim().min(1, "API_KEY is required"),
   ALLOWED_ORIGINS: z.string().trim().optional(),
   LOG_LEVEL: logLevelSchema.default("info"),
   NODE_ENV: nodeEnvSchema.default("development"),

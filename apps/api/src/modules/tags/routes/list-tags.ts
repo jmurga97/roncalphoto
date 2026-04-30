@@ -1,10 +1,10 @@
 import { OK } from "@/config/status-codes";
 import { jsonSuccess } from "@/shared/lib/http";
-import { createOpenApiRouter, createReadOnlyProtectedRoute } from "@/shared/lib/openapi";
+import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { tagsResponseSchema } from "../schemas/tags.schema";
 import { getTagsService } from "../services/tags.service";
 
-const route = createReadOnlyProtectedRoute({
+const route = createApiRoute({
   method: "get",
   path: "/",
   tags: ["Tags"],

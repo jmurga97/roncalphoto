@@ -1,9 +1,6 @@
 import { OK } from "@/config/status-codes";
-import {
-  jsonSuccess,
-  protectedRouteNotFoundErrorResponses,
-} from "@/shared/lib/http";
-import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
+import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
+import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import {
   sessionResponseSchema,
   sessionSlugParamsSchema,
@@ -11,7 +8,7 @@ import {
 } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
 
-const route = createProtectedRoute({
+const route = createApiRoute({
   method: "put",
   path: "/{slug}",
   tags: ["Sessions"],
@@ -26,7 +23,7 @@ const route = createProtectedRoute({
       },
     },
   },
-  errorResponses: protectedRouteNotFoundErrorResponses,
+  errorResponses: validationNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Update a session",

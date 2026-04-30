@@ -1,20 +1,17 @@
 import { OK } from "@/config/status-codes";
-import {
-  jsonSuccess,
-  protectedRouteNotFoundErrorResponses,
-} from "@/shared/lib/http";
-import { createOpenApiRouter, createProtectedRoute } from "@/shared/lib/openapi";
+import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
+import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { photoIdParamsSchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
-const route = createProtectedRoute({
+const route = createApiRoute({
   method: "get",
   path: "/{id}",
   tags: ["Photos"],
   request: {
     params: photoIdParamsSchema,
   },
-  errorResponses: protectedRouteNotFoundErrorResponses,
+  errorResponses: validationNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Get a photo by id",
