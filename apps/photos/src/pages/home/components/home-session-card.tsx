@@ -40,9 +40,7 @@ export function HomeSessionCard({ session }: HomeSessionCardProps) {
   const previewPhoto = pickRandomPhoto(session.photos);
   const titleClassName = [
     "editorial-heading overflow-hidden text-ellipsis whitespace-nowrap text-lg",
-    previewPhoto
-      ? "text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
-      : "text-(--color-text-welcome)",
+    previewPhoto ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]" : "",
   ].join(" ");
 
   return (
@@ -77,7 +75,9 @@ export function HomeSessionCard({ session }: HomeSessionCardProps) {
         )}
 
         <div className="absolute inset-x-0 bottom-0 p-2 sm:p-2.5">
-          <h2 className={titleClassName}>{session.title}</h2>
+          <h2 className={titleClassName} style={{ color: "var(--color-text-welcome)" }}>
+            {session.title}
+          </h2>
         </div>
       </Link>
     </article>
