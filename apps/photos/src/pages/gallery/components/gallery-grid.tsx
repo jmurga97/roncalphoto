@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { GalleryPhotoViewModel } from "../types";
+import { GalleryNextPhotoPeek } from "./gallery-next-photo-peek";
 import { GalleryScrollHint } from "./gallery-scroll-hint";
 import { GallerySlide } from "./gallery-slide";
 import { GalleryThumbnail } from "./gallery-thumbnail";
@@ -31,6 +32,9 @@ export function GalleryGrid({
           ))}
         </div>
 
+        {!showThumbnails ? (
+          <GalleryNextPhotoPeek currentPosition={currentIndex + 1} totalPhotos={photos.length} />
+        ) : null}
         <GalleryScrollHint photoCount={photos.length} />
       </div>
 

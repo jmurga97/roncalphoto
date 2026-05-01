@@ -24,11 +24,12 @@
 html,
 body,
 #root {
-  min-height: 100%;
+  height: 100%;
   margin: 0;
 }
 
 body {
+  overflow: hidden;
   background: var(--admin-black);
   color: var(--admin-text-primary);
   font-family: "Space Grotesk", system-ui, sans-serif;
@@ -47,7 +48,10 @@ select {
 }
 
 .admin-main-slot {
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .admin-page {
@@ -207,6 +211,10 @@ select {
 }
 
 .admin-sidebar-slot {
+  height: 100dvh;
+}
+
+.admin-sidebar-slot mc-sidebar-nav {
   height: 100%;
 }
 
