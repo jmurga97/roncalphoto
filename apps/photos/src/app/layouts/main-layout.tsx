@@ -12,7 +12,7 @@ export function MainLayout() {
     <div className="flex h-full">
       <Sidebar />
       <main
-        className="photo-stage relative flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+        className="photo-stage relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[color:color-mix(in_srgb,var(--color-bg)_84%,#000_16%)]"
         data-sidebar-desktop-open={isSidebarDesktopOpen ? "true" : "false"}
       >
         <Outlet />

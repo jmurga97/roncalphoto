@@ -18,7 +18,7 @@ export function SidebarNavigationMenu() {
       </header>
 
       <ul
-        className="session-menu-list rounded-md border ui-divider"
+        className="h-[clamp(40vh,28rem,56vh)] overflow-x-hidden overflow-y-auto rounded-md border bg-[color:color-mix(in_srgb,var(--color-surface-2)_28%,transparent)] p-0 [scrollbar-gutter:stable] max-md:h-[min(56vh,34rem)] ui-divider"
         data-sidebar-scroll-list="true"
       >
         {items?.map((item) => (

@@ -20,7 +20,7 @@ function focusAboutTrigger() {
 export function AboutPanel() {
   const isOpen = useSidebarAboutOpen();
   const { closeAbout } = useSidebarActions();
-  const panelRef = useRef<HTMLDialogElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const shouldRestoreFocusRef = useRef(false);
   const triggerToRestoreRef = useRef<HTMLElement | null>(null);
 

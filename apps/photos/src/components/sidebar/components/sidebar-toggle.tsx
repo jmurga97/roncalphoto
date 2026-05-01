@@ -9,12 +9,8 @@ export function SidebarToggle() {
     <button
       id={SIDEBAR_TOGGLE_ID}
       type="button"
-      className="fixed top-4 right-4 z-50 rounded-full border ui-divider p-3 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none"
+      className="fixed top-4 right-3 z-50 rounded-full border bg-[color:color-mix(in_srgb,var(--color-surface)_76%,transparent)] p-3 text-[var(--color-text)] shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl focus:outline-none ui-divider"
       data-sidebar-toggle="true"
-      style={{
-        background: "color-mix(in srgb, var(--color-surface) 76%, transparent)",
-        color: "var(--color-text)",
-      }}
       aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
       aria-expanded={isOpen}
       aria-controls="photos-sidebar"
@@ -32,21 +28,21 @@ export function SidebarToggle() {
         strokeLinejoin="round"
       >
         <line
-          className="sidebar-toggle-line sidebar-toggle-line-top"
+          className="sidebar-toggle-line sidebar-toggle-line-top origin-center transition-transform duration-300 ease-out motion-reduce:transition-none"
           x1="4"
           y1="6"
           x2="20"
           y2="6"
         />
         <line
-          className="sidebar-toggle-line sidebar-toggle-line-middle"
+          className="sidebar-toggle-line sidebar-toggle-line-middle origin-center transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none"
           x1="4"
           y1="12"
           x2="20"
           y2="12"
         />
         <line
-          className="sidebar-toggle-line sidebar-toggle-line-bottom"
+          className="sidebar-toggle-line sidebar-toggle-line-bottom origin-center transition-transform duration-300 ease-out motion-reduce:transition-none"
           x1="4"
           y1="18"
           x2="20"

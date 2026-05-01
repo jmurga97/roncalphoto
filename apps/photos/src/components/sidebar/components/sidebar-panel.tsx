@@ -19,7 +19,7 @@ export function SidebarPanel({ sidebarRef }: SidebarPanelProps) {
       ref={sidebarRef}
       aria-hidden={!isOpen && isMobile}
       aria-label="Panel editorial"
-      className="editorial-shell sidebar-panel fixed top-0 left-0 z-40 h-full overflow-y-auto"
+      className="editorial-shell fixed top-0 left-0 z-40 h-full -translate-x-full overflow-y-auto transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform data-[sidebar-open=true]:translate-x-0 motion-reduce:transition-none"
       data-sidebar-open={isOpen ? "true" : "false"}
       data-testid="sidebar-panel"
     >
