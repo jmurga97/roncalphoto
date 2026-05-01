@@ -1,4 +1,5 @@
-import { LitElement, html } from "lit";
+import { LitElement, type PropertyValues, html } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -14,42 +15,44 @@ export const TAG_NAME = MC_TAG_LIST_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_TAG_LIST_TAG_NAME)
 export class McTagList extends LitElement {
-  static properties = {
-    items: { attribute: false },
-    selectedIds: { attribute: false },
-    interactive: { type: Boolean, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaLabelStyles, componentStyles];
 
+  @property({ attribute: false })
   items: McTagItem[] = [];
 
+  @property({ attribute: false })
   selectedIds: string[] = [];
 
+  @property({ type: Boolean, reflect: true })
   interactive = false;
 
-  #getResolvedSelectedIds() {
-    return this.selectedIds.length > 0
-      ? normalizeSelectedIds(this.selectedIds)
-      : this.items.filter((item) => item.selected).map((item) => item.id);
+  @state()
+  private resolvedSelectedIds: string[] = [];
+
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("items") || changedProperties.has("selectedIds")) {
+      this.resolvedSelectedIds =
+        this.selectedIds.length > 0
+          ? normalizeSelectedIds(this.selectedIds)
+          : this.items.filter((item) => item.selected).map((item) => item.id);
+    }
   }
 
   #handleSelect(itemId: string) {
-    const nextSelectedIds = toggleSelectedId(this.#getResolvedSelectedIds(), itemId);
+    const nextSelectedIds = toggleSelectedId(this.resolvedSelectedIds, itemId);
     dispatchMcEvent(this, "mc-select", { itemId, selectedIds: nextSelectedIds });
   }
 
   render() {
-    const selectedIds = this.#getResolvedSelectedIds();
-
     return html`
       <div class="list" part="list">
         ${repeat(
           this.items,
           (item) => item.id,
           (item) => {
-            const isSelected = selectedIds.includes(item.id);
+            const isSelected = this.resolvedSelectedIds.includes(item.id);
 
             return this.interactive
               ? html`
@@ -58,6 +61,7 @@ export class McTagList extends LitElement {
                     part="item"
                     data-selected=${isSelected ? "true" : "false"}
                     type="button"
+                    aria-pressed=${isSelected ? "true" : "false"}
                     @click=${() => this.#handleSelect(item.id)}
                   >
                     ${item.label}

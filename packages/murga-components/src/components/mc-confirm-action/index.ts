@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -12,31 +13,29 @@ export const TAG_NAME = MC_CONFIRM_ACTION_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_CONFIRM_ACTION_TAG_NAME)
 export class McConfirmAction extends LitElement {
-  static properties = {
-    open: { type: Boolean, reflect: true },
-    tone: { type: String, reflect: true },
-    message: { type: String },
-    confirmLabel: { type: String, attribute: "confirm-label" },
-    cancelLabel: { type: String, attribute: "cancel-label" },
-    disabled: { type: Boolean, reflect: true },
-    pending: { type: Boolean, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaPanelStyles, murgaButtonStyles, componentStyles];
 
+  @property({ type: Boolean, reflect: true })
   open = false;
 
+  @property({ type: String, reflect: true })
   tone: McStatusTone = "error";
 
+  @property({ type: String })
   message = "Confirm action";
 
+  @property({ type: String, attribute: "confirm-label" })
   confirmLabel = "[CONFIRM]";
 
+  @property({ type: String, attribute: "cancel-label" })
   cancelLabel = "[CANCEL]";
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   pending = false;
 
   #handleConfirm() {

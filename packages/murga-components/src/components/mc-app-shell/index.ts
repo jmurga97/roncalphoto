@@ -1,4 +1,5 @@
-import { LitElement, html } from "lit";
+import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -12,17 +13,18 @@ export const TAG_NAME = MC_APP_SHELL_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_APP_SHELL_TAG_NAME)
 export class McAppShell extends LitElement {
-  static properties = {
-    sidebarOpen: { type: Boolean, attribute: "sidebar-open", reflect: true },
-    mobileOverlay: { type: Boolean, attribute: "mobile-overlay", reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaPanelStyles, componentStyles];
 
+  @property({ type: Boolean, attribute: "sidebar-open", reflect: true })
   sidebarOpen = false;
 
+  @property({ type: Boolean, attribute: "mobile-overlay", reflect: true })
   mobileOverlay = true;
+
+  @query(".sidebar")
+  private readonly sidebarElement?: HTMLElement;
 
   #releaseFocusTrap: (() => void) | null = null;
 
@@ -32,8 +34,10 @@ export class McAppShell extends LitElement {
     super.disconnectedCallback();
   }
 
-  updated() {
-    this.#syncFocusTrap();
+  protected updated(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("sidebarOpen") || changedProperties.has("mobileOverlay")) {
+      this.#syncFocusTrap();
+    }
   }
 
   #syncFocusTrap() {
@@ -44,13 +48,11 @@ export class McAppShell extends LitElement {
       return;
     }
 
-    const sidebarElement = this.renderRoot.querySelector<HTMLElement>(".sidebar");
-
-    if (!sidebarElement) {
+    if (!this.sidebarElement) {
       return;
     }
 
-    this.#releaseFocusTrap = createFocusTrap(sidebarElement, {
+    this.#releaseFocusTrap = createFocusTrap(this.sidebarElement, {
       onEscape: () => {
         dispatchMcEvent(this, "mc-sidebar-open-change", { open: false });
       },
@@ -77,7 +79,7 @@ export class McAppShell extends LitElement {
                 @click=${this.#handleOverlayClick}
               ></button>
             `
-            : null
+            : nothing
         }
         <aside class="sidebar" part="sidebar">
           <slot name="sidebar"></slot>

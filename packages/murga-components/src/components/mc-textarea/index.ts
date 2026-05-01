@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -13,70 +14,54 @@ export const TAG_NAME = MC_TEXTAREA_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_TEXTAREA_TAG_NAME)
 export class McTextarea extends LitElement {
-  static properties = {
-    value: { type: String },
-    inputId: { type: String, attribute: "input-id" },
-    name: { type: String },
-    rows: { type: Number },
-    placeholder: { type: String },
-    disabled: { type: Boolean, reflect: true },
-    required: { type: Boolean, reflect: true },
-    readonly: { type: Boolean, attribute: "readonly", reflect: true },
-    maxlength: { type: Number, attribute: "maxlength" },
-    invalid: { type: Boolean, reflect: true },
-    ariaLabel: { type: String, attribute: "aria-label" },
-  };
-
   static styles = [murgaThemeStyles, murgaInputSurfaceStyles, componentStyles];
 
+  @property({ type: String })
   value = "";
 
+  @property({ type: String, attribute: "input-id" })
   inputId?: string;
 
+  @property({ type: String })
   name?: string;
 
+  @property({ type: Number })
   rows = 5;
 
+  @property({ type: String })
   placeholder?: string;
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   required = false;
 
+  @property({ type: Boolean, attribute: "readonly", reflect: true })
+  readonly = false;
+
+  @property({ type: Number, attribute: "maxlength" })
   maxlength?: number;
 
+  @property({ type: Boolean, reflect: true })
   invalid = false;
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel: string | null = null;
 
-  #readonly = false;
-
-  get readonly() {
-    return this.#readonly;
-  }
-
-  set readonly(value: boolean) {
-    const nextValue = Boolean(value);
-    const previousValue = this.#readonly;
-    this.#readonly = nextValue;
-    this.requestUpdate("readonly", previousValue);
-  }
+  @query("textarea")
+  private readonly textareaElement?: HTMLTextAreaElement;
 
   updated() {
-    const textareaElement = this.#getTextarea();
-
-    if (!textareaElement) {
+    if (!this.textareaElement) {
       return;
     }
 
-    syncAriaAttributes(this, textareaElement);
-    syncAttribute(textareaElement, "aria-invalid", this.invalid ? "true" : null);
-    syncAttribute(textareaElement, "aria-label", this.ariaLabel);
-  }
-
-  #getTextarea() {
-    return this.renderRoot.querySelector("textarea");
+    syncAriaAttributes(this, this.textareaElement);
+    syncAttribute(this.textareaElement, "aria-invalid", this.invalid ? "true" : null);
+    syncAttribute(this.textareaElement, "aria-label", this.ariaLabel);
   }
 
   #handleInput(event: Event) {
@@ -96,6 +81,7 @@ export class McTextarea extends LitElement {
         id=${ifDefined(this.inputId)}
         name=${ifDefined(this.name)}
         rows=${this.rows}
+        .value=${this.value}
         placeholder=${ifDefined(this.placeholder)}
         maxlength=${ifDefined(this.maxlength)}
         ?disabled=${this.disabled}
@@ -103,9 +89,7 @@ export class McTextarea extends LitElement {
         ?readonly=${this.readonly}
         @input=${this.#handleInput}
         @change=${this.#handleChange}
-      >
-${this.value}</textarea
-      >
+      ></textarea>
     `;
   }
 }

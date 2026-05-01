@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -24,19 +25,17 @@ function getDefaultLabel(tone: McStatusTone) {
   }
 }
 
+@customElement(MC_STATUS_TEXT_TAG_NAME)
 export class McStatusText extends LitElement {
-  static properties = {
-    tone: { type: String, reflect: true },
-    label: { type: String },
-    polite: { type: Boolean, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaMetaStyles, componentStyles];
 
+  @property({ type: String, reflect: true })
   tone: McStatusTone = "idle";
 
+  @property({ type: String })
   label?: string;
 
+  @property({ type: Boolean, reflect: true })
   polite = false;
 
   render() {

@@ -1,6 +1,7 @@
 import { McCheckbox } from "../src/components/mc-checkbox";
 import { McInput } from "../src/components/mc-input";
 import { McSelect } from "../src/components/mc-select";
+import { McTextarea } from "../src/components/mc-textarea";
 import { McThumbnail } from "../src/components/mc-thumbnail";
 import { registerMurgaComponents } from "../src/index";
 import { appendAndFlush, flushMicrotasks } from "./helpers";
@@ -87,6 +88,32 @@ describe("atomic components", () => {
     ).toBe("archive");
   });
 
+  it("renders accessible select semantics", async () => {
+    const select = new McSelect();
+    select.open = true;
+    select.ariaLabel = "Session type";
+    select.selectedId = "featured";
+    select.options = [
+      { id: "featured", label: "Featured" },
+      { id: "archive", label: "Archive" },
+    ];
+
+    await appendAndFlush(select);
+
+    const trigger = select.shadowRoot?.querySelector<HTMLButtonElement>(".trigger");
+    const listbox = select.shadowRoot?.querySelector<HTMLElement>('[role="listbox"]');
+    const selectedOption = select.shadowRoot?.querySelector<HTMLElement>(
+      '.option[aria-selected="true"]',
+    );
+
+    expect(trigger?.getAttribute("aria-haspopup")).toBe("listbox");
+    expect(trigger?.getAttribute("aria-expanded")).toBe("true");
+    expect(trigger?.getAttribute("aria-controls")).toBeTruthy();
+    expect(listbox?.id).toBe(trigger?.getAttribute("aria-controls"));
+    expect(listbox?.getAttribute("aria-label")).toBe("Session type");
+    expect(selectedOption?.textContent).toContain("Featured");
+  });
+
   it("reflects checked state and emits detail in mc-checkbox", async () => {
     const checkbox = new McCheckbox();
     checkbox.checked = true;
@@ -110,6 +137,37 @@ describe("atomic components", () => {
     expect(
       (changeHandler.mock.calls[0]?.[0] as CustomEvent<{ checked: boolean }>).detail.checked,
     ).toBe(false);
+  });
+
+  it("keeps mc-textarea value synced without Lit warnings", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const textarea = new McTextarea();
+      textarea.value = "Initial body";
+
+      await appendAndFlush(textarea);
+
+      const nativeTextarea = textarea.shadowRoot?.querySelector<HTMLTextAreaElement>("textarea");
+
+      if (!nativeTextarea) {
+        throw new Error("Expected native textarea");
+      }
+
+      expect(nativeTextarea.value).toBe("Initial body");
+
+      textarea.value = "Updated body";
+      await textarea.updateComplete;
+      await flushMicrotasks();
+
+      expect(nativeTextarea.value).toBe("Updated body");
+      expect(warnSpy).not.toHaveBeenCalled();
+      expect(errorSpy).not.toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+      errorSpy.mockRestore();
+    }
   });
 
   it("emits mc-select from mc-thumbnail", async () => {

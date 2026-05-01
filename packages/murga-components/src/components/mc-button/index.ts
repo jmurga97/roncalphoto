@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -11,28 +12,26 @@ export const TAG_NAME = MC_BUTTON_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_BUTTON_TAG_NAME)
 export class McButton extends LitElement {
-  static properties = {
-    variant: { type: String },
-    size: { type: String },
-    type: { type: String },
-    disabled: { type: Boolean, reflect: true },
-    pending: { type: Boolean, reflect: true },
-    ariaLabel: { type: String, attribute: "aria-label" },
-  };
-
   static styles = [murgaThemeStyles, murgaButtonStyles, componentStyles];
 
+  @property({ type: String })
   variant: McButtonVariant = "secondary";
 
+  @property({ type: String })
   size: McButtonSize = "md";
 
+  @property({ type: String })
   type: "button" | "submit" | "reset" = "button";
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   pending = false;
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel: string | null = null;
 
   render() {

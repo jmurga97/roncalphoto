@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -17,15 +18,8 @@ export const TAG_NAME = MC_RESOURCE_EDITOR_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_RESOURCE_EDITOR_TAG_NAME)
 export class McResourceEditor extends LitElement {
-  static properties = {
-    resourceTitle: { type: String, attribute: "resource-title" },
-    status: { attribute: false },
-    dirty: { type: Boolean, reflect: true },
-    saving: { type: Boolean, reflect: true },
-    deleting: { type: Boolean, reflect: true },
-  };
-
   static styles = [
     murgaThemeStyles,
     murgaSurfaceStyles,
@@ -34,14 +28,19 @@ export class McResourceEditor extends LitElement {
     componentStyles,
   ];
 
+  @property({ type: String, attribute: "resource-title" })
   resourceTitle = "";
 
+  @property({ attribute: false })
   status: McInlineStatus | null = null;
 
+  @property({ type: Boolean, reflect: true })
   dirty = false;
 
+  @property({ type: Boolean, reflect: true })
   saving = false;
 
+  @property({ type: Boolean, reflect: true })
   deleting = false;
 
   #handleAction(action: "save" | "cancel" | "delete") {

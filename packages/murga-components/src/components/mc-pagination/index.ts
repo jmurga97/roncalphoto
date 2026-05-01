@@ -1,4 +1,5 @@
-import { LitElement, html } from "lit";
+import { LitElement, type PropertyValues, html } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -11,29 +12,50 @@ export const TAG_NAME = MC_PAGINATION_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_PAGINATION_TAG_NAME)
 export class McPagination extends LitElement {
-  static properties = {
-    page: { type: Number },
-    pageSize: { type: Number, attribute: "page-size" },
-    total: { type: Number },
-    hasMore: { type: Boolean, attribute: "has-more" },
-    disabled: { type: Boolean, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaButtonStyles, murgaMetaStyles, componentStyles];
 
+  @property({ type: Number })
   page = 1;
 
+  @property({ type: Number, attribute: "page-size" })
   pageSize = 20;
 
+  @property({ type: Number })
   total = 0;
 
+  @property({ type: Boolean, attribute: "has-more" })
   hasMore = false;
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
-  #getTotalPages() {
-    return this.total > 0 && this.pageSize > 0 ? Math.ceil(this.total / this.pageSize) : 0;
+  @state()
+  private totalPages = 0;
+
+  @state()
+  private disablePrevious = true;
+
+  @state()
+  private disableNext = true;
+
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    if (
+      changedProperties.has("page") ||
+      changedProperties.has("pageSize") ||
+      changedProperties.has("total") ||
+      changedProperties.has("hasMore") ||
+      changedProperties.has("disabled")
+    ) {
+      this.totalPages =
+        this.total > 0 && this.pageSize > 0 ? Math.ceil(this.total / this.pageSize) : 0;
+      this.disablePrevious = this.disabled || this.page <= 1;
+      this.disableNext =
+        this.disabled ||
+        (!this.hasMore && this.totalPages > 0 && this.page >= this.totalPages) ||
+        (!this.hasMore && this.totalPages === 0);
+    }
   }
 
   #handlePageChange(nextPage: number) {
@@ -41,35 +63,32 @@ export class McPagination extends LitElement {
   }
 
   render() {
-    const totalPages = this.#getTotalPages();
-    const disablePrevious = this.disabled || this.page <= 1;
-    const disableNext =
-      this.disabled ||
-      (!this.hasMore && totalPages > 0 && this.page >= totalPages) ||
-      (!this.hasMore && totalPages === 0);
-
     return html`
-      <div class="root" part="root">
+      <nav class="root" part="root" aria-label="Pagination">
         <button
           part="prev-button"
           type="button"
-          ?disabled=${disablePrevious}
+          aria-label="Go to previous page"
+          ?disabled=${this.disablePrevious}
           @click=${() => this.#handlePageChange(Math.max(1, this.page - 1))}
         >
           [PREV]
         </button>
         <span class="meta" part="meta">
-          ${totalPages > 0 ? `[PAGE ${this.page} / ${totalPages}]` : `[PAGE ${this.page}]`}
+          ${
+            this.totalPages > 0 ? `[PAGE ${this.page} / ${this.totalPages}]` : `[PAGE ${this.page}]`
+          }
         </span>
         <button
           part="next-button"
           type="button"
-          ?disabled=${disableNext}
+          aria-label="Go to next page"
+          ?disabled=${this.disableNext}
           @click=${() => this.#handlePageChange(this.page + 1)}
         >
           [NEXT]
         </button>
-      </div>
+      </nav>
     `;
   }
 }

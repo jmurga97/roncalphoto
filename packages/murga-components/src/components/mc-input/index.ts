@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -13,73 +14,57 @@ export const TAG_NAME = MC_INPUT_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_INPUT_TAG_NAME)
 export class McInput extends LitElement {
-  static properties = {
-    value: { type: String },
-    inputId: { type: String, attribute: "input-id" },
-    name: { type: String },
-    type: { type: String },
-    placeholder: { type: String },
-    autocomplete: { type: String },
-    disabled: { type: Boolean, reflect: true },
-    required: { type: Boolean, reflect: true },
-    readonly: { type: Boolean, attribute: "readonly", reflect: true },
-    maxlength: { type: Number, attribute: "maxlength" },
-    invalid: { type: Boolean, reflect: true },
-    ariaLabel: { type: String, attribute: "aria-label" },
-  };
-
   static styles = [murgaThemeStyles, murgaInputSurfaceStyles, componentStyles];
 
+  @property({ type: String })
   value = "";
 
+  @property({ type: String, attribute: "input-id" })
   inputId?: string;
 
+  @property({ type: String })
   name?: string;
 
+  @property({ type: String })
   type = "text";
 
+  @property({ type: String })
   placeholder?: string;
 
+  @property({ type: String })
   autocomplete?: string;
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   required = false;
 
+  @property({ type: Boolean, attribute: "readonly", reflect: true })
+  readonly = false;
+
+  @property({ type: Number, attribute: "maxlength" })
   maxlength?: number;
 
+  @property({ type: Boolean, reflect: true })
   invalid = false;
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel: string | null = null;
 
-  #readonly = false;
-
-  get readonly() {
-    return this.#readonly;
-  }
-
-  set readonly(value: boolean) {
-    const nextValue = Boolean(value);
-    const previousValue = this.#readonly;
-    this.#readonly = nextValue;
-    this.requestUpdate("readonly", previousValue);
-  }
+  @query("input")
+  private readonly inputElement?: HTMLInputElement;
 
   updated() {
-    const inputElement = this.#getInput();
-
-    if (!inputElement) {
+    if (!this.inputElement) {
       return;
     }
 
-    syncAriaAttributes(this, inputElement);
-    syncAttribute(inputElement, "aria-invalid", this.invalid ? "true" : null);
-    syncAttribute(inputElement, "aria-label", this.ariaLabel);
-  }
-
-  #getInput() {
-    return this.renderRoot.querySelector("input");
+    syncAriaAttributes(this, this.inputElement);
+    syncAttribute(this.inputElement, "aria-invalid", this.invalid ? "true" : null);
+    syncAttribute(this.inputElement, "aria-label", this.ariaLabel);
   }
 
   #handleInput(event: Event) {

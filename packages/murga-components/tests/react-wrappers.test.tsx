@@ -261,4 +261,47 @@ describe("react wrappers", () => {
       root.unmount();
     });
   });
+
+  it("preserves element defaults when optional React props are omitted", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <div>
+          <McAppShell />
+          <McButton>Default action</McButton>
+          <McTextarea />
+        </div>,
+      );
+    });
+
+    await flushMicrotasks();
+
+    const appShell = container.querySelector("mc-app-shell");
+    const button = container.querySelector("mc-button");
+    const textarea = container.querySelector("mc-textarea");
+
+    if (
+      !(appShell instanceof HTMLElement) ||
+      !(button instanceof HTMLElement) ||
+      !(textarea instanceof HTMLElement)
+    ) {
+      throw new Error("Expected wrapper elements with defaults");
+    }
+
+    expect((appShell as HTMLElement & { mobileOverlay: boolean }).mobileOverlay).toBe(true);
+    expect((button as HTMLElement & { variant: string; size: string; type: string }).variant).toBe(
+      "secondary",
+    );
+    expect((button as HTMLElement & { size: string }).size).toBe("md");
+    expect((button as HTMLElement & { type: string }).type).toBe("button");
+    expect((textarea as HTMLElement & { rows: number }).rows).toBe(5);
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });

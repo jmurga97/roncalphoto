@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -17,39 +18,35 @@ export const TAG_NAME = MC_SEARCH_FIELD_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_SEARCH_FIELD_TAG_NAME)
 export class McSearchField extends LitElement {
-  static properties = {
-    value: { type: String },
-    inputId: { type: String, attribute: "input-id" },
-    name: { type: String },
-    placeholder: { type: String },
-    disabled: { type: Boolean, reflect: true },
-    pending: { type: Boolean, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaInputSurfaceStyles, murgaButtonStyles, componentStyles];
 
+  @property({ type: String })
   value = "";
 
+  @property({ type: String, attribute: "input-id" })
   inputId?: string;
 
+  @property({ type: String })
   name?: string;
 
+  @property({ type: String })
   placeholder = "[SEARCH]";
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   pending = false;
 
-  updated() {
-    const inputElement = this.#getInput();
-    if (inputElement) {
-      syncAriaAttributes(this, inputElement);
-    }
-  }
+  @query("input")
+  private readonly inputElement?: HTMLInputElement;
 
-  #getInput() {
-    return this.renderRoot.querySelector("input");
+  updated() {
+    if (this.inputElement) {
+      syncAriaAttributes(this, this.inputElement);
+    }
   }
 
   #handleInput(event: Event) {
@@ -84,6 +81,7 @@ export class McSearchField extends LitElement {
         <button
           part="clear-button"
           type="button"
+          aria-label="Clear search"
           ?disabled=${this.disabled || this.value.length === 0}
           @click=${this.#handleClear}
         >

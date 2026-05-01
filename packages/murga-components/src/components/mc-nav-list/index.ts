@@ -1,4 +1,5 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -13,19 +14,17 @@ export const TAG_NAME = MC_NAV_LIST_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_NAV_LIST_TAG_NAME)
 export class McNavList extends LitElement {
-  static properties = {
-    items: { attribute: false },
-    ariaLabel: { type: String, attribute: "aria-label" },
-    orientation: { type: String, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaLabelStyles, murgaMetaStyles, componentStyles];
 
+  @property({ attribute: false })
   items: McNavItem[] = [];
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel = "Navigation";
 
+  @property({ type: String, reflect: true })
   orientation: McOrientation = "vertical";
 
   #handleSelect(itemId: string) {
@@ -45,6 +44,7 @@ export class McNavList extends LitElement {
                 part="item"
                 type="button"
                 data-current=${item.current ? "true" : "false"}
+                aria-current=${item.current ? "page" : nothing}
                 @click=${() => this.#handleSelect(item.id)}
               >
                 <span class="label" part="label">${item.label}</span>

@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -13,43 +14,38 @@ export const TAG_NAME = MC_CHECKBOX_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_CHECKBOX_TAG_NAME)
 export class McCheckbox extends LitElement {
-  static properties = {
-    checked: { type: Boolean, reflect: true },
-    name: { type: String },
-    value: { type: String },
-    disabled: { type: Boolean, reflect: true },
-    required: { type: Boolean, reflect: true },
-    ariaLabel: { type: String, attribute: "aria-label" },
-  };
-
   static styles = [murgaThemeStyles, componentStyles];
 
+  @property({ type: Boolean, reflect: true })
   checked = false;
 
+  @property({ type: String })
   name?: string;
 
+  @property({ type: String })
   value = "true";
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   required = false;
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel: string | null = null;
 
-  updated() {
-    const inputElement = this.#getInput();
+  @query("input")
+  private readonly inputElement?: HTMLInputElement;
 
-    if (!inputElement) {
+  updated() {
+    if (!this.inputElement) {
       return;
     }
 
-    syncAriaAttributes(this, inputElement);
-    syncAttribute(inputElement, "aria-label", this.ariaLabel);
-  }
-
-  #getInput() {
-    return this.renderRoot.querySelector("input");
+    syncAriaAttributes(this, this.inputElement);
+    syncAttribute(this.inputElement, "aria-label", this.ariaLabel);
   }
 
   #handleChange(event: Event) {

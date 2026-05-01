@@ -1,4 +1,5 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -24,18 +25,8 @@ export const TAG_NAME = MC_SELECT_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_SELECT_TAG_NAME)
 export class McSelect extends LitElement {
-  static properties = {
-    options: { attribute: false },
-    selectedId: { type: String, attribute: "selected-id" },
-    inputId: { type: String, attribute: "input-id" },
-    name: { type: String },
-    placeholder: { type: String },
-    disabled: { type: Boolean, reflect: true },
-    open: { type: Boolean, reflect: true },
-    ariaLabel: { type: String, attribute: "aria-label" },
-  };
-
   static styles = [
     murgaThemeStyles,
     murgaButtonStyles,
@@ -44,46 +35,72 @@ export class McSelect extends LitElement {
     componentStyles,
   ];
 
+  @property({ attribute: false })
   options: McOption[] = [];
 
+  @property({ type: String, attribute: "selected-id" })
   selectedId: string | null = null;
 
+  @property({ type: String, attribute: "input-id" })
   inputId?: string;
 
+  @property({ type: String })
   name?: string;
 
+  @property({ type: String })
   placeholder = "[SELECT]";
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   open = false;
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel: string | null = null;
+
+  @query(".trigger")
+  private readonly triggerElement?: HTMLButtonElement;
+
+  @query(".panel")
+  private readonly panelElement?: HTMLElement;
+
+  @state()
+  private selectedOption: McOption | null = null;
+
+  @state()
+  private displayLabel = this.placeholder;
 
   readonly #listboxId = `${SELECT_LISTBOX_PREFIX}-${++selectListboxCount}`;
 
-  updated(changedProperties: Map<string, unknown>) {
-    const triggerElement = this.#getTrigger();
-
-    if (!triggerElement) {
-      return;
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    if (
+      changedProperties.has("options") ||
+      changedProperties.has("selectedId") ||
+      changedProperties.has("placeholder")
+    ) {
+      this.selectedOption = findItemById(this.options, this.selectedId);
+      this.displayLabel = this.selectedOption?.label ?? this.placeholder;
     }
+  }
 
-    syncAriaAttributes(this, triggerElement);
-    syncAttribute(triggerElement, "aria-label", this.ariaLabel);
+  protected updated(changedProperties: PropertyValues<this>) {
+    if (this.triggerElement) {
+      syncAriaAttributes(this, this.triggerElement);
+      syncAttribute(this.triggerElement, "aria-controls", this.#listboxId);
+      syncAttribute(this.triggerElement, "aria-expanded", this.open ? "true" : "false");
+      syncAttribute(this.triggerElement, "aria-haspopup", "listbox");
+      syncAttribute(this.triggerElement, "aria-label", this.ariaLabel);
+    }
 
     if (changedProperties.has("open") && this.open) {
       queueMicrotask(() => {
-        const selectedOption = this.renderRoot.querySelector<HTMLButtonElement>(
+        const selectedOption = this.panelElement?.querySelector<HTMLButtonElement>(
           '.option[aria-selected="true"]',
         );
         selectedOption?.focus();
       });
     }
-  }
-
-  #getTrigger() {
-    return this.renderRoot.querySelector<HTMLButtonElement>(".trigger");
   }
 
   #handleTriggerClick() {
@@ -104,13 +121,13 @@ export class McSelect extends LitElement {
 
   #handlePanelKeyDown(event: KeyboardEvent) {
     const optionElements = Array.from(
-      this.renderRoot.querySelectorAll<HTMLButtonElement>(".option"),
+      this.panelElement?.querySelectorAll<HTMLButtonElement>(".option") ?? [],
     );
 
     if (event.key === "Escape") {
       event.preventDefault();
       dispatchMcEvent(this, "mc-open-change", { open: false });
-      this.#getTrigger()?.focus();
+      this.triggerElement?.focus();
       return;
     }
 
@@ -135,9 +152,6 @@ export class McSelect extends LitElement {
   }
 
   render() {
-    const selectedOption = findItemById(this.options, this.selectedId);
-    const displayLabel = selectedOption?.label ?? this.placeholder;
-
     return html`
       <div class="field" part="field">
         <input
@@ -157,7 +171,7 @@ export class McSelect extends LitElement {
           @click=${this.#handleTriggerClick}
           @keydown=${this.#handleTriggerKeyDown}
         >
-          <span class=${selectedOption ? "value" : "value placeholder"}>${displayLabel}</span>
+          <span class=${this.selectedOption ? "value" : "value placeholder"}>${this.displayLabel}</span>
           <span>${this.open ? "[OPEN]" : "[CLOSED]"}</span>
         </button>
 
@@ -169,6 +183,7 @@ export class McSelect extends LitElement {
                 class="panel"
                 part="panel"
                 role="listbox"
+                aria-label=${this.ariaLabel ?? this.placeholder}
                 @keydown=${this.#handlePanelKeyDown}
               >
                 ${repeat(

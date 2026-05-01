@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -11,19 +12,17 @@ export const TAG_NAME = MC_INLINE_MESSAGE_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_INLINE_MESSAGE_TAG_NAME)
 export class McInlineMessage extends LitElement {
-  static properties = {
-    tone: { type: String, reflect: true },
-    title: { type: String },
-    message: { type: String },
-  };
-
   static styles = [murgaThemeStyles, murgaMetaStyles, murgaPanelStyles, componentStyles];
 
+  @property({ type: String, reflect: true })
   tone: McStatusTone = "idle";
 
+  @property({ type: String })
   title = "";
 
+  @property({ type: String })
   message = "";
 
   render() {

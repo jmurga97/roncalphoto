@@ -1,10 +1,12 @@
 import { LitElement, html } from "lit";
+import { customElement } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement("mc-placeholder")
 export class McPlaceholder extends LitElement {
   static styles = componentStyles;
 

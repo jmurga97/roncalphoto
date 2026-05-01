@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -10,31 +11,29 @@ export const TAG_NAME = MC_FIELD_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_FIELD_TAG_NAME)
 export class McField extends LitElement {
-  static properties = {
-    inputId: { type: String, attribute: "input-id" },
-    label: { type: String },
-    hint: { type: String },
-    error: { type: String },
-    required: { type: Boolean, reflect: true },
-    optional: { type: Boolean, reflect: true },
-    invalid: { type: Boolean, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, murgaLabelStyles, murgaMetaStyles, componentStyles];
 
+  @property({ type: String, attribute: "input-id" })
   inputId?: string;
 
+  @property({ type: String })
   label?: string;
 
+  @property({ type: String })
   hint?: string;
 
+  @property({ type: String })
   error?: string;
 
+  @property({ type: Boolean, reflect: true })
   required = false;
 
+  @property({ type: Boolean, reflect: true })
   optional = false;
 
+  @property({ type: Boolean, reflect: true })
   invalid = false;
 
   render() {

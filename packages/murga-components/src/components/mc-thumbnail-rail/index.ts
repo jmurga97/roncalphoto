@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -15,22 +16,20 @@ export const TAG_NAME = MC_THUMBNAIL_RAIL_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_THUMBNAIL_RAIL_TAG_NAME)
 export class McThumbnailRail extends LitElement {
-  static properties = {
-    items: { attribute: false },
-    selectedId: { type: String, attribute: "selected-id" },
-    ariaLabel: { type: String, attribute: "aria-label" },
-    orientation: { type: String, reflect: true },
-  };
-
   static styles = [murgaThemeStyles, componentStyles];
 
+  @property({ attribute: false })
   items: McMediaItem[] = [];
 
+  @property({ type: String, attribute: "selected-id" })
   selectedId?: string;
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel = "Media thumbnails";
 
+  @property({ type: String, reflect: true })
   orientation: McOrientation = "horizontal";
 
   #handleSelect(event: Event) {

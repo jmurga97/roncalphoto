@@ -1,9 +1,11 @@
 import { McAppShell } from "../src/components/mc-app-shell";
 import { McMediaBrowser } from "../src/components/mc-media-browser";
+import { McNavList } from "../src/components/mc-nav-list";
 import { McPagination } from "../src/components/mc-pagination";
 import { McResourceTable } from "../src/components/mc-resource-table";
 import { McSidebarNav } from "../src/components/mc-sidebar-nav";
 import { McTagList } from "../src/components/mc-tag-list";
+import { McTagPicker } from "../src/components/mc-tag-picker";
 import { registerMurgaComponents } from "../src/index";
 import { appendAndFlush, flushMicrotasks } from "./helpers";
 
@@ -113,6 +115,36 @@ describe("composed components", () => {
     expect(sidebar.shadowRoot?.querySelector('slot[name="footer"]')).not.toBeNull();
   });
 
+  it("keeps sidebar focus trap stable across unrelated updates", async () => {
+    const sidebar = new McSidebarNav();
+    sidebar.open = true;
+    sidebar.title = "Library";
+    sidebar.items = [
+      { id: "overview", label: "Overview" },
+      { id: "sessions", label: "Sessions" },
+    ];
+    sidebar.footerItems = [{ id: "logout", label: "Logout" }];
+
+    await appendAndFlush(sidebar);
+
+    const footerButton = sidebar.shadowRoot?.querySelector<HTMLButtonElement>(
+      '.item[data-variant="footer"]',
+    );
+
+    if (!footerButton) {
+      throw new Error("Expected footer button");
+    }
+
+    footerButton.focus();
+    expect(sidebar.shadowRoot?.activeElement).toBe(footerButton);
+
+    sidebar.subtitle = "Updated subtitle";
+    await sidebar.updateComplete;
+    await flushMicrotasks();
+
+    expect(sidebar.shadowRoot?.activeElement).toBe(footerButton);
+  });
+
   it("emits footer item selection in mc-sidebar-nav", async () => {
     const sidebar = new McSidebarNav();
     sidebar.footerItems = [{ id: "logout", label: "Logout" }];
@@ -135,6 +167,48 @@ describe("composed components", () => {
     expect(
       (selectHandler.mock.calls[0]?.[0] as CustomEvent<{ selectedId: string }>).detail.selectedId,
     ).toBe("logout");
+  });
+
+  it("adds basic aria metadata to navigation and tag controls", async () => {
+    const navList = new McNavList();
+    navList.items = [
+      { id: "overview", label: "Overview", current: true },
+      { id: "sessions", label: "Sessions", count: 4 },
+    ];
+
+    const tagList = new McTagList();
+    tagList.interactive = true;
+    tagList.items = [
+      { id: "portrait", label: "Portrait", selected: true },
+      { id: "editorial", label: "Editorial" },
+    ];
+
+    const tagPicker = new McTagPicker();
+    tagPicker.open = true;
+    tagPicker.selectedIds = ["portrait"];
+    tagPicker.options = [
+      { id: "portrait", label: "Portrait" },
+      { id: "editorial", label: "Editorial" },
+    ];
+
+    document.body.append(navList, tagList, tagPicker);
+    await Promise.all([navList.updateComplete, tagList.updateComplete, tagPicker.updateComplete]);
+    await flushMicrotasks();
+
+    const currentNavItem = navList.shadowRoot?.querySelector<HTMLButtonElement>(".item");
+    const selectedTag = tagList.shadowRoot?.querySelector<HTMLButtonElement>(".item");
+    const tagPickerTrigger = tagPicker.shadowRoot?.querySelector<HTMLButtonElement>(".trigger");
+    const tagPickerPanel = tagPicker.shadowRoot?.querySelector<HTMLElement>('[role="listbox"]');
+    const selectedPickerOption = tagPicker.shadowRoot?.querySelector<HTMLElement>(
+      '[role="option"][aria-selected="true"]',
+    );
+
+    expect(currentNavItem?.getAttribute("aria-current")).toBe("page");
+    expect(selectedTag?.getAttribute("aria-pressed")).toBe("true");
+    expect(tagPickerTrigger?.getAttribute("aria-haspopup")).toBe("listbox");
+    expect(tagPickerTrigger?.getAttribute("aria-controls")).toBe(tagPickerPanel?.id);
+    expect(tagPickerPanel?.getAttribute("aria-multiselectable")).toBe("true");
+    expect(selectedPickerOption?.textContent).toContain("Portrait");
   });
 
   it("emits sort and row selection in mc-resource-table", async () => {
@@ -171,6 +245,38 @@ describe("composed components", () => {
     expect(
       (rowHandler.mock.calls[0]?.[0] as CustomEvent<{ selectedId: string }>).detail.selectedId,
     ).toBe("row-1");
+  });
+
+  it("adds aria metadata to pagination and resource tables", async () => {
+    const pagination = new McPagination();
+    pagination.page = 2;
+    pagination.pageSize = 10;
+    pagination.total = 40;
+
+    const table = new McResourceTable();
+    table.selectedId = "row-1";
+    table.columns = [{ id: "name", label: "Name", sortable: true }];
+    table.rows = [{ id: "row-1", cells: { name: "Session A" } }];
+
+    document.body.append(pagination, table);
+    await Promise.all([pagination.updateComplete, table.updateComplete]);
+    await flushMicrotasks();
+
+    const nav = pagination.shadowRoot?.querySelector("nav");
+    const prevButton =
+      pagination.shadowRoot?.querySelector<HTMLButtonElement>('[part="prev-button"]');
+    const nextButton =
+      pagination.shadowRoot?.querySelector<HTMLButtonElement>('[part="next-button"]');
+    const sortButton = table.shadowRoot?.querySelector<HTMLButtonElement>(".sort-button");
+    const selectedRow = table.shadowRoot?.querySelector<HTMLTableRowElement>(
+      'tbody tr[data-selected="true"]',
+    );
+
+    expect(nav?.getAttribute("aria-label")).toBe("Pagination");
+    expect(prevButton?.getAttribute("aria-label")).toBe("Go to previous page");
+    expect(nextButton?.getAttribute("aria-label")).toBe("Go to next page");
+    expect(sortButton?.getAttribute("aria-label")).toBe("Sort by Name");
+    expect(selectedRow?.getAttribute("aria-selected")).toBe("true");
   });
 
   it("navigates media with arrow keys in mc-media-browser", async () => {

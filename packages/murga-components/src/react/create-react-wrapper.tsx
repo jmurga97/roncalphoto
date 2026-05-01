@@ -55,7 +55,13 @@ export function createReactWrapper<
 
       for (const propertyKey of propertyKeysRef.current) {
         const key = propertyKey as string;
-        (element as Record<string, unknown>)[key] = (props as Record<string, unknown>)[key];
+        const value = (props as Record<string, unknown>)[key];
+
+        if (value === undefined) {
+          continue;
+        }
+
+        (element as Record<string, unknown>)[key] = value;
       }
     }, [props]);
 

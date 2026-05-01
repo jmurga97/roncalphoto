@@ -1,4 +1,6 @@
 import { LitElement, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { styleMap } from "lit/directives/style-map.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -17,14 +19,8 @@ export const TAG_NAME = MC_OVERVIEW_PANEL_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_OVERVIEW_PANEL_TAG_NAME)
 export class McOverviewPanel extends LitElement {
-  static properties = {
-    title: { type: String },
-    description: { type: String },
-    stats: { attribute: false },
-    status: { attribute: false },
-  };
-
   static styles = [
     murgaThemeStyles,
     murgaSurfaceStyles,
@@ -33,12 +29,16 @@ export class McOverviewPanel extends LitElement {
     componentStyles,
   ];
 
+  @property({ type: String })
   title = "";
 
+  @property({ type: String })
   description?: string;
 
+  @property({ attribute: false })
   stats: McStatItem[] = [];
 
+  @property({ attribute: false })
   status: McInlineStatus | null = null;
 
   #getStatColor(status?: McStatItem["status"]) {
@@ -52,6 +52,12 @@ export class McOverviewPanel extends LitElement {
       default:
         return "var(--text-display)";
     }
+  }
+
+  #getStatValueStyles(status?: McStatItem["status"]) {
+    return styleMap({
+      color: this.#getStatColor(status),
+    });
   }
 
   render() {
@@ -74,7 +80,7 @@ export class McOverviewPanel extends LitElement {
                   (item) => html`
                     <article class="stat">
                       <div>${item.label}</div>
-                      <div class="stat-value" style=${`color: ${this.#getStatColor(item.status)};`}>
+                      <div class="stat-value" style=${this.#getStatValueStyles(item.status)}>
                         ${item.value}
                       </div>
                     </article>

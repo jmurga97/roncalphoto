@@ -1,4 +1,5 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { createComponentStyles } from "../../internal/component-styles";
@@ -15,23 +16,30 @@ export const TAG_NAME = MC_MEDIA_BROWSER_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_MEDIA_BROWSER_TAG_NAME)
 export class McMediaBrowser extends LitElement {
-  static properties = {
-    items: { attribute: false },
-    selectedId: { type: String, attribute: "selected-id" },
-    showRail: { type: Boolean, attribute: "show-rail", reflect: true },
-    emptyLabel: { type: String, attribute: "empty-label" },
-  };
-
   static styles = [murgaThemeStyles, murgaSurfaceStyles, murgaMetaStyles, componentStyles];
 
+  @property({ attribute: false })
   items: McMediaItem[] = [];
 
+  @property({ type: String, attribute: "selected-id" })
   selectedId?: string;
 
+  @property({ type: Boolean, attribute: "show-rail", reflect: true })
   showRail = true;
 
+  @property({ type: String, attribute: "empty-label" })
   emptyLabel = "No media available";
+
+  @state()
+  private selectedItem: McMediaItem | null = null;
+
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("items") || changedProperties.has("selectedId")) {
+      this.selectedItem = findItemById(this.items, this.selectedId) ?? this.items[0] ?? null;
+    }
+  }
 
   #handleSelect(event: Event) {
     const detail = (event as CustomEvent<{ selectedId: string }>).detail;
@@ -55,9 +63,7 @@ export class McMediaBrowser extends LitElement {
   }
 
   render() {
-    const selectedItem = findItemById(this.items, this.selectedId) ?? this.items[0] ?? null;
-
-    if (!selectedItem) {
+    if (!this.selectedItem) {
       return html`
         <div class="root" part="root">
           <div>${this.emptyLabel}</div>
@@ -69,9 +75,13 @@ export class McMediaBrowser extends LitElement {
       <section class="root" part="root" tabindex="0" @keydown=${this.#handleKeyDown}>
         <div class="viewport" part="viewport">
           <div class="media" part="media">
-            <img src=${selectedItem.src} alt=${selectedItem.alt} />
+            <img src=${this.selectedItem.src} alt=${this.selectedItem.alt} />
           </div>
-          ${selectedItem.caption ? html`<div class="caption">${selectedItem.caption}</div>` : nothing}
+          ${
+            this.selectedItem.caption
+              ? html`<div class="caption">${this.selectedItem.caption}</div>`
+              : nothing
+          }
           <slot name="meta"></slot>
         </div>
         ${
@@ -80,7 +90,7 @@ export class McMediaBrowser extends LitElement {
               <mc-thumbnail-rail
                 part="rail"
                 .items=${this.items}
-                .selectedId=${selectedItem.id}
+                .selectedId=${this.selectedItem.id}
                 @mc-select=${this.#handleSelect}
               ></mc-thumbnail-rail>
             `

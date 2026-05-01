@@ -1,4 +1,5 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -14,32 +15,33 @@ export const TAG_NAME = MC_SIDEBAR_NAV_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_SIDEBAR_NAV_TAG_NAME)
 export class McSidebarNav extends LitElement {
-  static properties = {
-    ariaLabel: { type: String, attribute: "aria-label" },
-    footerItems: { attribute: false },
-    items: { attribute: false },
-    secondaryItems: { attribute: false },
-    open: { type: Boolean, reflect: true },
-    title: { type: String },
-    subtitle: { type: String },
-  };
-
   static styles = [murgaThemeStyles, murgaLabelStyles, murgaMetaStyles, componentStyles];
 
+  @property({ type: String, attribute: "aria-label" })
   ariaLabel = "Main navigation";
 
+  @property({ attribute: false })
   items: McNavItem[] = [];
 
+  @property({ attribute: false })
   secondaryItems: McNavItem[] = [];
 
+  @property({ attribute: false })
   footerItems: McNavItem[] = [];
 
+  @property({ type: Boolean, reflect: true })
   open = false;
 
+  @property({ type: String })
   title = "";
 
+  @property({ type: String })
   subtitle?: string;
+
+  @query(".panel")
+  private readonly panelElement?: HTMLElement;
 
   #releaseFocusTrap: (() => void) | null = null;
 
@@ -49,8 +51,10 @@ export class McSidebarNav extends LitElement {
     super.disconnectedCallback();
   }
 
-  updated() {
-    this.#syncFocusTrap();
+  protected updated(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("open")) {
+      this.#syncFocusTrap();
+    }
   }
 
   #syncFocusTrap() {
@@ -61,13 +65,11 @@ export class McSidebarNav extends LitElement {
       return;
     }
 
-    const panelElement = this.renderRoot.querySelector<HTMLElement>(".panel");
-
-    if (!panelElement) {
+    if (!this.panelElement) {
       return;
     }
 
-    this.#releaseFocusTrap = createFocusTrap(panelElement, {
+    this.#releaseFocusTrap = createFocusTrap(this.panelElement, {
       onEscape: () => {
         dispatchMcEvent(this, "mc-open-change", { open: false });
       },
@@ -93,6 +95,7 @@ export class McSidebarNav extends LitElement {
           data-variant=${variant}
           type="button"
           data-current=${item.current ? "true" : "false"}
+          aria-current=${item.current ? "page" : nothing}
           @click=${() => this.#handleSelect(item.id)}
         >
           <span class="item-content">
@@ -123,7 +126,7 @@ export class McSidebarNav extends LitElement {
                 @click=${this.#handleOverlayClick}
               ></button>
             `
-            : null
+            : nothing
         }
         <aside class="panel" part="panel">
           <header class="header" part="header">

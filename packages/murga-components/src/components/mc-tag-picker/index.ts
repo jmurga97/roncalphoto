@@ -1,4 +1,5 @@
-import { LitElement, html } from "lit";
+import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -20,15 +21,8 @@ export const TAG_NAME = MC_TAG_PICKER_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_TAG_PICKER_TAG_NAME)
 export class McTagPicker extends LitElement {
-  static properties = {
-    options: { attribute: false },
-    selectedIds: { attribute: false },
-    inputId: { type: String, attribute: "input-id" },
-    disabled: { type: Boolean, reflect: true },
-    open: { type: Boolean, reflect: true },
-  };
-
   static styles = [
     murgaThemeStyles,
     murgaButtonStyles,
@@ -37,56 +31,87 @@ export class McTagPicker extends LitElement {
     componentStyles,
   ];
 
+  @property({ attribute: false })
   options: McOption[] = [];
 
+  @property({ attribute: false })
   selectedIds: string[] = [];
 
+  @property({ type: String, attribute: "input-id" })
   inputId?: string;
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   open = false;
+
+  @state()
+  private normalizedSelectedIds: string[] = [];
+
+  @state()
+  private selectedCount = 0;
+
+  readonly #listboxId = `mc-tag-picker-listbox-${Math.random().toString(36).slice(2)}`;
+
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("selectedIds")) {
+      this.normalizedSelectedIds = normalizeSelectedIds(this.selectedIds);
+      this.selectedCount = this.normalizedSelectedIds.length;
+    }
+  }
 
   #handleTriggerClick() {
     dispatchMcEvent(this, "mc-open-change", { open: !this.open });
   }
 
   #handleOptionToggle(optionId: string) {
-    const nextSelectedIds = toggleSelectedId(normalizeSelectedIds(this.selectedIds), optionId);
+    const nextSelectedIds = toggleSelectedId(this.normalizedSelectedIds, optionId);
     dispatchMcEvent(this, "mc-change", { selectedIds: nextSelectedIds });
   }
 
   render() {
-    const selectedIds = normalizeSelectedIds(this.selectedIds);
-    const selectedCount = selectedIds.length;
-
     return html`
       <div part="field">
-        <input id=${ifDefined(this.inputId)} type="hidden" value=${selectedIds.join(",")} />
+        <input id=${ifDefined(this.inputId)} type="hidden" value=${this.normalizedSelectedIds.join(",")} />
         <button
           class="trigger"
           part="trigger"
           type="button"
           ?disabled=${this.disabled}
+          aria-controls=${this.#listboxId}
           aria-expanded=${this.open ? "true" : "false"}
+          aria-haspopup="listbox"
           @click=${this.#handleTriggerClick}
         >
-          <span>${selectedCount > 0 ? `[${selectedCount} SELECTED]` : "[SELECT TAGS]"}</span>
+          <span>${this.selectedCount > 0 ? `[${this.selectedCount} SELECTED]` : "[SELECT TAGS]"}</span>
           <span>${this.open ? "[OPEN]" : "[CLOSED]"}</span>
         </button>
         ${
           this.open
             ? html`
-              <div class="panel" part="panel">
+              <div
+                id=${this.#listboxId}
+                class="panel"
+                part="panel"
+                role="listbox"
+                aria-multiselectable="true"
+              >
                 ${repeat(
                   this.options,
                   (option) => option.id,
                   (option) => html`
-                    <label class="option" part="option">
+                    <label
+                      class="option"
+                      part="option"
+                      role="option"
+                      aria-selected=${this.normalizedSelectedIds.includes(option.id) ? "true" : "false"}
+                    >
                       <input
                         type="checkbox"
                         value=${option.id}
-                        ?checked=${selectedIds.includes(option.id)}
+                        tabindex="-1"
+                        ?checked=${this.normalizedSelectedIds.includes(option.id)}
                         ?disabled=${this.disabled || Boolean(option.disabled)}
                         @change=${() => this.#handleOptionToggle(option.id)}
                       />
@@ -96,7 +121,7 @@ export class McTagPicker extends LitElement {
                 )}
               </div>
             `
-            : null
+            : nothing
         }
       </div>
     `;

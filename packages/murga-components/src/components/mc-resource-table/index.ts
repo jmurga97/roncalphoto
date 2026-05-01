@@ -1,4 +1,6 @@
 import { LitElement, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { styleMap } from "lit/directives/style-map.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -13,26 +15,36 @@ export const TAG_NAME = MC_RESOURCE_TABLE_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_RESOURCE_TABLE_TAG_NAME)
 export class McResourceTable extends LitElement {
-  static properties = {
-    columns: { attribute: false },
-    rows: { attribute: false },
-    selectedId: { type: String, attribute: "selected-id" },
-    loading: { type: Boolean, reflect: true },
-    emptyLabel: { type: String, attribute: "empty-label" },
-  };
-
   static styles = [murgaThemeStyles, murgaLabelStyles, murgaMetaStyles, componentStyles];
 
+  @property({ attribute: false })
   columns: McTableColumn[] = [];
 
+  @property({ attribute: false })
   rows: McTableRow[] = [];
 
+  @property({ type: String, attribute: "selected-id" })
   selectedId?: string;
 
+  @property({ type: Boolean, reflect: true })
   loading = false;
 
+  @property({ type: String, attribute: "empty-label" })
   emptyLabel = "No rows available";
+
+  #getColumnHeaderStyles(column: McTableColumn) {
+    return styleMap({
+      width: column.width,
+    });
+  }
+
+  #getColumnCellStyles(column: McTableColumn) {
+    return styleMap({
+      textAlign: column.align === "end" ? "right" : column.align,
+    });
+  }
 
   #handleSort(columnId: string) {
     dispatchMcEvent(this, "mc-sort", { columnId });
@@ -77,13 +89,14 @@ export class McResourceTable extends LitElement {
                 this.columns,
                 (column) => column.id,
                 (column) => html`
-                  <th style=${column.width ? `width: ${column.width};` : ""}>
+                  <th style=${this.#getColumnHeaderStyles(column)}>
                     ${
                       column.sortable
                         ? html`
                           <button
                             class="sort-button"
                             type="button"
+                            aria-label=${`Sort by ${column.label}`}
                             @click=${() => this.#handleSort(column.id)}
                           >
                             ${column.label}
@@ -107,6 +120,7 @@ export class McResourceTable extends LitElement {
                   <tr
                     part="row"
                     data-selected=${isSelected ? "true" : "false"}
+                    aria-selected=${isSelected ? "true" : "false"}
                     tabindex="0"
                     @click=${() => this.#handleRowSelect(row.id)}
                     @keydown=${(event: KeyboardEvent) => this.#handleRowKeyDown(event, row.id)}
@@ -115,10 +129,7 @@ export class McResourceTable extends LitElement {
                       this.columns,
                       (column) => column.id,
                       (column) => html`
-                        <td
-                          part="cell"
-                          style=${column.align ? `text-align: ${column.align};` : ""}
-                        >
+                        <td part="cell" style=${this.#getColumnCellStyles(column)}>
                           ${row.cells[column.id] ?? ""}
                         </td>
                       `,

@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { repeat } from "lit/directives/repeat.js";
@@ -18,13 +19,8 @@ export const TAG_NAME = MC_RELATIONSHIP_PANEL_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_RELATIONSHIP_PANEL_TAG_NAME)
 export class McRelationshipPanel extends LitElement {
-  static properties = {
-    title: { type: String },
-    items: { attribute: false },
-    emptyLabel: { type: String, attribute: "empty-label" },
-  };
-
   static styles = [
     murgaThemeStyles,
     murgaSurfaceStyles,
@@ -33,10 +29,13 @@ export class McRelationshipPanel extends LitElement {
     componentStyles,
   ];
 
+  @property({ type: String })
   title = "";
 
+  @property({ attribute: false })
   items: McNavItem[] = [];
 
+  @property({ type: String, attribute: "empty-label" })
   emptyLabel = "No related items";
 
   #handleSelect(itemId: string) {

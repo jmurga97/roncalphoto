@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import componentStylesText from "./styles.css?inline";
 
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -13,31 +14,29 @@ export const TAG_NAME = MC_THUMBNAIL_TAG_NAME;
 
 const componentStyles = createComponentStyles(componentStylesText);
 
+@customElement(MC_THUMBNAIL_TAG_NAME)
 export class McThumbnail extends LitElement {
-  static properties = {
-    itemId: { type: String, attribute: "item-id" },
-    src: { type: String },
-    alt: { type: String },
-    selected: { type: Boolean, reflect: true },
-    disabled: { type: Boolean, reflect: true },
-    loading: { type: Boolean, reflect: true },
-    ratio: { type: String },
-  };
-
   static styles = [murgaThemeStyles, murgaMetaStyles, componentStyles];
 
+  @property({ type: String, attribute: "item-id" })
   itemId = "";
 
+  @property({ type: String })
   src?: string;
 
+  @property({ type: String })
   alt = "";
 
+  @property({ type: Boolean, reflect: true })
   selected = false;
 
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  @property({ type: Boolean, reflect: true })
   loading = false;
 
+  @property({ type: String })
   ratio: McThumbnailRatio = "square";
 
   #handleClick() {
