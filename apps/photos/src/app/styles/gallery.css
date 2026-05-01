@@ -32,6 +32,11 @@
   color: var(--color-text);
 }
 
+.gallery-mobile-session-title .editorial-heading {
+  text-wrap: balance;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.14);
+}
+
 @media (min-width: 640px) and (max-width: 767px) {
   .gallery-next-peek {
     right: 1.25rem;

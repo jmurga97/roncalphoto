@@ -75,5 +75,6 @@ export function useGalleryViewModel(): GalleryData {
     selection,
     setPhotoId,
     sessionSlug: session.slug,
+    sessionTitle: session.title,
   };
 }

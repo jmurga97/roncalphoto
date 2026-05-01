@@ -81,6 +81,7 @@ export function GalleryView() {
       currentIndex={galleryData.selection.currentIndex}
       onSelectPhoto={(photoId) => selectPhoto(photoId, { scroll: true })}
       photos={galleryData.photos}
+      sessionTitle={galleryData.sessionTitle}
       showThumbnails={screenMode === "desktop"}
     />
   );

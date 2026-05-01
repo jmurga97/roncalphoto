@@ -10,6 +10,7 @@ interface GalleryGridProps {
   currentIndex: number;
   onSelectPhoto: (photoId: string) => void;
   photos: GalleryPhotoViewModel[];
+  sessionTitle: string;
   showThumbnails: boolean;
 }
 
@@ -18,11 +19,17 @@ export function GalleryGrid({
   currentIndex,
   onSelectPhoto,
   photos,
+  sessionTitle,
   showThumbnails,
 }: GalleryGridProps) {
   return (
     <div data-gallery-root className="photo-stage gallery-enter flex h-full flex-col">
       <div className="relative min-h-0 w-full flex-1">
+          <header className="gallery-mobile-session-title pointer-events-none absolute top-7 left-3 right-20 z-10 md:hidden">
+            <h1 className="editorial-heading line-clamp-2 text-base leading-tight sm:text-lg">
+              {sessionTitle}
+            </h1>
+          </header>
         <div
           ref={containerRef}
           className="scrollbar-hide h-full w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory"

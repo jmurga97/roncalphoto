@@ -1,3 +1,4 @@
+import { useSidebarActions, useSidebarMobile } from "@app/store";
 import { Link } from "@tanstack/react-router";
 import type { SidebarNavigationItem } from "../types";
 
@@ -6,6 +7,9 @@ interface SidebarItemProps {
 }
 
 export function SidebarItem({ item }: SidebarItemProps) {
+  const isMobile = useSidebarMobile();
+  const { closeSidebar } = useSidebarActions();
+
   return (
     <li className="session-menu-item">
       <Link
@@ -14,6 +18,11 @@ export function SidebarItem({ item }: SidebarItemProps) {
           "session-menu-link block px-3 py-2.5 text-[0.88rem] leading-snug transition-colors",
           item.isActive ? "font-bold text-(--color-text)" : "ui-link",
         ].join(" ")}
+        onClick={() => {
+          if (isMobile) {
+            closeSidebar();
+          }
+        }}
         params={{ slug: item.slug }}
         search={() => ({})}
         to="/session/$slug"
