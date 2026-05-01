@@ -59,7 +59,7 @@ export const murgaThemeStyles = css`
 
   :where(button, input, textarea, select, [tabindex]):focus-visible {
     outline: 2px solid var(--text-display);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 `;
 
@@ -79,57 +79,79 @@ export const murgaMetaStyles = css`
 `;
 
 export const murgaButtonStyles = css`
-  border: 1px solid var(--border-visible);
-  border-radius: 999px;
-  min-block-size: 44px;
-  padding: 12px 24px;
-  background: transparent;
-  color: var(--text-primary);
-  cursor: pointer;
-  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
-  text-transform: uppercase;
-  transition:
-    border-color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
-    color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
-    background-color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
-    opacity 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
-}
+  button {
+    border: 1px solid var(--border-visible);
+    border-radius: 999px;
+    min-block-size: 44px;
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    transition:
+      border-color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
+      color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
+      background-color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
+      opacity 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
 
-button[disabled] {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
+  button:hover:not([disabled]) {
+    border-color: var(--text-display);
+    color: var(--text-display);
+  }
+
+  button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
 `;
 
 export const murgaInputSurfaceStyles = css`
-  border: 1px solid var(--border-visible);
-  border-radius: 8px;
-  background: transparent;
-  min-block-size: 44px;
-  inline-size: 100%;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
-}
+  :where(input, textarea, select) {
+    border: 1px solid var(--border-visible);
+    border-radius: 8px;
+    background: transparent;
+    min-block-size: 44px;
+    inline-size: 100%;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+    transition:
+      border-color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
+      color 200ms cubic-bezier(0.25, 0.1, 0.25, 1),
+      opacity 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
 
-:where(input, textarea, select)::placeholder {
-  color: var(--text-disabled);
-}
+  :where(input, textarea, select):hover:not([disabled]) {
+    border-color: var(--text-secondary);
+  }
+
+  :where(input, textarea, select):focus {
+    border-color: var(--text-display);
+    outline: none;
+  }
+
+  :where(input, textarea, select)::placeholder {
+    color: var(--text-disabled);
+  }
 `;
 
 export const murgaPanelStyles = css`
-  background: var(--surface-raised);
-  border: 1px solid var(--border-visible);
-  border-radius: 12px;
-}
+  :host {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-visible);
+    border-radius: 12px;
+  }
 `;
 
 export const murgaSurfaceStyles = css`
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
+  :host {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
 `;

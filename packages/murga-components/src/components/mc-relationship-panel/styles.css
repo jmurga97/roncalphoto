@@ -1,0 +1,28 @@
+.root {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  min-block-size: 44px;
+  padding: 12px 0;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.empty {
+  color: var(--text-secondary);
+}

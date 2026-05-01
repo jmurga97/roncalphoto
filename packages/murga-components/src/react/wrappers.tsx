@@ -1,5 +1,7 @@
 import type { McAppShell as McAppShellElement } from "../components/mc-app-shell";
+import type { McBadge as McBadgeElement } from "../components/mc-badge";
 import type { McButton as McButtonElement } from "../components/mc-button";
+import type { McCheckbox as McCheckboxElement } from "../components/mc-checkbox";
 import type { McConfirmAction as McConfirmActionElement } from "../components/mc-confirm-action";
 import type { McField as McFieldElement } from "../components/mc-field";
 import type { McInlineMessage as McInlineMessageElement } from "../components/mc-inline-message";
@@ -18,10 +20,12 @@ import type { McStatusText as McStatusTextElement } from "../components/mc-statu
 import type { McTagList as McTagListElement } from "../components/mc-tag-list";
 import type { McTagPicker as McTagPickerElement } from "../components/mc-tag-picker";
 import type { McTextarea as McTextareaElement } from "../components/mc-textarea";
+import type { McThumbnail as McThumbnailElement } from "../components/mc-thumbnail";
 import type { McThumbnailRail as McThumbnailRailElement } from "../components/mc-thumbnail-rail";
 import { type ReactWrapperProps, createReactWrapper } from "./create-react-wrapper";
 
 type ChangeHandler = (event: CustomEvent<{ value: string }>) => void;
+type CheckboxChangeHandler = (event: CustomEvent<{ checked: boolean; value: string }>) => void;
 type OpenChangeHandler = (event: CustomEvent<{ open: boolean }>) => void;
 type SelectChangeHandler = (event: CustomEvent<{ selectedId: string | null }>) => void;
 type MultiSelectChangeHandler = (event: CustomEvent<{ selectedIds: string[] }>) => void;
@@ -54,10 +58,23 @@ export const McAppShell = createReactWrapper<
   },
 });
 
+type McBadgePropertyProps = Partial<Pick<McBadgeElement, "tone">>;
+type McBadgeEventProps = Record<never, never>;
+export type McBadgeProps = ReactWrapperProps<
+  McBadgeElement,
+  McBadgePropertyProps,
+  McBadgeEventProps
+>;
+export const McBadge = createReactWrapper<McBadgeElement, McBadgePropertyProps, McBadgeEventProps>({
+  tagName: "mc-badge",
+  propertyKeys: ["tone"],
+  eventMap: {},
+});
+
 type McButtonPropertyProps = Partial<
   Pick<McButtonElement, "variant" | "size" | "type" | "disabled" | "pending" | "ariaLabel">
 >;
-type McButtonEventProps = {};
+type McButtonEventProps = Record<never, never>;
 export type McButtonProps = ReactWrapperProps<
   McButtonElement,
   McButtonPropertyProps,
@@ -73,22 +90,43 @@ export const McButton = createReactWrapper<
   eventMap: {},
 });
 
+type McCheckboxPropertyProps = Partial<
+  Pick<McCheckboxElement, "checked" | "name" | "value" | "disabled" | "required" | "ariaLabel">
+>;
+type McCheckboxEventProps = {
+  onMcChange?: CheckboxChangeHandler;
+};
+export type McCheckboxProps = ReactWrapperProps<
+  McCheckboxElement,
+  McCheckboxPropertyProps,
+  McCheckboxEventProps
+>;
+export const McCheckbox = createReactWrapper<
+  McCheckboxElement,
+  McCheckboxPropertyProps,
+  McCheckboxEventProps
+>({
+  tagName: "mc-checkbox",
+  propertyKeys: ["checked", "name", "value", "disabled", "required", "ariaLabel"],
+  eventMap: {
+    onMcChange: "mc-change",
+  },
+});
+
 type McFieldPropertyProps = Partial<
   Pick<McFieldElement, "inputId" | "label" | "hint" | "error" | "required" | "optional" | "invalid">
 >;
-type McFieldEventProps = {};
+type McFieldEventProps = Record<never, never>;
 export type McFieldProps = ReactWrapperProps<
   McFieldElement,
   McFieldPropertyProps,
   McFieldEventProps
 >;
-export const McField = createReactWrapper<McFieldElement, McFieldPropertyProps, McFieldEventProps>(
-  {
-    tagName: "mc-field",
-    propertyKeys: ["inputId", "label", "hint", "error", "required", "optional", "invalid"],
-    eventMap: {},
-  },
-);
+export const McField = createReactWrapper<McFieldElement, McFieldPropertyProps, McFieldEventProps>({
+  tagName: "mc-field",
+  propertyKeys: ["inputId", "label", "hint", "error", "required", "optional", "invalid"],
+  eventMap: {},
+});
 
 type McInputPropertyProps = Partial<
   Pick<
@@ -116,11 +154,7 @@ export type McInputProps = ReactWrapperProps<
   McInputPropertyProps,
   McInputEventProps
 >;
-export const McInput = createReactWrapper<
-  McInputElement,
-  McInputPropertyProps,
-  McInputEventProps
->({
+export const McInput = createReactWrapper<McInputElement, McInputPropertyProps, McInputEventProps>({
   tagName: "mc-input",
   propertyKeys: [
     "value",
@@ -222,7 +256,7 @@ export const McSearchField = createReactWrapper<
 type McInlineMessagePropertyProps = Partial<
   Pick<McInlineMessageElement, "tone" | "title" | "message">
 >;
-type McInlineMessageEventProps = {};
+type McInlineMessageEventProps = Record<never, never>;
 export type McInlineMessageProps = ReactWrapperProps<
   McInlineMessageElement,
   McInlineMessagePropertyProps,
@@ -239,7 +273,7 @@ export const McInlineMessage = createReactWrapper<
 });
 
 type McStatusTextPropertyProps = Partial<Pick<McStatusTextElement, "tone" | "label" | "polite">>;
-type McStatusTextEventProps = {};
+type McStatusTextEventProps = Record<never, never>;
 export type McStatusTextProps = ReactWrapperProps<
   McStatusTextElement,
   McStatusTextPropertyProps,
@@ -456,6 +490,29 @@ type McThumbnailRailPropertyProps = Partial<
 type McThumbnailRailEventProps = {
   onMcSelect?: SimpleSelectHandler;
 };
+type McThumbnailPropertyProps = Partial<
+  Pick<McThumbnailElement, "itemId" | "src" | "alt" | "selected" | "disabled" | "loading" | "ratio">
+>;
+type McThumbnailEventProps = {
+  onMcSelect?: SimpleSelectHandler;
+};
+export type McThumbnailProps = ReactWrapperProps<
+  McThumbnailElement,
+  McThumbnailPropertyProps,
+  McThumbnailEventProps
+>;
+export const McThumbnail = createReactWrapper<
+  McThumbnailElement,
+  McThumbnailPropertyProps,
+  McThumbnailEventProps
+>({
+  tagName: "mc-thumbnail",
+  propertyKeys: ["itemId", "src", "alt", "selected", "disabled", "loading", "ratio"],
+  eventMap: {
+    onMcSelect: "mc-select",
+  },
+});
+
 export type McThumbnailRailProps = ReactWrapperProps<
   McThumbnailRailElement,
   McThumbnailRailPropertyProps,
@@ -474,7 +531,10 @@ export const McThumbnailRail = createReactWrapper<
 });
 
 type McSidebarNavPropertyProps = Partial<
-  Pick<McSidebarNavElement, "items" | "secondaryItems" | "open" | "title" | "subtitle">
+  Pick<
+    McSidebarNavElement,
+    "ariaLabel" | "footerItems" | "items" | "secondaryItems" | "open" | "title" | "subtitle"
+  >
 >;
 type McSidebarNavEventProps = {
   onMcSelect?: SimpleSelectHandler;
@@ -491,7 +551,15 @@ export const McSidebarNav = createReactWrapper<
   McSidebarNavEventProps
 >({
   tagName: "mc-sidebar-nav",
-  propertyKeys: ["items", "secondaryItems", "open", "title", "subtitle"],
+  propertyKeys: [
+    "ariaLabel",
+    "footerItems",
+    "items",
+    "secondaryItems",
+    "open",
+    "title",
+    "subtitle",
+  ],
   eventMap: {
     onMcSelect: "mc-select",
     onMcOpenChange: "mc-open-change",
@@ -501,7 +569,7 @@ export const McSidebarNav = createReactWrapper<
 type McOverviewPanelPropertyProps = Partial<
   Pick<McOverviewPanelElement, "title" | "description" | "stats" | "status">
 >;
-type McOverviewPanelEventProps = {};
+type McOverviewPanelEventProps = Record<never, never>;
 export type McOverviewPanelProps = ReactWrapperProps<
   McOverviewPanelElement,
   McOverviewPanelPropertyProps,

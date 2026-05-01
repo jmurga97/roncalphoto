@@ -1,0 +1,35 @@
+:host {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--label);
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.meta {
+  color: var(--text-disabled);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+}
+
+.hint {
+  color: var(--text-secondary);
+  font-size: var(--body-sm);
+}
+
+.error {
+  color: var(--accent);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+}

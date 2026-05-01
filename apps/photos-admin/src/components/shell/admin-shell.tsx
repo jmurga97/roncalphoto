@@ -6,6 +6,10 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 
 function getCurrentSectionLabel(pathname: string) {
+  if (pathname.startsWith("/components")) {
+    return "Components";
+  }
+
   if (pathname.startsWith("/sessions")) {
     return "Sessions";
   }
@@ -34,6 +38,11 @@ function getNavigationItems(
       current: pathname === "/",
     },
     {
+      id: "components",
+      label: "Components",
+      current: pathname.startsWith("/components"),
+    },
+    {
       id: "sessions",
       label: "Sessions",
       count: totalSessions,
@@ -50,6 +59,21 @@ function getNavigationItems(
       label: "Tags",
       count: totalTags,
       current: pathname.startsWith("/tags"),
+    },
+  ];
+}
+
+function getFooterItems() {
+  return [
+    {
+      id: "public-site",
+      label: "Ver sitio",
+      description: "Abrir portfolio publico",
+    },
+    {
+      id: "logout",
+      label: "Logout",
+      description: "Cerrar sesion del dashboard",
     },
   ];
 }
@@ -75,9 +99,19 @@ export function AdminShell() {
     >
       <div slot="sidebar" className="admin-sidebar-slot">
         <McSidebarNav
+          ariaLabel="Dashboard navigation"
+          footerItems={getFooterItems()}
           items={getNavigationItems(location.pathname, sessions.length, totalPhotos, tags.length)}
           onMcSelect={(event) => {
             switch (event.detail.selectedId) {
+              case "public-site":
+                window.open("/", "_blank", "noopener,noreferrer");
+                break;
+              case "logout":
+                break;
+              case "components":
+                navigate({ to: "/components" });
+                break;
               case "sessions":
                 navigate({ to: "/sessions" });
                 break;
@@ -97,14 +131,13 @@ export function AdminShell() {
             }
           }}
           open={false}
-          subtitle="Read, edit and curate portfolio data"
-          title="RoncalPhoto"
         >
-          <div slot="header" className="admin-sidebar-banner">
-            <div className="admin-sidebar-kicker">Dashboard v1</div>
-            <div className="admin-sidebar-copy">
+          <div slot="header" className="admin-sidebar-identity">
+            <div className="admin-sidebar-kicker">Dashboard</div>
+            <div className="admin-sidebar-title">RoncalPhoto</div>
+            <p className="admin-sidebar-copy">
               Overview, lectura completa y edición persistente de sesiones y fotos.
-            </div>
+            </p>
           </div>
           <div slot="footer" className="admin-sidebar-footer">
             <McStatusText label={`${totalPhotos} fotos activas en D1`} polite tone="success" />

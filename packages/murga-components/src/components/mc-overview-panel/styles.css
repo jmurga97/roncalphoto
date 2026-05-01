@@ -1,0 +1,47 @@
+.root {
+  display: grid;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.title {
+  font-family: "Doto", "Space Mono", monospace;
+  font-size: var(--display-md);
+  line-height: 1.1;
+  color: var(--text-display);
+  letter-spacing: -0.02em;
+}
+
+.description {
+  color: var(--text-secondary);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+.stat {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.stat-value {
+  color: var(--text-display);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--subheading);
+}
+
+.status {
+  color: var(--text-secondary);
+}

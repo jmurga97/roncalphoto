@@ -1,0 +1,13 @@
+.rail {
+  display: flex;
+  gap: var(--space-sm);
+  overflow: auto;
+}
+
+:host([orientation="vertical"]) .rail {
+  flex-direction: column;
+}
+
+.item {
+  flex: 0 0 112px;
+}

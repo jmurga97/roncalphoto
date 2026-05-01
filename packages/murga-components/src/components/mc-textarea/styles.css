@@ -1,0 +1,8 @@
+textarea {
+  min-block-size: 132px;
+  resize: vertical;
+}
+
+:host([invalid]) textarea {
+  border-color: var(--accent);
+}

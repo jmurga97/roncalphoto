@@ -2,6 +2,7 @@ import { McAppShell } from "../src/components/mc-app-shell";
 import { McMediaBrowser } from "../src/components/mc-media-browser";
 import { McPagination } from "../src/components/mc-pagination";
 import { McResourceTable } from "../src/components/mc-resource-table";
+import { McSidebarNav } from "../src/components/mc-sidebar-nav";
 import { McTagList } from "../src/components/mc-tag-list";
 import { registerMurgaComponents } from "../src/index";
 import { appendAndFlush, flushMicrotasks } from "./helpers";
@@ -86,6 +87,54 @@ describe("composed components", () => {
     await flushMicrotasks();
 
     expect(document.activeElement).toBe(launcher);
+  });
+
+  it("renders named regions in mc-sidebar-nav", async () => {
+    const sidebar = new McSidebarNav();
+
+    const header = document.createElement("div");
+    header.slot = "header";
+    header.textContent = "RoncalPhoto";
+
+    const navigation = document.createElement("div");
+    navigation.slot = "navigation";
+    navigation.textContent = "Navigation";
+
+    const footer = document.createElement("div");
+    footer.slot = "footer";
+    footer.textContent = "Footer";
+
+    sidebar.append(header, navigation, footer);
+
+    await appendAndFlush(sidebar);
+
+    expect(sidebar.shadowRoot?.querySelector('slot[name="header"]')).not.toBeNull();
+    expect(sidebar.shadowRoot?.querySelector('slot[name="navigation"]')).not.toBeNull();
+    expect(sidebar.shadowRoot?.querySelector('slot[name="footer"]')).not.toBeNull();
+  });
+
+  it("emits footer item selection in mc-sidebar-nav", async () => {
+    const sidebar = new McSidebarNav();
+    sidebar.footerItems = [{ id: "logout", label: "Logout" }];
+
+    await appendAndFlush(sidebar);
+
+    const selectHandler = vi.fn();
+    sidebar.addEventListener("mc-select", selectHandler as EventListener);
+
+    const footerButton = sidebar.shadowRoot?.querySelector<HTMLButtonElement>(
+      '.item[data-variant="footer"]',
+    );
+
+    if (!footerButton) {
+      throw new Error("Expected footer action");
+    }
+
+    footerButton.click();
+
+    expect(
+      (selectHandler.mock.calls[0]?.[0] as CustomEvent<{ selectedId: string }>).detail.selectedId,
+    ).toBe("logout");
   });
 
   it("emits sort and row selection in mc-resource-table", async () => {

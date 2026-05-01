@@ -1,0 +1,40 @@
+label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 44px;
+  block-size: 44px;
+  cursor: pointer;
+}
+
+input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border: 1px solid var(--border-visible);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--black);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+}
+
+input:checked + .indicator {
+  border-color: var(--text-display);
+  background: var(--text-display);
+}
+
+:host([disabled]) label {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -13,6 +13,7 @@ import {
   McResourceEditor,
   McSearchField,
   McSelect,
+  McSidebarNav,
   McStatusText,
   McTextarea,
 } from "../src/react";
@@ -82,6 +83,7 @@ describe("react wrappers", () => {
     const inputChangeHandler = vi.fn();
     const textareaChangeHandler = vi.fn();
     const searchClearHandler = vi.fn();
+    const sidebarSelectHandler = vi.fn();
     const confirmHandler = vi.fn();
     const pageChangeHandler = vi.fn();
     const saveHandler = vi.fn();
@@ -110,6 +112,12 @@ describe("react wrappers", () => {
           />
           <McTextarea onMcChange={textareaChangeHandler} rows={8} value="Longer description" />
           <McSearchField onMcClear={searchClearHandler} pending value="urban" />
+          <McSidebarNav
+            ariaLabel="Dashboard navigation"
+            footerItems={[{ id: "logout", label: "Logout" }]}
+            items={[{ id: "overview", label: "Overview" }]}
+            onMcSelect={sidebarSelectHandler}
+          />
           <McConfirmAction onMcConfirm={confirmHandler} open pending />
           <McPagination
             hasMore
@@ -141,6 +149,7 @@ describe("react wrappers", () => {
     const input = container.querySelector("mc-input");
     const textarea = container.querySelector("mc-textarea");
     const searchField = container.querySelector("mc-search-field");
+    const sidebarNav = container.querySelector("mc-sidebar-nav");
     const confirmAction = container.querySelector("mc-confirm-action");
     const pagination = container.querySelector("mc-pagination");
     const resourceEditor = container.querySelector("mc-resource-editor");
@@ -154,6 +163,7 @@ describe("react wrappers", () => {
       !(input instanceof HTMLElement) ||
       !(textarea instanceof HTMLElement) ||
       !(searchField instanceof HTMLElement) ||
+      !(sidebarNav instanceof HTMLElement) ||
       !(confirmAction instanceof HTMLElement) ||
       !(pagination instanceof HTMLElement) ||
       !(resourceEditor instanceof HTMLElement) ||
@@ -169,6 +179,9 @@ describe("react wrappers", () => {
     expect((input as HTMLElement & { value: string }).value).toBe("Editorial");
     expect((textarea as HTMLElement & { rows: number }).rows).toBe(8);
     expect((searchField as HTMLElement & { pending: boolean }).pending).toBe(true);
+    expect((sidebarNav as HTMLElement & { footerItems: unknown[] }).footerItems).toEqual([
+      { id: "logout", label: "Logout" },
+    ]);
     expect((confirmAction as HTMLElement & { open: boolean }).open).toBe(true);
     expect((pagination as HTMLElement & { page: number }).page).toBe(2);
     expect((resourceEditor as HTMLElement & { resourceTitle: string }).resourceTitle).toBe(
@@ -206,6 +219,13 @@ describe("react wrappers", () => {
         detail: { value: "" },
       }),
     );
+    sidebarNav.dispatchEvent(
+      new CustomEvent("mc-select", {
+        bubbles: true,
+        composed: true,
+        detail: { selectedId: "logout" },
+      }),
+    );
     confirmAction.dispatchEvent(
       new CustomEvent("mc-confirm", {
         bubbles: true,
@@ -232,6 +252,7 @@ describe("react wrappers", () => {
     expect(inputChangeHandler).toHaveBeenCalledTimes(1);
     expect(textareaChangeHandler).toHaveBeenCalledTimes(1);
     expect(searchClearHandler).toHaveBeenCalledTimes(1);
+    expect(sidebarSelectHandler).toHaveBeenCalledTimes(1);
     expect(confirmHandler).toHaveBeenCalledTimes(1);
     expect(pageChangeHandler).toHaveBeenCalledTimes(1);
     expect(saveHandler).toHaveBeenCalledTimes(1);

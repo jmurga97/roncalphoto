@@ -1,0 +1,61 @@
+.root {
+  display: grid;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block-end: var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-display);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: flex-end;
+  padding-block-start: var(--space-lg);
+  border-top: 1px solid var(--border);
+}
+
+.footer ::slotted(*) {
+  margin-inline-end: auto;
+}
+
+.aside {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-md);
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .aside {
+    border-top: 0;
+    border-inline-start: 1px solid var(--border);
+    padding-top: 0;
+    padding-inline-start: var(--space-lg);
+  }
+}

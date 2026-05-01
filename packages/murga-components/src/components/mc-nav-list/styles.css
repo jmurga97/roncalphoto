@@ -1,0 +1,33 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+:host([orientation="horizontal"]) .list {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  min-block-size: 44px;
+  padding: 12px 0;
+  text-align: left;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.item[data-current="true"] {
+  color: var(--text-display);
+}
+
+.label {
+  flex: 1;
+}

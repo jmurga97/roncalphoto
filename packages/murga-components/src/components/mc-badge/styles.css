@@ -1,0 +1,30 @@
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-visible);
+  border-radius: 999px;
+  min-block-size: 24px;
+  padding: 4px 12px;
+  color: var(--text-secondary);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:host([tone="accent"]) .base,
+:host([tone="error"]) .base {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+:host([tone="success"]) .base {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+:host([tone="warning"]) .base {
+  border-color: var(--warning);
+  color: var(--warning);
+}

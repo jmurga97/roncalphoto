@@ -1,0 +1,12 @@
+input {
+  border-color: var(--border-visible);
+}
+
+:host([invalid]) input {
+  border-color: var(--accent);
+}
+
+input[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

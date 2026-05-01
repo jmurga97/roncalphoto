@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  border: 1px dashed currentColor;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font: inherit;
+  color: inherit;
+}

@@ -14,6 +14,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppTagsRouteImport } from './routes/_app.tags'
 import { Route as AppSessionsRouteImport } from './routes/_app.sessions'
 import { Route as AppPhotosRouteImport } from './routes/_app.photos'
+import { Route as AppComponentsRouteImport } from './routes/_app.components'
 import { Route as AppTagsSlugRouteImport } from './routes/_app.tags.$slug'
 import { Route as AppSessionsNewRouteImport } from './routes/_app.sessions.new'
 import { Route as AppSessionsSlugRouteImport } from './routes/_app.sessions.$slug'
@@ -44,6 +45,11 @@ const AppPhotosRoute = AppPhotosRouteImport.update({
   path: '/photos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppComponentsRoute = AppComponentsRouteImport.update({
+  id: '/components',
+  path: '/components',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTagsSlugRoute = AppTagsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -72,6 +78,7 @@ const AppPhotosIdRoute = AppPhotosIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/components': typeof AppComponentsRoute
   '/photos': typeof AppPhotosRouteWithChildren
   '/sessions': typeof AppSessionsRouteWithChildren
   '/tags': typeof AppTagsRouteWithChildren
@@ -82,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/tags/$slug': typeof AppTagsSlugRoute
 }
 export interface FileRoutesByTo {
+  '/components': typeof AppComponentsRoute
   '/photos': typeof AppPhotosRouteWithChildren
   '/sessions': typeof AppSessionsRouteWithChildren
   '/tags': typeof AppTagsRouteWithChildren
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/components': typeof AppComponentsRoute
   '/_app/photos': typeof AppPhotosRouteWithChildren
   '/_app/sessions': typeof AppSessionsRouteWithChildren
   '/_app/tags': typeof AppTagsRouteWithChildren
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/components'
     | '/photos'
     | '/sessions'
     | '/tags'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/tags/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/components'
     | '/photos'
     | '/sessions'
     | '/tags'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/_app/components'
     | '/_app/photos'
     | '/_app/sessions'
     | '/_app/tags'
@@ -181,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/photos'
       fullPath: '/photos'
       preLoaderRoute: typeof AppPhotosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/components': {
+      id: '/_app/components'
+      path: '/components'
+      fullPath: '/components'
+      preLoaderRoute: typeof AppComponentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/tags/$slug': {
@@ -261,6 +280,7 @@ const AppTagsRouteWithChildren =
   AppTagsRoute._addFileChildren(AppTagsRouteChildren)
 
 interface AppRouteChildren {
+  AppComponentsRoute: typeof AppComponentsRoute
   AppPhotosRoute: typeof AppPhotosRouteWithChildren
   AppSessionsRoute: typeof AppSessionsRouteWithChildren
   AppTagsRoute: typeof AppTagsRouteWithChildren
@@ -268,6 +288,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppComponentsRoute: AppComponentsRoute,
   AppPhotosRoute: AppPhotosRouteWithChildren,
   AppSessionsRoute: AppSessionsRouteWithChildren,
   AppTagsRoute: AppTagsRouteWithChildren,

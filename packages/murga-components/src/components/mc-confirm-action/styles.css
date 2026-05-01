@@ -1,0 +1,20 @@
+.root {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-md);
+}
+
+.message {
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+button[data-tone="confirm"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}

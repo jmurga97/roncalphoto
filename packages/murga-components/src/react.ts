@@ -3,8 +3,12 @@ export { reactWrapperEntryPoint } from "./react-entry";
 export {
   McAppShell,
   type McAppShellProps,
+  McBadge,
+  type McBadgeProps,
   McButton,
   type McButtonProps,
+  McCheckbox,
+  type McCheckboxProps,
   McConfirmAction,
   type McConfirmActionProps,
   McField,
@@ -41,6 +45,8 @@ export {
   type McTagPickerProps,
   McTextarea,
   type McTextareaProps,
+  McThumbnail,
+  type McThumbnailProps,
   McThumbnailRail,
   type McThumbnailRailProps,
 } from "./react/wrappers";

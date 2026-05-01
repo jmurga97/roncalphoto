@@ -1,6 +1,6 @@
 import { photosListQueryOptions } from "@lib/api/photos/query-options";
 import { PhotosListView } from "@pages/photos/photos-list-view";
-import { createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router";
 
 function validatePhotosSearch(search: Record<string, unknown>) {
   const page =
@@ -16,9 +16,15 @@ function validatePhotosSearch(search: Record<string, unknown>) {
 }
 
 export const Route = createFileRoute("/_app/photos")({
-  component: PhotosListView,
+  component: PhotosRoute,
   validateSearch: validatePhotosSearch,
   loaderDeps: ({ search }) => ({ page: search.page }),
   loader: ({ context, deps }) =>
     context.queryClient.ensureQueryData(photosListQueryOptions(deps.page, 24)),
 });
+
+function PhotosRoute() {
+  const location = useLocation();
+
+  return location.pathname === "/photos" ? <PhotosListView /> : <Outlet />;
+}

@@ -1,0 +1,31 @@
+.root {
+  display: grid;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+.viewport {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.media {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+img {
+  display: block;
+  inline-size: 100%;
+  max-block-size: min(70vh, 720px);
+  object-fit: contain;
+}
+
+.caption {
+  color: var(--text-secondary);
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+}

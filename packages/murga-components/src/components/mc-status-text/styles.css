@@ -1,0 +1,18 @@
+.text {
+  font-family: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+:host([tone="success"]) .text {
+  color: var(--success);
+}
+
+:host([tone="error"]) .text {
+  color: var(--accent);
+}
+
+:host([tone="loading"]) .text {
+  color: var(--warning);
+}

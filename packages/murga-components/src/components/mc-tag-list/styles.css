@@ -1,0 +1,25 @@
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-visible);
+  border-radius: 999px;
+  min-block-size: 28px;
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+button.item {
+  cursor: pointer;
+}
+
+.item[data-selected="true"] {
+  border-color: var(--text-display);
+  color: var(--text-display);
+}
