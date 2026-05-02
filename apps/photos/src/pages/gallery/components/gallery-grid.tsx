@@ -23,8 +23,11 @@ export function GalleryGrid({
   showThumbnails,
 }: GalleryGridProps) {
   return (
-    <div data-gallery-root className="photo-stage gallery-enter flex h-full flex-col">
-      <div className="relative min-h-0 w-full flex-1">
+    <div data-gallery-root className="photo-stage gallery-stage-enter flex h-full flex-col">
+      <div
+        className="relative min-h-0 w-full flex-1"
+        style={{ viewTransitionName: "session-stage" }}
+      >
         <header className="pointer-events-none absolute top-7 left-3 right-20 z-10 md:hidden">
           <h1 className="editorial-heading line-clamp-2 text-balance text-base leading-tight [text-shadow:0_1px_10px_rgb(0_0_0_/_0.14)] sm:text-lg">
             {sessionTitle}

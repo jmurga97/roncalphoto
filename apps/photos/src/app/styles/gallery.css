@@ -2,6 +2,10 @@
   animation: gallery-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.gallery-stage-enter {
+  animation: gallery-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @keyframes gallery-enter {
   from {
     opacity: 0;
@@ -14,8 +18,75 @@
   }
 }
 
+@supports (view-transition-name: none) {
+  .gallery-stage-enter {
+    animation: none;
+  }
+
+  ::view-transition-group(root) {
+    animation: none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  ::view-transition-old(root) {
+    opacity: 0;
+  }
+
+  ::view-transition-new(root) {
+    opacity: 1;
+  }
+
+  ::view-transition-group(session-stage) {
+    animation-duration: 720ms;
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.2, 1);
+    isolation: isolate;
+  }
+
+  ::view-transition-old(session-stage),
+  ::view-transition-new(session-stage) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(session-stage) {
+    animation: session-stage-out 720ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+
+  ::view-transition-new(session-stage) {
+    animation: session-stage-in 720ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+}
+
+@keyframes session-stage-in {
+  from {
+    opacity: 0.18;
+    transform: scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes session-stage-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.006);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .gallery-enter {
+  .gallery-enter,
+  .gallery-stage-enter {
     animation: none;
   }
 

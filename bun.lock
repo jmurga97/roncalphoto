@@ -29,6 +29,20 @@
         "wrangler": "^4.60.0",
       },
     },
+    "apps/image-optimizer": {
+      "name": "@roncal/image-optimizer",
+      "version": "0.0.1",
+      "dependencies": {
+        "aws4fetch": "^1.0.20",
+        "hono": "^4.11.5",
+        "zod": "^4.3.6",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.6",
+        "typescript": "^5.9.3",
+        "wrangler": "^4.60.0",
+      },
+    },
     "apps/photos": {
       "name": "@roncal/photos-app",
       "version": "0.0.1",
@@ -413,6 +427,8 @@
 
     "@roncal/api": ["@roncal/api@workspace:apps/api"],
 
+    "@roncal/image-optimizer": ["@roncal/image-optimizer@workspace:apps/image-optimizer"],
+
     "@roncal/photos-admin": ["@roncal/photos-admin@workspace:apps/photos-admin"],
 
     "@roncal/photos-app": ["@roncal/photos-app@workspace:apps/photos"],
@@ -530,6 +546,8 @@
     "assertion-error": ["assertion-error@2.0.1", "", {}, "sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA=="],
 
     "atomic-sleep": ["atomic-sleep@1.0.0", "", {}, "sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ=="],
+
+    "aws4fetch": ["aws4fetch@1.0.20", "", {}, "sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g=="],
 
     "babel-dead-code-elimination": ["babel-dead-code-elimination@1.0.12", "", { "dependencies": { "@babel/core": "^7.23.7", "@babel/parser": "^7.23.6", "@babel/traverse": "^7.23.7", "@babel/types": "^7.23.6" } }, "sha512-GERT7L2TiYcYDtYk1IpD+ASAYXjKbLTDPhBtYj7X1NuRMDTMtAx9kyBenub1Ev41lo91OHCKdmP+egTDmfQ7Ig=="],
 
