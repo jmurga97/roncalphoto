@@ -1,7 +1,9 @@
 import { useShellActions, useShellMobile, useSidebarOpen } from "@app/store/shell-store";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
+import { signOut } from "@lib/auth-client";
 import { McAppShell, McButton, McSidebarNav, McStatusText } from "@murga/components/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 
@@ -80,6 +82,7 @@ function getFooterItems() {
 
 export function AdminShell() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
@@ -102,12 +105,15 @@ export function AdminShell() {
           ariaLabel="Dashboard navigation"
           footerItems={getFooterItems()}
           items={getNavigationItems(location.pathname, sessions.length, totalPhotos, tags.length)}
-          onMcSelect={(event) => {
+          onMcSelect={async (event) => {
             switch (event.detail.selectedId) {
               case "public-site":
                 window.open("/", "_blank", "noopener,noreferrer");
                 break;
               case "logout":
+                await signOut();
+                queryClient.clear();
+                await navigate({ to: "/login" });
                 break;
               case "components":
                 navigate({ to: "/components" });

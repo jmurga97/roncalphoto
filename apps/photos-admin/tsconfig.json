@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "experimentalDecorators": true,
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "paths": {
@@ -12,7 +13,8 @@
       "@pages/*": ["./src/pages/*"],
       "@utils/*": ["./src/utils/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "useDefineForClassFields": false
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

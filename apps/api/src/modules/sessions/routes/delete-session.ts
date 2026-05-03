@@ -1,5 +1,6 @@
+import { requireSession } from "@/auth";
 import { OK } from "@/config/status-codes";
-import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
+import { jsonSuccess, protectedValidationNotFoundErrorResponses } from "@/shared/lib/http";
 import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { deleteSessionResponseSchema, sessionSlugParamsSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
@@ -7,11 +8,12 @@ import { getSessionsService } from "../services/sessions.service";
 const route = createApiRoute({
   method: "delete",
   path: "/{slug}",
+  middleware: requireSession,
   tags: ["Sessions"],
   request: {
     params: sessionSlugParamsSchema,
   },
-  errorResponses: validationNotFoundErrorResponses,
+  errorResponses: protectedValidationNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Delete a session",

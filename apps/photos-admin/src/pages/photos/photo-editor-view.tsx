@@ -129,7 +129,7 @@ function CreatePhotoEditor() {
 function EditPhotoEditor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const params = useParams({ from: "/_app/photos/$id" });
+  const params = useParams({ from: "/_auth/photos/$id" });
   const { data: photo } = useSuspenseQuery(photoDetailQueryOptions(params.id));
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const saveMutation = useMutation({

@@ -1,5 +1,6 @@
+import { requireSession } from "@/auth";
 import { CREATED } from "@/config/status-codes";
-import { jsonSuccess } from "@/shared/lib/http";
+import { jsonSuccess, protectedValidationErrorResponses } from "@/shared/lib/http";
 import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { createPhotoBodySchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
@@ -7,6 +8,7 @@ import { getPhotosService } from "../services/photos.service";
 const route = createApiRoute({
   method: "post",
   path: "/",
+  middleware: requireSession,
   tags: ["Photos"],
   request: {
     body: {
@@ -18,6 +20,7 @@ const route = createApiRoute({
       },
     },
   },
+  errorResponses: protectedValidationErrorResponses,
   responses: {
     [CREATED]: {
       description: "Create a photo",

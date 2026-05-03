@@ -4,13 +4,17 @@ import { McButton, McOverviewPanel } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
+interface OverviewViewProps {
+  userEmail: string;
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es-ES", {
     dateStyle: "medium",
   }).format(new Date(value));
 }
 
-export function OverviewView() {
+export function OverviewView({ userEmail }: OverviewViewProps) {
   const navigate = useNavigate();
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
@@ -23,7 +27,7 @@ export function OverviewView() {
     <div className="admin-page admin-overview-grid">
       <section className="admin-overview-grid">
         <div className="admin-page-header">
-          <div className="admin-kicker">Overview</div>
+          <div className="admin-kicker">Overview · {userEmail}</div>
           <h2>Todo el portfolio en una sola vista.</h2>
           <p>
             Métricas reales de sesiones, fotos y tags combinadas con accesos rápidos para arrancar

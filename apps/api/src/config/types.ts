@@ -6,6 +6,7 @@ export type AppBindings = {
   Bindings: EnvBindings;
   Variables: {
     runtimeEnv: RuntimeEnv;
+    authSession: unknown;
   };
 } & HonoPinoEnv;
 

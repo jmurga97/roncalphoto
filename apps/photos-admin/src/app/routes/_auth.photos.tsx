@@ -15,7 +15,7 @@ function validatePhotosSearch(search: Record<string, unknown>) {
   };
 }
 
-export const Route = createFileRoute("/_app/photos")({
+export const Route = createFileRoute("/_auth/photos")({
   component: PhotosRoute,
   validateSearch: validatePhotosSearch,
   loaderDeps: ({ search }) => ({ page: search.page }),

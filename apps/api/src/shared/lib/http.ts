@@ -4,6 +4,7 @@ import {
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
   OK,
+  UNAUTHORIZED,
 } from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
 import { z } from "@hono/zod-openapi";
@@ -48,6 +49,7 @@ export function createErrorResponse(description: string) {
 }
 
 export const badRequestResponse = createErrorResponse("Invalid request");
+export const unauthorizedResponse = createErrorResponse("Unauthorized");
 export const notFoundResponse = createErrorResponse("Resource not found");
 export const internalServerErrorResponse = createErrorResponse("Internal server error");
 
@@ -63,6 +65,16 @@ export const validationErrorResponses = {
 export const validationNotFoundErrorResponses = {
   ...validationErrorResponses,
   [NOT_FOUND]: notFoundResponse,
+} as const;
+
+export const protectedValidationErrorResponses = {
+  ...validationErrorResponses,
+  [UNAUTHORIZED]: unauthorizedResponse,
+} as const;
+
+export const protectedValidationNotFoundErrorResponses = {
+  ...validationNotFoundErrorResponses,
+  [UNAUTHORIZED]: unauthorizedResponse,
 } as const;
 
 export function jsonSuccess<Data, Status extends typeof OK | typeof CREATED>(

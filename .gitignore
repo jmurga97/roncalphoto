@@ -1,3 +1,16 @@
+# Cloudflare secrets - NUNCA commitear
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Excluir también .env locales si los usas
+.env
+.env.*
+!.env.example
+
+# D1 local
+.wrangler/
+
 # build output
 dist/
 

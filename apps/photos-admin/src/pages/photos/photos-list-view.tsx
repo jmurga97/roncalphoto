@@ -12,7 +12,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
-const photosRouteApi = getRouteApi("/_app/photos");
+const photosRouteApi = getRouteApi("/_auth/photos");
 
 export function PhotosListView() {
   const navigate = useNavigate();

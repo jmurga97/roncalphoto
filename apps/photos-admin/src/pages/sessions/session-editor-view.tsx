@@ -91,7 +91,7 @@ function CreateSessionEditor() {
 function EditSessionEditor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const params = useParams({ from: "/_app/sessions/$slug" });
+  const params = useParams({ from: "/_auth/sessions/$slug" });
   const { data: session } = useSuspenseQuery(sessionDetailQueryOptions(params.slug));
   const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
   const saveMutation = useMutation({

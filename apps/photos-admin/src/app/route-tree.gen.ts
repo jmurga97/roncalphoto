@@ -9,115 +9,125 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as AppTagsRouteImport } from './routes/_app.tags'
-import { Route as AppSessionsRouteImport } from './routes/_app.sessions'
-import { Route as AppPhotosRouteImport } from './routes/_app.photos'
-import { Route as AppComponentsRouteImport } from './routes/_app.components'
-import { Route as AppTagsSlugRouteImport } from './routes/_app.tags.$slug'
-import { Route as AppSessionsNewRouteImport } from './routes/_app.sessions.new'
-import { Route as AppSessionsSlugRouteImport } from './routes/_app.sessions.$slug'
-import { Route as AppPhotosNewRouteImport } from './routes/_app.photos.new'
-import { Route as AppPhotosIdRouteImport } from './routes/_app.photos.$id'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AuthIndexRouteImport } from './routes/_auth.index'
+import { Route as AuthTagsRouteImport } from './routes/_auth.tags'
+import { Route as AuthSessionsRouteImport } from './routes/_auth.sessions'
+import { Route as AuthPhotosRouteImport } from './routes/_auth.photos'
+import { Route as AuthComponentsRouteImport } from './routes/_auth.components'
+import { Route as AuthTagsSlugRouteImport } from './routes/_auth.tags.$slug'
+import { Route as AuthSessionsNewRouteImport } from './routes/_auth.sessions.new'
+import { Route as AuthSessionsSlugRouteImport } from './routes/_auth.sessions.$slug'
+import { Route as AuthPhotosNewRouteImport } from './routes/_auth.photos.new'
+import { Route as AuthPhotosIdRouteImport } from './routes/_auth.photos.$id'
 
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthRoute,
 } as any)
-const AppTagsRoute = AppTagsRouteImport.update({
+const AuthTagsRoute = AuthTagsRouteImport.update({
   id: '/tags',
   path: '/tags',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthRoute,
 } as any)
-const AppSessionsRoute = AppSessionsRouteImport.update({
+const AuthSessionsRoute = AuthSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthRoute,
 } as any)
-const AppPhotosRoute = AppPhotosRouteImport.update({
+const AuthPhotosRoute = AuthPhotosRouteImport.update({
   id: '/photos',
   path: '/photos',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthRoute,
 } as any)
-const AppComponentsRoute = AppComponentsRouteImport.update({
+const AuthComponentsRoute = AuthComponentsRouteImport.update({
   id: '/components',
   path: '/components',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthRoute,
 } as any)
-const AppTagsSlugRoute = AppTagsSlugRouteImport.update({
+const AuthTagsSlugRoute = AuthTagsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
-  getParentRoute: () => AppTagsRoute,
+  getParentRoute: () => AuthTagsRoute,
 } as any)
-const AppSessionsNewRoute = AppSessionsNewRouteImport.update({
+const AuthSessionsNewRoute = AuthSessionsNewRouteImport.update({
   id: '/new',
   path: '/new',
-  getParentRoute: () => AppSessionsRoute,
+  getParentRoute: () => AuthSessionsRoute,
 } as any)
-const AppSessionsSlugRoute = AppSessionsSlugRouteImport.update({
+const AuthSessionsSlugRoute = AuthSessionsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
-  getParentRoute: () => AppSessionsRoute,
+  getParentRoute: () => AuthSessionsRoute,
 } as any)
-const AppPhotosNewRoute = AppPhotosNewRouteImport.update({
+const AuthPhotosNewRoute = AuthPhotosNewRouteImport.update({
   id: '/new',
   path: '/new',
-  getParentRoute: () => AppPhotosRoute,
+  getParentRoute: () => AuthPhotosRoute,
 } as any)
-const AppPhotosIdRoute = AppPhotosIdRouteImport.update({
+const AuthPhotosIdRoute = AuthPhotosIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => AppPhotosRoute,
+  getParentRoute: () => AuthPhotosRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
-  '/components': typeof AppComponentsRoute
-  '/photos': typeof AppPhotosRouteWithChildren
-  '/sessions': typeof AppSessionsRouteWithChildren
-  '/tags': typeof AppTagsRouteWithChildren
-  '/photos/$id': typeof AppPhotosIdRoute
-  '/photos/new': typeof AppPhotosNewRoute
-  '/sessions/$slug': typeof AppSessionsSlugRoute
-  '/sessions/new': typeof AppSessionsNewRoute
-  '/tags/$slug': typeof AppTagsSlugRoute
+  '/': typeof AuthIndexRoute
+  '/login': typeof LoginRoute
+  '/components': typeof AuthComponentsRoute
+  '/photos': typeof AuthPhotosRouteWithChildren
+  '/sessions': typeof AuthSessionsRouteWithChildren
+  '/tags': typeof AuthTagsRouteWithChildren
+  '/photos/$id': typeof AuthPhotosIdRoute
+  '/photos/new': typeof AuthPhotosNewRoute
+  '/sessions/$slug': typeof AuthSessionsSlugRoute
+  '/sessions/new': typeof AuthSessionsNewRoute
+  '/tags/$slug': typeof AuthTagsSlugRoute
 }
 export interface FileRoutesByTo {
-  '/components': typeof AppComponentsRoute
-  '/photos': typeof AppPhotosRouteWithChildren
-  '/sessions': typeof AppSessionsRouteWithChildren
-  '/tags': typeof AppTagsRouteWithChildren
-  '/': typeof AppIndexRoute
-  '/photos/$id': typeof AppPhotosIdRoute
-  '/photos/new': typeof AppPhotosNewRoute
-  '/sessions/$slug': typeof AppSessionsSlugRoute
-  '/sessions/new': typeof AppSessionsNewRoute
-  '/tags/$slug': typeof AppTagsSlugRoute
+  '/login': typeof LoginRoute
+  '/components': typeof AuthComponentsRoute
+  '/photos': typeof AuthPhotosRouteWithChildren
+  '/sessions': typeof AuthSessionsRouteWithChildren
+  '/tags': typeof AuthTagsRouteWithChildren
+  '/': typeof AuthIndexRoute
+  '/photos/$id': typeof AuthPhotosIdRoute
+  '/photos/new': typeof AuthPhotosNewRoute
+  '/sessions/$slug': typeof AuthSessionsSlugRoute
+  '/sessions/new': typeof AuthSessionsNewRoute
+  '/tags/$slug': typeof AuthTagsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
-  '/_app/components': typeof AppComponentsRoute
-  '/_app/photos': typeof AppPhotosRouteWithChildren
-  '/_app/sessions': typeof AppSessionsRouteWithChildren
-  '/_app/tags': typeof AppTagsRouteWithChildren
-  '/_app/': typeof AppIndexRoute
-  '/_app/photos/$id': typeof AppPhotosIdRoute
-  '/_app/photos/new': typeof AppPhotosNewRoute
-  '/_app/sessions/$slug': typeof AppSessionsSlugRoute
-  '/_app/sessions/new': typeof AppSessionsNewRoute
-  '/_app/tags/$slug': typeof AppTagsSlugRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_auth/components': typeof AuthComponentsRoute
+  '/_auth/photos': typeof AuthPhotosRouteWithChildren
+  '/_auth/sessions': typeof AuthSessionsRouteWithChildren
+  '/_auth/tags': typeof AuthTagsRouteWithChildren
+  '/_auth/': typeof AuthIndexRoute
+  '/_auth/photos/$id': typeof AuthPhotosIdRoute
+  '/_auth/photos/new': typeof AuthPhotosNewRoute
+  '/_auth/sessions/$slug': typeof AuthSessionsSlugRoute
+  '/_auth/sessions/new': typeof AuthSessionsNewRoute
+  '/_auth/tags/$slug': typeof AuthTagsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/components'
     | '/photos'
     | '/sessions'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/tags/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/components'
     | '/photos'
     | '/sessions'
@@ -141,164 +152,175 @@ export interface FileRouteTypes {
     | '/tags/$slug'
   id:
     | '__root__'
-    | '/_app'
-    | '/_app/components'
-    | '/_app/photos'
-    | '/_app/sessions'
-    | '/_app/tags'
-    | '/_app/'
-    | '/_app/photos/$id'
-    | '/_app/photos/new'
-    | '/_app/sessions/$slug'
-    | '/_app/sessions/new'
-    | '/_app/tags/$slug'
+    | '/_auth'
+    | '/login'
+    | '/_auth/components'
+    | '/_auth/photos'
+    | '/_auth/sessions'
+    | '/_auth/tags'
+    | '/_auth/'
+    | '/_auth/photos/$id'
+    | '/_auth/photos/new'
+    | '/_auth/sessions/$slug'
+    | '/_auth/sessions/new'
+    | '/_auth/tags/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/': {
+      id: '/_auth/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_app/tags': {
-      id: '/_app/tags'
+    '/_auth/tags': {
+      id: '/_auth/tags'
       path: '/tags'
       fullPath: '/tags'
-      preLoaderRoute: typeof AppTagsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthTagsRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_app/sessions': {
-      id: '/_app/sessions'
+    '/_auth/sessions': {
+      id: '/_auth/sessions'
       path: '/sessions'
       fullPath: '/sessions'
-      preLoaderRoute: typeof AppSessionsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthSessionsRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_app/photos': {
-      id: '/_app/photos'
+    '/_auth/photos': {
+      id: '/_auth/photos'
       path: '/photos'
       fullPath: '/photos'
-      preLoaderRoute: typeof AppPhotosRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthPhotosRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_app/components': {
-      id: '/_app/components'
+    '/_auth/components': {
+      id: '/_auth/components'
       path: '/components'
       fullPath: '/components'
-      preLoaderRoute: typeof AppComponentsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthComponentsRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_app/tags/$slug': {
-      id: '/_app/tags/$slug'
+    '/_auth/tags/$slug': {
+      id: '/_auth/tags/$slug'
       path: '/$slug'
       fullPath: '/tags/$slug'
-      preLoaderRoute: typeof AppTagsSlugRouteImport
-      parentRoute: typeof AppTagsRoute
+      preLoaderRoute: typeof AuthTagsSlugRouteImport
+      parentRoute: typeof AuthTagsRoute
     }
-    '/_app/sessions/new': {
-      id: '/_app/sessions/new'
+    '/_auth/sessions/new': {
+      id: '/_auth/sessions/new'
       path: '/new'
       fullPath: '/sessions/new'
-      preLoaderRoute: typeof AppSessionsNewRouteImport
-      parentRoute: typeof AppSessionsRoute
+      preLoaderRoute: typeof AuthSessionsNewRouteImport
+      parentRoute: typeof AuthSessionsRoute
     }
-    '/_app/sessions/$slug': {
-      id: '/_app/sessions/$slug'
+    '/_auth/sessions/$slug': {
+      id: '/_auth/sessions/$slug'
       path: '/$slug'
       fullPath: '/sessions/$slug'
-      preLoaderRoute: typeof AppSessionsSlugRouteImport
-      parentRoute: typeof AppSessionsRoute
+      preLoaderRoute: typeof AuthSessionsSlugRouteImport
+      parentRoute: typeof AuthSessionsRoute
     }
-    '/_app/photos/new': {
-      id: '/_app/photos/new'
+    '/_auth/photos/new': {
+      id: '/_auth/photos/new'
       path: '/new'
       fullPath: '/photos/new'
-      preLoaderRoute: typeof AppPhotosNewRouteImport
-      parentRoute: typeof AppPhotosRoute
+      preLoaderRoute: typeof AuthPhotosNewRouteImport
+      parentRoute: typeof AuthPhotosRoute
     }
-    '/_app/photos/$id': {
-      id: '/_app/photos/$id'
+    '/_auth/photos/$id': {
+      id: '/_auth/photos/$id'
       path: '/$id'
       fullPath: '/photos/$id'
-      preLoaderRoute: typeof AppPhotosIdRouteImport
-      parentRoute: typeof AppPhotosRoute
+      preLoaderRoute: typeof AuthPhotosIdRouteImport
+      parentRoute: typeof AuthPhotosRoute
     }
   }
 }
 
-interface AppPhotosRouteChildren {
-  AppPhotosIdRoute: typeof AppPhotosIdRoute
-  AppPhotosNewRoute: typeof AppPhotosNewRoute
+interface AuthPhotosRouteChildren {
+  AuthPhotosIdRoute: typeof AuthPhotosIdRoute
+  AuthPhotosNewRoute: typeof AuthPhotosNewRoute
 }
 
-const AppPhotosRouteChildren: AppPhotosRouteChildren = {
-  AppPhotosIdRoute: AppPhotosIdRoute,
-  AppPhotosNewRoute: AppPhotosNewRoute,
+const AuthPhotosRouteChildren: AuthPhotosRouteChildren = {
+  AuthPhotosIdRoute: AuthPhotosIdRoute,
+  AuthPhotosNewRoute: AuthPhotosNewRoute,
 }
 
-const AppPhotosRouteWithChildren = AppPhotosRoute._addFileChildren(
-  AppPhotosRouteChildren,
+const AuthPhotosRouteWithChildren = AuthPhotosRoute._addFileChildren(
+  AuthPhotosRouteChildren,
 )
 
-interface AppSessionsRouteChildren {
-  AppSessionsSlugRoute: typeof AppSessionsSlugRoute
-  AppSessionsNewRoute: typeof AppSessionsNewRoute
+interface AuthSessionsRouteChildren {
+  AuthSessionsSlugRoute: typeof AuthSessionsSlugRoute
+  AuthSessionsNewRoute: typeof AuthSessionsNewRoute
 }
 
-const AppSessionsRouteChildren: AppSessionsRouteChildren = {
-  AppSessionsSlugRoute: AppSessionsSlugRoute,
-  AppSessionsNewRoute: AppSessionsNewRoute,
+const AuthSessionsRouteChildren: AuthSessionsRouteChildren = {
+  AuthSessionsSlugRoute: AuthSessionsSlugRoute,
+  AuthSessionsNewRoute: AuthSessionsNewRoute,
 }
 
-const AppSessionsRouteWithChildren = AppSessionsRoute._addFileChildren(
-  AppSessionsRouteChildren,
+const AuthSessionsRouteWithChildren = AuthSessionsRoute._addFileChildren(
+  AuthSessionsRouteChildren,
 )
 
-interface AppTagsRouteChildren {
-  AppTagsSlugRoute: typeof AppTagsSlugRoute
+interface AuthTagsRouteChildren {
+  AuthTagsSlugRoute: typeof AuthTagsSlugRoute
 }
 
-const AppTagsRouteChildren: AppTagsRouteChildren = {
-  AppTagsSlugRoute: AppTagsSlugRoute,
+const AuthTagsRouteChildren: AuthTagsRouteChildren = {
+  AuthTagsSlugRoute: AuthTagsSlugRoute,
 }
 
-const AppTagsRouteWithChildren =
-  AppTagsRoute._addFileChildren(AppTagsRouteChildren)
+const AuthTagsRouteWithChildren = AuthTagsRoute._addFileChildren(
+  AuthTagsRouteChildren,
+)
 
-interface AppRouteChildren {
-  AppComponentsRoute: typeof AppComponentsRoute
-  AppPhotosRoute: typeof AppPhotosRouteWithChildren
-  AppSessionsRoute: typeof AppSessionsRouteWithChildren
-  AppTagsRoute: typeof AppTagsRouteWithChildren
-  AppIndexRoute: typeof AppIndexRoute
+interface AuthRouteChildren {
+  AuthComponentsRoute: typeof AuthComponentsRoute
+  AuthPhotosRoute: typeof AuthPhotosRouteWithChildren
+  AuthSessionsRoute: typeof AuthSessionsRouteWithChildren
+  AuthTagsRoute: typeof AuthTagsRouteWithChildren
+  AuthIndexRoute: typeof AuthIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppComponentsRoute: AppComponentsRoute,
-  AppPhotosRoute: AppPhotosRouteWithChildren,
-  AppSessionsRoute: AppSessionsRouteWithChildren,
-  AppTagsRoute: AppTagsRouteWithChildren,
-  AppIndexRoute: AppIndexRoute,
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthComponentsRoute: AuthComponentsRoute,
+  AuthPhotosRoute: AuthPhotosRouteWithChildren,
+  AuthSessionsRoute: AuthSessionsRouteWithChildren,
+  AuthTagsRoute: AuthTagsRouteWithChildren,
+  AuthIndexRoute: AuthIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

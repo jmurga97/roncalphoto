@@ -1,0 +1,4 @@
+BETTER_AUTH_SECRET=genera-con-openssl-rand-hex-32
+EMAIL_WORKER_API_KEY=coincide-con-WORKER_API_KEY-del-email-worker
+# Canonical admin origin. In local development auth also tolerates configured localhost origins.
+PHOTOS_ADMIN_URL=http://localhost:5173

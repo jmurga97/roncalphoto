@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 export default defineConfig(({ mode }) => {
   const envDir = path.resolve(__dirname, "../..");
   const env = loadEnv(mode, envDir, "");
-  const apiUrl = env.VITE_API_URL || env.API_URL || "http://localhost:8787";
+  const apiUrl = env.API_URL || env.VITE_API_URL || "http://localhost:8787";
 
   return {
     envDir,

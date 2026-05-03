@@ -1,5 +1,6 @@
+import { requireSession } from "@/auth";
 import { CREATED } from "@/config/status-codes";
-import { jsonSuccess } from "@/shared/lib/http";
+import { jsonSuccess, protectedValidationErrorResponses } from "@/shared/lib/http";
 import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import { createSessionBodySchema, sessionResponseSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
@@ -7,6 +8,7 @@ import { getSessionsService } from "../services/sessions.service";
 const route = createApiRoute({
   method: "post",
   path: "/",
+  middleware: requireSession,
   tags: ["Sessions"],
   request: {
     body: {
@@ -18,6 +20,7 @@ const route = createApiRoute({
       },
     },
   },
+  errorResponses: protectedValidationErrorResponses,
   responses: {
     [CREATED]: {
       description: "Create a session",

@@ -1,5 +1,6 @@
+import { requireSession } from "@/auth";
 import { OK } from "@/config/status-codes";
-import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
+import { jsonSuccess, protectedValidationNotFoundErrorResponses } from "@/shared/lib/http";
 import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import {
   sessionResponseSchema,
@@ -11,6 +12,7 @@ import { getSessionsService } from "../services/sessions.service";
 const route = createApiRoute({
   method: "put",
   path: "/{slug}",
+  middleware: requireSession,
   tags: ["Sessions"],
   request: {
     params: sessionSlugParamsSchema,
@@ -23,7 +25,7 @@ const route = createApiRoute({
       },
     },
   },
-  errorResponses: validationNotFoundErrorResponses,
+  errorResponses: protectedValidationNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Update a session",

@@ -5,7 +5,7 @@ function getRequiredEnv(name: string): string {
 }
 
 export default defineConfig({
-  schema: "./src/db/schema/index.ts",
+  schema: ["./src/db/schema/index.ts", "./src/db/schema/auth.ts"],
   out: "./src/db/migrations",
   dialect: "sqlite",
   driver: "d1-http",

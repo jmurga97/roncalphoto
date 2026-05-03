@@ -1,5 +1,6 @@
+import { requireSession } from "@/auth";
 import { OK } from "@/config/status-codes";
-import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
+import { jsonSuccess, protectedValidationNotFoundErrorResponses } from "@/shared/lib/http";
 import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
 import {
   photoIdParamsSchema,
@@ -11,6 +12,7 @@ import { getPhotosService } from "../services/photos.service";
 const route = createApiRoute({
   method: "put",
   path: "/{id}",
+  middleware: requireSession,
   tags: ["Photos"],
   request: {
     params: photoIdParamsSchema,
@@ -23,7 +25,7 @@ const route = createApiRoute({
       },
     },
   },
-  errorResponses: validationNotFoundErrorResponses,
+  errorResponses: protectedValidationNotFoundErrorResponses,
   responses: {
     [OK]: {
       description: "Update a photo",

@@ -4,9 +4,14 @@
 
 Monorepo para portfolio de fotografia profesional.
 
-- Frontend: `apps/photos` con Vite + React, desplegado en Cloudflare
-- API: Hono en Cloudflare Workers + D1
-- Tipos compartidos: `@roncal/shared`
+- `apps/photos`: frontend publico con Vite + React, desplegado en Cloudflare
+- `apps/photos-admin`: dashboard protegido por auth
+- `apps/api`: backend con Hono sobre Cloudflare Workers + D1
+- `apps/email-worker`: worker para enviar OTPs de inicio de sesion por email
+- `apps/image-optimizer`: logica para transformar imagenes subidas a R2 y persistir sus datos en base de datos
+- `packages/auth`: configuracion de Better Auth para autenticacion por OTP via email
+- `packages/murga-components`: libreria de componentes Lit para el dashboard admin
+- `packages/shared`: tipos compartidos del dominio
 - Runtime y package manager: Bun
 
 El dominio actual usa sesiones etiquetadas con tags (`1..n` por sesion).
@@ -45,52 +50,22 @@ La ruta principal es `/session/:slug`.
 ```text
 roncalphoto/
 ├── apps/
+│   ├── api/
+│   ├── email-worker/
+│   ├── image-optimizer/
 │   ├── photos/
-│   │   ├── src/
-│   │   │   ├── app/
-│   │   │   │   ├── layouts/
-│   │   │   │   ├── routes/
-│   │   │   │   ├── store/
-│   │   │   │   └── styles/
-│   │   │   ├── components/
-│   │   │   │   ├── error/
-│   │   │   │   ├── gallery/
-│   │   │   │   ├── loading/
-│   │   │   │   └── sidebar/
-│   │   │   ├── lib/
-│   │   │   ├── pages/
-│   │   │   │   ├── gallery/
-│   │   │   │   ├── home/
-│   │   │   │   └── layout/
-│   │   │   └── utils/
-│   │   ├── public/
-│   │   ├── vite.config.ts
-│   │   └── wrangler.toml
-│   └── api/
-│       ├── src/
-│       │   ├── app/
-│       │   │   └── middlewares/
-│       │   ├── config/
-│       │   ├── db/
-│       │   │   ├── migrations/
-│       │   │   └── schema/
-│       │   ├── modules/
-│       │   │   ├── photos/
-│       │   │   ├── sessions/
-│       │   │   └── tags/
-│       │   └── shared/
-│       │       ├── errors/
-│       │       ├── lib/
-│       │       └── utils/
-│       ├── drizzle.config.ts
-│       └── wrangler.json
+│   └── photos-admin/
 ├── packages/
-│   └── shared/
-│       └── src/
-│           ├── types.ts
-│           ├── mappers.ts
-│           ├── normalizers.ts
-│           └── index.ts
+│   ├── auth/
+│   ├── email-templates/
+│   ├── murga-components/
+│   ├── shared/
+│   │   └── src/
+│   │       ├── types.ts
+│   │       ├── mappers.ts
+│   │       ├── normalizers.ts
+│   │       └── index.ts
+│   └── ui/
 ├── package.json
 ├── turbo.json
 ├── tsconfig.json

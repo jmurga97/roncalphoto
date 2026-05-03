@@ -1,8 +1,6 @@
 import type { ApiResponse } from "@roncal/shared";
 
-const API_URL = import.meta.env.DEV
-  ? ""
-  : (import.meta.env.API_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8787");
+const API_URL = import.meta.env.API_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
 export class ApiRequestError extends Error {
   readonly status: number;

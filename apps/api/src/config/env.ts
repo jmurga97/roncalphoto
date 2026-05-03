@@ -16,7 +16,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal"]);
 const nodeEnvSchema = z.enum(["development", "test", "production"]);
 
-const envSchema = z.object({
+const publicEnvSchema = z.object({
   DB_RONCALPHOTO: z.custom<D1Database>(
     (value) => typeof value === "object" && value !== null,
     "DB_RONCALPHOTO binding is required",
@@ -26,12 +26,24 @@ const envSchema = z.object({
   NODE_ENV: nodeEnvSchema.default("development"),
 });
 
-export type EnvBindings = z.input<typeof envSchema>;
-type ParsedEnv = z.output<typeof envSchema>;
+const authEnvSchema = z.object({
+  BETTER_AUTH_SECRET: z.string().trim().min(1),
+  EMAIL_WORKER_URL: z.string().trim().min(1),
+  EMAIL_WORKER_API_KEY: z.string().trim().min(1),
+  PHOTOS_ADMIN_URL: z.string().trim().min(1),
+});
 
-export interface RuntimeEnv extends ParsedEnv {
+export type EnvBindings = z.input<typeof publicEnvSchema> & Partial<z.input<typeof authEnvSchema>>;
+type ParsedPublicEnv = z.output<typeof publicEnvSchema>;
+type ParsedAuthEnv = z.output<typeof authEnvSchema>;
+
+export interface RuntimeEnv extends ParsedPublicEnv {
   allowedOrigins: string[];
 }
+
+export type AuthRuntimeEnv = ParsedAuthEnv;
+
+const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
 function parseAllowedOrigins(value?: string): string[] {
   const configuredOrigins = value
@@ -44,8 +56,65 @@ function parseAllowedOrigins(value?: string): string[] {
   return Array.from(new Set([...DEFAULT_ALLOWED_ORIGINS, ...configuredOrigins]));
 }
 
+export function isLocalDevelopmentOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname.replace(/^\[(.*)\]$/, "$1");
+
+    return (url.protocol === "http:" || url.protocol === "https:") && LOCAL_DEV_HOSTS.has(hostname);
+  } catch {
+    return false;
+  }
+}
+
+export function resolveAllowedOrigin(
+  origin: string | undefined,
+  allowedOrigins: readonly string[],
+  options?: {
+    allowLocalDevelopmentOrigin?: boolean;
+    missingOriginValue?: "*" | null;
+    nodeEnv?: string;
+  },
+): string | "*" | null {
+  if (!origin) {
+    return options?.missingOriginValue ?? "*";
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return origin;
+  }
+
+  if (options?.allowLocalDevelopmentOrigin && options.nodeEnv !== "production") {
+    return isLocalDevelopmentOrigin(origin) ? origin : null;
+  }
+
+  return null;
+}
+
+export function resolveAuthAllowedOrigins(
+  runtimeEnv: Pick<RuntimeEnv, "allowedOrigins" | "NODE_ENV">,
+  photosAdminUrl?: string | null,
+): string[] {
+  const allowedOrigins = new Set<string>();
+  const canonicalOrigin = photosAdminUrl?.trim();
+
+  if (canonicalOrigin) {
+    allowedOrigins.add(canonicalOrigin);
+  }
+
+  if (runtimeEnv.NODE_ENV !== "production") {
+    for (const origin of runtimeEnv.allowedOrigins) {
+      if (isLocalDevelopmentOrigin(origin)) {
+        allowedOrigins.add(origin);
+      }
+    }
+  }
+
+  return Array.from(allowedOrigins);
+}
+
 export function parseEnv(rawEnv: EnvBindings): RuntimeEnv {
-  const env = envSchema.parse(rawEnv);
+  const env = publicEnvSchema.parse(rawEnv);
 
   return {
     ...env,
@@ -53,8 +122,16 @@ export function parseEnv(rawEnv: EnvBindings): RuntimeEnv {
   };
 }
 
+export function parseAuthEnv(rawEnv: EnvBindings): AuthRuntimeEnv {
+  return authEnvSchema.parse(rawEnv);
+}
+
 export function getRuntimeEnv(c: Context<AppBindings>): RuntimeEnv {
   return c.get("runtimeEnv");
+}
+
+export function getAuthRuntimeEnv(c: Context<AppBindings>): AuthRuntimeEnv {
+  return parseAuthEnv(c.env);
 }
 
 export function isProductionEnv(

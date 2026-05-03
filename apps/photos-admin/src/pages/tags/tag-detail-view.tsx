@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 
 export function TagDetailView() {
   const navigate = useNavigate();
-  const params = useParams({ from: "/_app/tags/$slug" });
+  const params = useParams({ from: "/_auth/tags/$slug" });
   const { data } = useSuspenseQuery(tagDetailQueryOptions(params.slug));
 
   return (

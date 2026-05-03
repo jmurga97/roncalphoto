@@ -87,8 +87,19 @@ bun run --filter=@roncal/api db:migrate:remote
 
 1. Instalar dependencias: `bun install`
 2. Crear variables de entorno en la raiz del repo porque `apps/photos/vite.config.ts` usa `envDir` apuntando a `../..`
-3. Definir `API_URL` o `VITE_API_URL` para preview/build; en desarrollo Vite usa proxy local a `/api`
-4. Para API local crear `apps/api/.dev.vars` con `ALLOWED_ORIGINS` incluyendo los hosts de frontend local que uses, por ejemplo `http://localhost:5173` o `http://localhost:5174`
+3. Definir `API_URL` o `VITE_API_URL` apuntando al API local o desplegado. En local el puerto esperado es `http://localhost:8787`.
+4. Puertos locales por defecto:
+   API `8787`, email worker `8788`, image optimizer `8789`, admin `5173`, photos `5174`
+5. Para flujos de auth admin y OTP crear `apps/api/.dev.vars` con `BETTER_AUTH_SECRET`, `EMAIL_WORKER_URL`, `EMAIL_WORKER_API_KEY` y `PHOTOS_ADMIN_URL`; las rutas publicas (`/api/sessions`, `/api/photos`, `/api/tags`) no dependen de esas variables
+
+## Auth admin
+
+- `apps/api` monta Better Auth en `/api/auth/*` y usa OTP por email.
+- `EMAIL_WORKER_URL` debe apuntar al origen base del worker de email, por ejemplo `http://localhost:8788`; la API llamara a `/send/otp`.
+- `EMAIL_WORKER_API_KEY` en la API debe coincidir con el secret `WORKER_API_KEY` del email worker.
+- `BETTER_AUTH_SECRET`, `EMAIL_WORKER_URL`, `EMAIL_WORKER_API_KEY` y `PHOTOS_ADMIN_URL` son obligatorios solo para `/api/auth/*`.
+- `PHOTOS_ADMIN_URL` sigue siendo el origen canonico del dashboard; en desarrollo local el auth tambien tolera otros orígenes `localhost` configurados en `ALLOWED_ORIGINS`, para no depender de un puerto fijo si Vite cambia de `5173` a `5174` u otro permitido.
+- El login admin tiene sign-up desactivado: antes del primer acceso debe existir un usuario en la tabla Better Auth `user` de D1.
 
 ## Notas
 

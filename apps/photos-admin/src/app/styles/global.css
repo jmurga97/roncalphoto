@@ -144,6 +144,99 @@ select {
   padding: 6rem 1.5rem;
 }
 
+.admin-login-shell {
+  display: grid;
+  min-height: 100dvh;
+  padding: 1.25rem;
+  background: var(--admin-black);
+  place-items: center;
+}
+
+.admin-login-panel {
+  display: grid;
+  gap: 1.5rem;
+  width: min(100%, 32rem);
+}
+
+.admin-login-header {
+  padding-block-end: 1.5rem;
+}
+
+.admin-login-form,
+.admin-login-field,
+.admin-login-actions {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-login-field span {
+  color: var(--admin-text-secondary);
+  font-family: "Space Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-login-field input {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid var(--admin-border-visible);
+  border-radius: 0.5rem;
+  background: var(--admin-surface);
+  color: var(--admin-text-display);
+  padding: 0.75rem 0.875rem;
+  outline: none;
+  transition: border-color 180ms var(--admin-ease), background 180ms var(--admin-ease);
+}
+
+.admin-login-field input:focus {
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-raised);
+}
+
+.admin-login-field input::placeholder {
+  color: var(--admin-text-disabled);
+}
+
+.admin-login-error {
+  margin: 0;
+  color: var(--admin-accent);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.admin-login-button,
+.admin-login-secondary {
+  min-height: 3rem;
+  border: 1px solid var(--admin-border-visible);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--admin-text-display);
+  cursor: pointer;
+  transition: opacity 180ms var(--admin-ease), border-color 180ms var(--admin-ease), background
+    180ms var(--admin-ease);
+}
+
+.admin-login-button {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+.admin-login-secondary {
+  background: transparent;
+}
+
+.admin-login-button:disabled,
+.admin-login-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-login-secondary:hover:not(:disabled),
+.admin-login-button:hover:not(:disabled) {
+  border-color: var(--admin-text-display);
+}
+
 .admin-link {
   color: var(--admin-text-display);
   text-decoration: none;

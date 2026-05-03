@@ -14,8 +14,8 @@
     "@roncal/shared": "workspace:*",
     "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-router": "^1.139.3",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "tailwindcss": "^4.1.18",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
