@@ -41,7 +41,7 @@ const authInstances = new WeakMap<D1Database, AuthHandler>();
 function createAuthConfigError() {
   return new HttpError(
     BAD_REQUEST,
-    "Auth is not configured. Set BETTER_AUTH_SECRET, EMAIL_WORKER_URL, EMAIL_WORKER_API_KEY and PHOTOS_ADMIN_URL in apps/api/.dev.vars to use /api/auth.",
+    "Auth is not configured. Set BETTER_AUTH_SECRET and PHOTOS_ADMIN_URL, then configure the EMAIL_WORKER service binding or the EMAIL_WORKER_URL and EMAIL_WORKER_API_KEY fallback in apps/api/.dev.vars.",
   );
 }
 
@@ -61,7 +61,10 @@ export function getAuth(c: Context<AppBindings>): AuthHandler {
   return getOrCreateInstance(authInstances, c.env.DB_RONCALPHOTO, () =>
     createAuth({
       db: getAuthDb(c.env.DB_RONCALPHOTO),
-      env: authEnv,
+      env: {
+        ...authEnv,
+        NODE_ENV: runtimeEnv.NODE_ENV,
+      },
       trustedOrigins,
     }),
   );

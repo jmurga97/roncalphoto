@@ -34,7 +34,7 @@ Queue consumer
 
 ## Bindings y variables
 
-`wrangler.json` espera estos bindings:
+`wrangler.toml` espera estos bindings:
 
 - `IMAGES`: Cloudflare Images binding.
 - `DB_RONCALPHOTO`: D1 compartida con la API.
@@ -42,7 +42,7 @@ Queue consumer
 - `MEDIA_BUCKET`: bucket publico o con custom domain para imagenes servidas al portfolio.
 - `IMAGE_PROCESSING_QUEUE`: Queue `roncalphoto-image-processing`.
 
-Variables configuradas en `wrangler.json`:
+Variables configuradas en `wrangler.toml`:
 
 - `PUBLIC_MEDIA_BASE_URL`: base publica para construir `photos.url` y `photos.miniature`.
 - `R2_ACCOUNT_ID`: account id de Cloudflare para firmar URLs S3-compatible.
@@ -191,7 +191,7 @@ wrangler queues create roncalphoto-image-processing
 
 4. Crear credenciales S3-compatible de R2 con permisos sobre `roncalphoto-originals`.
 
-Guardar secrets:
+Guardar secrets en `apps/image-optimizer/.dev.vars` para local o via `wrangler secret put` para remoto:
 
 ```bash
 wrangler secret put ADMIN_UPLOAD_TOKEN
@@ -199,7 +199,7 @@ wrangler secret put R2_ACCESS_KEY_ID
 wrangler secret put R2_SECRET_ACCESS_KEY
 ```
 
-5. Sustituir placeholders de `wrangler.json`:
+5. Sustituir placeholders de `wrangler.toml`:
 
 - `R2_ACCOUNT_ID`
 - `R2_ORIGINALS_BUCKET_NAME`

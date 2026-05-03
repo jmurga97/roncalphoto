@@ -32,7 +32,10 @@ export function createApp() {
     const runtimeEnv = getRuntimeEnv(c);
     const authAllowedOrigins = resolveAuthAllowedOrigins(runtimeEnv, c.env.PHOTOS_ADMIN_URL);
     const middleware = cors({
-      origin: (origin) => resolveAllowedOrigin(origin, authAllowedOrigins),
+      origin: (origin) =>
+        resolveAllowedOrigin(origin, authAllowedOrigins, {
+          missingOriginValue: null,
+        }),
       allowHeaders: ["Content-Type", "Authorization"],
       allowMethods: ["GET", "POST", "OPTIONS"],
       exposeHeaders: ["Content-Length"],

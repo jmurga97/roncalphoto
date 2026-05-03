@@ -1,7 +1,10 @@
 import { createAuthClient, emailOtpClient } from "@roncal/auth/client";
+import { resolveAuthBaseUrl } from "@roncal/shared";
 
-const AUTH_BASE_URL =
-  import.meta.env.API_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8787";
+const AUTH_BASE_URL = resolveAuthBaseUrl({
+  viteApiUrl: import.meta.env.VITE_API_URL,
+  legacyApiUrl: import.meta.env.API_URL,
+});
 
 const betterAuthClient = createAuthClient({
   baseURL: AUTH_BASE_URL,

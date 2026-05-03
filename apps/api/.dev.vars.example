@@ -1,4 +1,9 @@
+ALLOWED_ORIGINS=http://localhost:4321,http://localhost:3000,http://localhost:5173,http://localhost:5174,http://127.0.0.1:4321,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5174
+LOG_LEVEL=debug
+NODE_ENV=development
+
 BETTER_AUTH_SECRET=genera-con-openssl-rand-hex-32
+EMAIL_WORKER_URL=http://localhost:8788
 EMAIL_WORKER_API_KEY=coincide-con-WORKER_API_KEY-del-email-worker
 # Canonical admin origin. In local development auth also tolerates configured localhost origins.
 PHOTOS_ADMIN_URL=http://localhost:5173

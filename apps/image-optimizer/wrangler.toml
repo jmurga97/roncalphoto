@@ -1,0 +1,40 @@
+name = "roncalphoto-image-optimizer"
+main = "src/index.ts"
+compatibility_date = "2026-05-03"
+upload_source_maps = true
+
+[images]
+binding = "IMAGES"
+
+[[d1_databases]]
+binding = "DB_RONCALPHOTO"
+database_id = "94ca923e-89fb-4fea-a2d5-b7cef1e71cf6"
+database_name = "roncalphoto"
+migrations_dir = "../api/src/db/migrations"
+
+[[r2_buckets]]
+binding = "ORIGINALS_BUCKET"
+bucket_name = "roncalphoto-originals"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "roncalphoto-media"
+
+[[queues.producers]]
+binding = "IMAGE_PROCESSING_QUEUE"
+queue = "roncalphoto-image-processing"
+
+[[queues.consumers]]
+queue = "roncalphoto-image-processing"
+max_batch_size = 1
+max_batch_timeout = 5
+
+[observability]
+enabled = true
+
+[vars]
+ALLOWED_ORIGINS = "https://admin.roncalphoto.com,https://roncalphoto.com"
+NODE_ENV = "production"
+PUBLIC_MEDIA_BASE_URL = "https://media.roncalphoto.com"
+R2_ACCOUNT_ID = "replace-with-cloudflare-account-id"
+R2_ORIGINALS_BUCKET_NAME = "roncalphoto-originals"

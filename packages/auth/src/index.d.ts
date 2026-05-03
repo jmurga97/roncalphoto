@@ -1,10 +1,16 @@
 export type AuthDatabase = unknown;
 
+export interface EmailWorkerBinding {
+  fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+}
+
 export interface AuthEnv {
   BETTER_AUTH_SECRET: string;
-  EMAIL_WORKER_URL: string;
-  EMAIL_WORKER_API_KEY: string;
   PHOTOS_ADMIN_URL: string;
+  NODE_ENV?: string;
+  EMAIL_WORKER?: EmailWorkerBinding;
+  EMAIL_WORKER_URL?: string;
+  EMAIL_WORKER_API_KEY?: string;
 }
 
 export interface CreateAuthOptions {

@@ -1,0 +1,24 @@
+name = "roncalphoto-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-03"
+compatibility_flags = ["nodejs_compat"]
+upload_source_maps = true
+
+[[d1_databases]]
+binding = "DB_RONCALPHOTO"
+database_id = "94ca923e-89fb-4fea-a2d5-b7cef1e71cf6"
+database_name = "roncalphoto"
+migrations_dir = "src/db/migrations"
+
+[[services]]
+binding = "EMAIL_WORKER"
+service = "roncalphoto-email-worker"
+
+[observability]
+enabled = true
+
+[vars]
+ALLOWED_ORIGINS = "https://admin.roncalphoto.com,https://roncalphoto.com"
+LOG_LEVEL = "info"
+NODE_ENV = "production"
+PHOTOS_ADMIN_URL = "https://admin.roncalphoto.com"

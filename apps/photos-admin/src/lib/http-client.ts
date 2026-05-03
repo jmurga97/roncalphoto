@@ -1,6 +1,9 @@
-import type { ApiResponse, PaginatedResponse } from "@roncal/shared";
+import { type ApiResponse, type PaginatedResponse, resolveApiBaseUrl } from "@roncal/shared";
 
-const API_URL = import.meta.env.API_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8787";
+const API_URL = resolveApiBaseUrl({
+  viteApiUrl: import.meta.env.VITE_API_URL,
+  legacyApiUrl: import.meta.env.API_URL,
+});
 
 export class ApiRequestError extends Error {
   readonly status: number;

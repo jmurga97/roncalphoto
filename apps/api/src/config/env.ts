@@ -16,6 +16,10 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal"]);
 const nodeEnvSchema = z.enum(["development", "test", "production"]);
 
+export interface EmailWorkerServiceBinding {
+  fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+}
+
 const publicEnvSchema = z.object({
   DB_RONCALPHOTO: z.custom<D1Database>(
     (value) => typeof value === "object" && value !== null,
@@ -26,12 +30,34 @@ const publicEnvSchema = z.object({
   NODE_ENV: nodeEnvSchema.default("development"),
 });
 
-const authEnvSchema = z.object({
-  BETTER_AUTH_SECRET: z.string().trim().min(1),
-  EMAIL_WORKER_URL: z.string().trim().min(1),
-  EMAIL_WORKER_API_KEY: z.string().trim().min(1),
-  PHOTOS_ADMIN_URL: z.string().trim().min(1),
-});
+const authEnvSchema = z
+  .object({
+    BETTER_AUTH_SECRET: z.string().trim().min(1),
+    EMAIL_WORKER: z
+      .custom<EmailWorkerServiceBinding>(
+        (value) =>
+          typeof value === "object" &&
+          value !== null &&
+          typeof (value as { fetch?: unknown }).fetch === "function",
+        "EMAIL_WORKER service binding must implement fetch",
+      )
+      .optional(),
+    EMAIL_WORKER_URL: z.string().trim().min(1).optional(),
+    EMAIL_WORKER_API_KEY: z.string().trim().min(1).optional(),
+    PHOTOS_ADMIN_URL: z.string().trim().min(1),
+  })
+  .superRefine((env, ctx) => {
+    if (env.EMAIL_WORKER || (env.EMAIL_WORKER_URL && env.EMAIL_WORKER_API_KEY)) {
+      return;
+    }
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        "Auth requires the EMAIL_WORKER service binding or EMAIL_WORKER_URL and EMAIL_WORKER_API_KEY.",
+      path: ["EMAIL_WORKER"],
+    });
+  });
 
 export type EnvBindings = z.input<typeof publicEnvSchema> & Partial<z.input<typeof authEnvSchema>>;
 type ParsedPublicEnv = z.output<typeof publicEnvSchema>;

@@ -6,16 +6,23 @@ const SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7;
 const OTP_EXPIRES_IN_SECONDS = 300;
 const OTP_EXPIRES_IN_LABEL = "5 minutos";
 const OTP_LENGTH = 6;
+const EMAIL_WORKER_OTP_PATH = "https://email-worker.internal/send/otp";
 
 type DrizzleAdapterDatabase = Parameters<typeof drizzleAdapter>[0];
 
 export type AuthDatabase = unknown;
 
+export interface EmailWorkerBinding {
+  fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+}
+
 export interface AuthEnv {
   BETTER_AUTH_SECRET: string;
-  EMAIL_WORKER_URL: string;
-  EMAIL_WORKER_API_KEY: string;
   PHOTOS_ADMIN_URL: string;
+  NODE_ENV?: string;
+  EMAIL_WORKER?: EmailWorkerBinding;
+  EMAIL_WORKER_URL?: string;
+  EMAIL_WORKER_API_KEY?: string;
 }
 
 export interface CreateAuthOptions {
@@ -56,6 +63,23 @@ function resolveEmailWorkerOtpUrl(baseUrl: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/send/otp`;
 }
 
+function resolveEmailWorkerFallbackConfig(env: AuthEnv): { url: string; apiKey: string } {
+  const url = env.EMAIL_WORKER_URL?.trim();
+  const apiKey = env.EMAIL_WORKER_API_KEY?.trim();
+
+  if (!url || !apiKey) {
+    throw new Error(
+      "Email worker is not configured. Provide the EMAIL_WORKER service binding or EMAIL_WORKER_URL and EMAIL_WORKER_API_KEY.",
+    );
+  }
+
+  return { url, apiKey };
+}
+
+function shouldUseEmailWorkerUrl(env: AuthEnv): boolean {
+  return env.NODE_ENV !== "production" && Boolean(env.EMAIL_WORKER_URL?.trim());
+}
+
 async function resolveEmailWorkerError(response: Response): Promise<string> {
   try {
     const body = (await response.clone().json()) as EmailWorkerErrorBody;
@@ -84,14 +108,28 @@ async function sendOtpToEmailWorker(
   payload: SendOtpPayload,
   fetcher: typeof fetch,
 ): Promise<void> {
-  const response = await fetcher(resolveEmailWorkerOtpUrl(env.EMAIL_WORKER_URL), {
+  const request: RequestInit = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Api-Key": env.EMAIL_WORKER_API_KEY,
     },
     body: JSON.stringify(payload),
-  });
+  };
+
+  let response: Response;
+
+  if (!shouldUseEmailWorkerUrl(env) && env.EMAIL_WORKER) {
+    response = await env.EMAIL_WORKER.fetch(EMAIL_WORKER_OTP_PATH, request);
+  } else {
+    const fallback = resolveEmailWorkerFallbackConfig(env);
+    const headers = new Headers(request.headers);
+    headers.set("X-Api-Key", fallback.apiKey);
+
+    response = await fetcher(resolveEmailWorkerOtpUrl(fallback.url), {
+      ...request,
+      headers,
+    });
+  }
 
   if (!response.ok) {
     const errorDetails = await resolveEmailWorkerError(response);

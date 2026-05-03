@@ -28,7 +28,7 @@ interface EmailBinding {
 
 interface Bindings {
   SEND_EMAIL: EmailBinding;
-  WORKER_API_KEY: string;
+  WORKER_API_KEY?: string;
   FROM_EMAIL: string;
   FROM_NAME: string;
 }
@@ -92,9 +92,15 @@ function toEmailServiceError(error: unknown): EmailServiceError {
 }
 
 app.use("/send/*", async (c, next) => {
-  const apiKey = c.req.header("X-Api-Key");
+  const configuredApiKey = c.env.WORKER_API_KEY?.trim();
 
-  if (!apiKey || apiKey !== c.env.WORKER_API_KEY) {
+  if (!configuredApiKey) {
+    return next();
+  }
+
+  const apiKey = c.req.header("X-Api-Key")?.trim();
+
+  if (!apiKey || apiKey !== configuredApiKey) {
     return c.json(
       {
         success: false,

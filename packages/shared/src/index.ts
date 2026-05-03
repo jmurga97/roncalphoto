@@ -13,3 +13,4 @@ export type {
 
 export { normalizePhotoMetadata } from "./normalizers";
 export { apiPhotoToPhoto, apiSessionToSession } from "./mappers";
+export { resolveApiBaseUrl, resolveAuthBaseUrl } from "./runtime";

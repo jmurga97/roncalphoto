@@ -16,6 +16,7 @@ export async function corsMiddleware(c: import("hono").Context<AppBindings>, nex
     origin: (origin) => {
       return resolveAllowedOrigin(origin, allowedOrigins, {
         allowLocalDevelopmentOrigin: true,
+        missingOriginValue: null,
         nodeEnv: runtimeEnv.NODE_ENV,
       });
     },
