@@ -2,14 +2,14 @@ import type { AppDb } from "@/db";
 import { getDb, photos } from "@/db";
 import { HttpError } from "@/shared/errors";
 import {
+  type PhotoRecord,
   toApiPhoto,
   toPhotoRecord,
   toPhotoUpdateRecord,
-  type PhotoRecord,
 } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { generateId } from "@/shared/utils/id";
-import { normalizePhotoMetadata, type ApiPhoto, type PhotoMetadata } from "@roncal/shared";
+import { type ApiPhoto, type PhotoMetadata, normalizePhotoMetadata } from "@roncal/shared";
 import { asc, eq, sql } from "drizzle-orm";
 
 interface ListPhotosOptions {
@@ -38,10 +38,6 @@ interface UpdatePhotoInput {
   metadata?: Partial<PhotoMetadata>;
 }
 
-function normalizeMetadata(metadata?: Partial<PhotoMetadata>) {
-  return normalizePhotoMetadata(metadata);
-}
-
 function createPhotoEntity(input: CreatePhotoInput): ApiPhoto {
   return {
     id: input.id ?? generateId(),
@@ -51,7 +47,7 @@ function createPhotoEntity(input: CreatePhotoInput): ApiPhoto {
     alt: input.alt,
     about: input.about,
     sortOrder: input.sortOrder ?? 0,
-    metadata: normalizeMetadata(input.metadata),
+    metadata: normalizePhotoMetadata(input.metadata),
   };
 }
 
@@ -66,7 +62,7 @@ function mergePhotoEntity(existing: PhotoRecord, input: UpdatePhotoInput): ApiPh
     alt: input.alt ?? currentPhoto.alt,
     about: input.about ?? currentPhoto.about,
     sortOrder: input.sortOrder ?? currentPhoto.sortOrder,
-    metadata: normalizeMetadata({
+    metadata: normalizePhotoMetadata({
       ...currentPhoto.metadata,
       ...input.metadata,
     }),
@@ -129,10 +125,7 @@ export class PhotosService {
 
     const photo = mergePhotoEntity(existing, input);
 
-    await this.db
-      .update(photos)
-      .set(toPhotoUpdateRecord(photo))
-      .where(eq(photos.id, id));
+    await this.db.update(photos).set(toPhotoUpdateRecord(photo)).where(eq(photos.id, id));
 
     return photo;
   }

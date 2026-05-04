@@ -105,13 +105,3 @@ export function jsonPaginated<Data>(
     OK,
   );
 }
-
-export function jsonValidationError(c: Context<AppBindings>, error: string) {
-  return c.json(
-    {
-      success: false as const,
-      error,
-    },
-    BAD_REQUEST,
-  );
-}

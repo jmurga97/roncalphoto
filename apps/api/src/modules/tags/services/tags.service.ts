@@ -1,7 +1,7 @@
 import type { AppDb } from "@/db";
 import { getDb, sessionTags, sessions, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
-import { toApiSession, toTag, type SessionRecord } from "@/shared/lib/api-mappers";
+import { type SessionRecord, toApiSession, toTag } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { listTagsBySessionIds } from "@/shared/lib/session-relations";
 import type { ApiSession, ApiTagWithSessions, Tag } from "@roncal/shared";

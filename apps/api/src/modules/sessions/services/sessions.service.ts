@@ -1,12 +1,12 @@
 import { HttpError } from "@/shared/errors";
+import { type SessionRecord, toApiSession } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
-import { toApiSession } from "@/shared/lib/api-mappers";
 import { generateId } from "@/shared/utils/id";
 import { pickNextAvailableSlug, slugify } from "@/shared/utils/slug";
 import type { ApiSession } from "@roncal/shared";
 import {
-  getSessionsRepository,
   type SessionsRepository,
+  getSessionsRepository,
 } from "../repositories/sessions.repository";
 
 interface HydrateOptions {
@@ -44,10 +44,6 @@ export class SessionsService {
     }
 
     const [session] = await this.hydrateSessions([row], options);
-
-    if (!session) {
-      throw new HttpError(404, "Session not found");
-    }
 
     return session;
   }
@@ -123,7 +119,7 @@ export class SessionsService {
   }
 
   private async hydrateSessions(
-    rows: Awaited<ReturnType<SessionsRepository["listSessions"]>>,
+    rows: SessionRecord[],
     options: HydrateOptions = {},
   ): Promise<ApiSession[]> {
     if (rows.length === 0) {

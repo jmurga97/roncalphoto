@@ -59,8 +59,8 @@ export function toPhotoRecord(photo: ApiPhoto) {
 }
 
 export function toPhotoUpdateRecord(photo: ApiPhoto) {
-  const { id, ...photoRecord } = toPhotoRecord(photo);
-  void id;
+  const { id: _id, ...photoRecord } = toPhotoRecord(photo);
+  void _id;
   return photoRecord;
 }
 

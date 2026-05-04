@@ -2,6 +2,7 @@ import { getAuthRuntimeEnv, getRuntimeEnv, isProductionEnv } from "@/config/env"
 import { BAD_REQUEST, NOT_FOUND, OK, UNAUTHORIZED } from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
 import { HttpError } from "@/shared/errors";
+import { jsonSuccess } from "@/shared/lib/http";
 import {
   type AuthKeyValueStore,
   OTP_EXPIRES_IN_LABEL,
@@ -98,26 +99,6 @@ export function getConfiguredAuthEnv(c: Context<AppBindings>) {
   } catch {
     throw createAuthConfigError();
   }
-}
-
-function jsonSuccess<Data>(c: Context<AppBindings>, data: Data) {
-  return c.json(
-    {
-      success: true as const,
-      data,
-    },
-    OK,
-  );
-}
-
-function jsonError(c: Context<AppBindings>, error: string, status: typeof NOT_FOUND) {
-  return c.json(
-    {
-      success: false as const,
-      error,
-    },
-    status,
-  );
 }
 
 function normalizeEmail(email: unknown): string | null {
@@ -370,7 +351,7 @@ async function handleSendVerificationOtp(c: Context<AppBindings>) {
   const user = await findAuthorizedUserByEmail(c, store, email);
 
   if (!user) {
-    return jsonSuccess(c, { sent: false });
+    return jsonSuccess(c, { sent: false }, OK);
   }
 
   const otp = generateOtp();
@@ -395,7 +376,7 @@ async function handleSendVerificationOtp(c: Context<AppBindings>) {
     throw error;
   }
 
-  return jsonSuccess(c, { sent: true });
+  return jsonSuccess(c, { sent: true }, OK);
 }
 
 function remainingTtlSeconds(expiresAt: string): number {
@@ -467,10 +448,14 @@ async function handleSignInEmailOtp(c: Context<AppBindings>) {
   await store.setJson(authSessionKey(tokenHash), session, SESSION_EXPIRES_IN_SECONDS);
   setCookie(c, AUTH_COOKIE_NAME, token, getCookieOptions(c));
 
-  return jsonSuccess(c, {
-    session,
-    user,
-  } satisfies AuthSession);
+  return jsonSuccess(
+    c,
+    {
+      session,
+      user,
+    } satisfies AuthSession,
+    OK,
+  );
 }
 
 async function getSessionFromCookie(c: Context<AppBindings>): Promise<AuthSession | null> {
@@ -504,7 +489,7 @@ async function getSessionFromCookie(c: Context<AppBindings>): Promise<AuthSessio
 }
 
 async function handleGetSession(c: Context<AppBindings>) {
-  return jsonSuccess(c, await getSessionFromCookie(c));
+  return jsonSuccess(c, await getSessionFromCookie(c), OK);
 }
 
 async function handleSignOut(c: Context<AppBindings>) {
@@ -519,7 +504,7 @@ async function handleSignOut(c: Context<AppBindings>) {
 
   clearSessionCookie(c);
 
-  return jsonSuccess(c, { signedOut: true });
+  return jsonSuccess(c, { signedOut: true }, OK);
 }
 
 function getAuthRoute(path: string): string {
@@ -545,7 +530,7 @@ export async function authHandler(c: Context<AppBindings>): Promise<Response> {
     return handleSignOut(c);
   }
 
-  return jsonError(c, "Auth route not found", NOT_FOUND);
+  return c.json({ success: false as const, error: "Auth route not found" }, NOT_FOUND);
 }
 
 export async function requireSession(c: Context<AppBindings>, next: Next) {

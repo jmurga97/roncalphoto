@@ -3,8 +3,8 @@ import { photos, sessionTags, tags } from "@/db";
 import type { ApiPhoto, Tag } from "@roncal/shared";
 import { asc, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
-import { groupValuesBy } from "./collections";
 import { toApiPhoto, toTag } from "./api-mappers";
+import { groupValuesBy } from "./collections";
 
 export async function listTagsBySessionIds(
   db: AppDb,
