@@ -1,11 +1,15 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins/email-otp";
+import {
+  OTP_EXPIRES_IN_LABEL,
+  OTP_EXPIRES_IN_SECONDS,
+  OTP_LENGTH,
+  SESSION_EXPIRES_IN_SECONDS,
+} from "./store";
 
-const SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7;
-const OTP_EXPIRES_IN_SECONDS = 300;
-const OTP_EXPIRES_IN_LABEL = "5 minutos";
-const OTP_LENGTH = 6;
+export * from "./store";
+
 const EMAIL_WORKER_OTP_PATH = "https://email-worker.internal/send/otp";
 
 type DrizzleAdapterDatabase = Parameters<typeof drizzleAdapter>[0];
