@@ -8,7 +8,7 @@ Monorepo para portfolio de fotografia profesional.
 - `apps/photos-admin`: dashboard protegido por auth
 - `apps/api`: backend con Hono sobre Cloudflare Workers + D1
 - `apps/email-worker`: worker para enviar OTPs de inicio de sesion por email
-- `apps/image-optimizer`: logica para transformar imagenes subidas a R2 y persistir sus datos en base de datos
+- `apps/image-optimizer`: imagenes subidas a R2 y persistir sus datos en base de datos
 - `packages/auth`: configuracion de Better Auth para autenticacion por OTP via email
 - `packages/murga-components`: libreria de componentes Lit para el dashboard admin
 - `packages/shared`: tipos compartidos del dominio
@@ -113,6 +113,8 @@ Reglas:
 
 - No mergear con errores de tipos o lint.
 - Medir antes de optimizar performance.
+- Evitar sobreingeniería
+- Priorizar dividir por archivos o clases siguiendo un patrón singleton donde tenga sentido agrupar responsabilidades
 
 ## API y rutas
 
@@ -123,24 +125,3 @@ Reglas:
 - `GET /api/photos`
 - `GET /api/photos/:id`
 - Ruta web principal: `/session/:slug`
-
-## Commits y PRs
-
-Titulo:
-
-```text
-[roncalphoto] Descripcion clara y concisa
-```
-
-PR debe incluir:
-
-- Que cambio
-- Por que
-- Como se verifico
-
-## Notas finales
-
-- Frontend y API se despliegan en Cloudflare.
-- D1 contiene datos de sesiones, tags y fotos.
-- `@roncal/shared` no tiene build step propio.
-- Este documento es vivo: actualizar cuando cambien decisiones o restricciones.
