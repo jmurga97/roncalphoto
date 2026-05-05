@@ -121,6 +121,14 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 
 > **Auth requirement**: either the `EMAIL_WORKER` service binding **or** both `EMAIL_WORKER_URL` and `EMAIL_WORKER_API_KEY` must be provided.
 
+### Cloudflare deploy credentials
+
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` must be configured as
+Cloudflare build/deploy environment variables for the `roncalphoto-api` Worker
+project when Cloudflare builds deploy this app. They are consumed by Wrangler
+for D1 migrations and `bun run deploy`; they must not be added to
+`wrangler.toml [vars]`, `.dev.vars`, or runtime secrets.
+
 ## Available scripts
 
 ```bash

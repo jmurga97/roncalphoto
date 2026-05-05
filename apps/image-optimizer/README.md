@@ -161,6 +161,14 @@ Environment variables / secrets:
 
 Local secrets live in `.dev.vars` (see `.dev.vars.example`).
 
+### Cloudflare deploy credentials
+
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` must be configured as
+Cloudflare build/deploy environment variables for the
+`roncalphoto-image-optimizer` Worker project when Cloudflare builds deploy this
+app. They are consumed by Wrangler during `bun run deploy`; they must not be
+added to `wrangler.toml [vars]`, `.dev.vars`, or runtime secrets.
+
 ## Available scripts
 
 ```bash

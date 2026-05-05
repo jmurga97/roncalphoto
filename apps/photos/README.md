@@ -67,12 +67,20 @@ src/
 
 The Vite dev server proxies `/api` and `/health` to this URL automatically.
 
+### Cloudflare Workers deploy credentials
+
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` must be configured as
+Cloudflare build/deploy environment variables only when deploying this app from
+an external CI environment. For Cloudflare Workers Builds, use the project's
+configured Build API token instead of adding these values to the repo,
+`wrangler.toml`, `.env.example`, or runtime variables.
+
 ## Available scripts
 
 ```bash
 bun run dev      # Start Vite dev server
 bun run build    # Production build
-bun run preview  # Preview built app with Wrangler Pages
+bun run preview  # Preview built app with Wrangler Workers
 bun run check    # TypeScript type check
 ```
 

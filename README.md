@@ -91,7 +91,7 @@ bun run --filter=@roncal/api db:migrate:remote
 4. Puertos locales por defecto:
    API `8787`, email worker `8788`, image optimizer `8789`, admin `5173`, photos `5174`
 5. Para Workers usar `wrangler.toml` como contrato de produccion y `*.dev.vars` para overrides locales. El auth admin necesita `apps/api/.dev.vars` con `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `EMAIL_WORKER_URL`, `EMAIL_WORKER_API_KEY` y `PHOTOS_ADMIN_URL`; las rutas publicas (`/api/sessions`, `/api/photos`, `/api/tags`) no dependen de esas variables
-6. La matriz operativa completa de Cloudflare, secrets, bindings y orden de despliegue vive en [docs/cloudflare-production.md](/Users/murgapja/dev/roncalphoto/docs/cloudflare-production.md).
+6. La matriz operativa completa de Cloudflare, credentials de deploy, secrets, bindings y orden de despliegue vive en [docs/cloudflare-production.md](/Users/murgapja/dev/roncalphoto/docs/cloudflare-production.md). `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID` son variables de build/deploy para Wrangler; no deben vivir en `wrangler.toml [vars]` ni en runtime.
 
 ## Auth admin
 

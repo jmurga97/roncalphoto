@@ -69,6 +69,14 @@ The worker is intentionally kept as a **single-file Hono application**. There is
 
 > **Local development**: copy `.dev.vars.example` to `.dev.vars` and set `WORKER_API_KEY` to the same value configured in `apps/api` (`EMAIL_WORKER_API_KEY`).
 
+### Cloudflare deploy credentials
+
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` must be configured as
+Cloudflare build/deploy environment variables for the
+`roncalphoto-email-worker` Worker project when Cloudflare builds deploy this
+app. They are consumed by Wrangler during `bun run deploy`; they must not be
+added to `wrangler.toml [vars]`, `.dev.vars`, or runtime secrets.
+
 ## Available scripts
 
 ```bash
