@@ -46,5 +46,18 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      outDir: "dist",
+      sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ["react", "react-dom"],
+            tanstack: ["@tanstack/react-router", "@tanstack/react-query", "zod"],
+            state: ["zustand"]
+          },
+        },
+      },
+    }
   };
 });
