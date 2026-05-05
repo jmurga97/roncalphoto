@@ -1,4 +1,4 @@
-name = "roncalphoto-photos"
+name = 'roncalphoto-web'
 compatibility_date = "2026-05-06"
 compatibility_flags = ["nodejs_compat"]
 
