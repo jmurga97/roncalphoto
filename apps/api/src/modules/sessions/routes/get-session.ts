@@ -1,6 +1,7 @@
+import { createRouter } from "@/app/create-app";
 import { OK } from "@/config/status-codes";
 import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
-import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
+import { createApiRoute } from "@/shared/lib/openapi";
 import { sessionResponseSchema, sessionSlugParamsSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
 
@@ -24,7 +25,7 @@ const route = createApiRoute({
   },
 });
 
-export default createOpenApiRouter(route, async (c) => {
+export default createRouter().openapi(route, async (c) => {
   const { slug } = c.req.valid("param");
   const service = getSessionsService(c.env.DB_RONCALPHOTO);
   const session = await service.getSessionBySlug(slug, {

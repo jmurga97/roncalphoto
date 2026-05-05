@@ -164,5 +164,5 @@ bun run check               # Run TypeScript type check
 4. **Cross-site production cookies**  
    Production keeps the admin and API on different origins. Better Auth is configured with `SameSite=None`, `Secure`, and `Partitioned` cookies in production, while local development uses same-site cookies.
 
-5. **Pre-existing type issues**  
-   `c.req.valid("json")`, `c.req.valid("param")`, and `c.req.valid("query")` currently infer as `never` in several route files due to a known type-level mismatch in the installed versions of `@hono/zod-openapi` and `zod`. These errors exist in the original codebase and do not affect runtime behavior.
+5. **OpenAPI route helpers preserve request inference**  
+   The shared `createApiRoute` helper keeps each route's exact `request` and `responses` types intact so `c.req.valid("json")`, `c.req.valid("param")`, and `c.req.valid("query")` stay strongly typed inside handlers.

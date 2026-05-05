@@ -1,6 +1,7 @@
+import { createRouter } from "@/app/create-app";
 import { OK } from "@/config/status-codes";
 import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
-import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
+import { createApiRoute } from "@/shared/lib/openapi";
 import { photoIdParamsSchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
@@ -24,7 +25,7 @@ const route = createApiRoute({
   },
 });
 
-export default createOpenApiRouter(route, async (c) => {
+export default createRouter().openapi(route, async (c) => {
   const { id } = c.req.valid("param");
   const service = getPhotosService(c.env.DB_RONCALPHOTO);
   const photo = await service.getPhotoById(id);

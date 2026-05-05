@@ -1,6 +1,7 @@
+import { createRouter } from "@/app/create-app";
 import { OK } from "@/config/status-codes";
 import { jsonSuccess } from "@/shared/lib/http";
-import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
+import { createApiRoute } from "@/shared/lib/openapi";
 import { tagsResponseSchema } from "../schemas/tags.schema";
 import { getTagsService } from "../services/tags.service";
 
@@ -20,7 +21,7 @@ const route = createApiRoute({
   },
 });
 
-export default createOpenApiRouter(route, async (c) => {
+export default createRouter().openapi(route, async (c) => {
   const service = getTagsService(c.env.DB_RONCALPHOTO);
   const tags = await service.listTags();
 

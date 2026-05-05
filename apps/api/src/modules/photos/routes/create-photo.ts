@@ -1,7 +1,8 @@
+import { createRouter } from "@/app/create-app";
 import { requireSession } from "@/auth";
 import { CREATED } from "@/config/status-codes";
 import { jsonSuccess, protectedValidationErrorResponses } from "@/shared/lib/http";
-import { createApiRoute, createOpenApiRouter } from "@/shared/lib/openapi";
+import { createApiRoute } from "@/shared/lib/openapi";
 import { createPhotoBodySchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
@@ -33,7 +34,7 @@ const route = createApiRoute({
   },
 });
 
-export default createOpenApiRouter(route, async (c) => {
+export default createRouter().openapi(route, async (c) => {
   const input = c.req.valid("json");
   const service = getPhotosService(c.env.DB_RONCALPHOTO);
   const photo = await service.createPhoto(input);
