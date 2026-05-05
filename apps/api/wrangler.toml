@@ -6,7 +6,7 @@ upload_source_maps = true
 
 [[d1_databases]]
 binding = "DB_RONCALPHOTO"
-database_id = "94ca923e-89fb-4fea-a2d5-b7cef1e71cf6"
+database_id = "da274846-1de9-4c1a-92fd-0e56c5f0f7b5"
 database_name = "roncalphoto"
 migrations_dir = "src/db/migrations"
 

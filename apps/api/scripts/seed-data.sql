@@ -1,7 +1,11 @@
--- Expanded mock dataset for local D1 development
--- Preserves baseline rows and appends additional fixtures.
+-- Seed data for local development
+-- Tags
+INSERT OR IGNORE INTO `tags` (`id`, `name`, `slug`) VALUES
+  ('tag-architecture', 'Arquitectura', 'arquitectura'),
+  ('tag-nature', 'Naturaleza', 'naturaleza');
+--> statement-breakpoint
 
-INSERT INTO `tags` (`id`, `name`, `slug`) VALUES
+INSERT OR IGNORE INTO `tags` (`id`, `name`, `slug`) VALUES
   ('tag-portrait', 'Retrato', 'retrato'),
   ('tag-editorial', 'Editorial', 'editorial'),
   ('tag-wedding', 'Boda', 'boda'),
@@ -10,7 +14,14 @@ INSERT INTO `tags` (`id`, `name`, `slug`) VALUES
   ('tag-bw', 'Blanco y Negro', 'blanco-y-negro'),
   ('tag-experimental', 'Experimental', 'experimental');
 --> statement-breakpoint
-INSERT INTO `sessions` (`id`, `slug`, `title`, `description`, `created_at`) VALUES
+
+-- Sessions
+INSERT OR IGNORE INTO `sessions` (`id`, `slug`, `title`, `description`, `created_at`) VALUES
+  ('sess-urban-lines', 'lineas-urbanas', 'Lineas Urbanas', '<p>Sesion de formas, volumen y ritmo urbano.</p>', '2026-01-15T09:00:00.000Z'),
+  ('sess-forest-light', 'luz-del-bosque', 'Luz del Bosque', '<p>Sesion de naturaleza y texturas en luz suave.</p>', '2026-01-10T09:00:00.000Z');
+--> statement-breakpoint
+
+INSERT OR IGNORE INTO `sessions` (`id`, `slug`, `title`, `description`, `created_at`) VALUES
   (
     'sess-portrait-editorial-a',
     'retrato-editorial',
@@ -47,7 +58,14 @@ INSERT INTO `sessions` (`id`, `slug`, `title`, `description`, `created_at`) VALU
     '2026-01-18T20:15:00.000Z'
   );
 --> statement-breakpoint
-INSERT INTO `session_tags` (`session_id`, `tag_id`) VALUES
+
+-- Session tags
+INSERT OR IGNORE INTO `session_tags` (`session_id`, `tag_id`) VALUES
+  ('sess-urban-lines', 'tag-architecture'),
+  ('sess-forest-light', 'tag-nature');
+--> statement-breakpoint
+
+INSERT OR IGNORE INTO `session_tags` (`session_id`, `tag_id`) VALUES
   ('sess-portrait-editorial-a', 'tag-portrait'),
   ('sess-portrait-editorial-a', 'tag-editorial'),
   ('sess-portrait-editorial-a', 'tag-bw'),
@@ -60,7 +78,68 @@ INSERT INTO `session_tags` (`session_id`, `tag_id`) VALUES
   ('sess-documentary-atelier', 'tag-bw'),
   ('sess-night-essay', 'tag-night');
 --> statement-breakpoint
-INSERT INTO `photos` (
+
+-- Photos (baseline)
+INSERT OR IGNORE INTO `photos` (
+  `id`,
+  `session_id`,
+  `url`,
+  `miniature`,
+  `alt`,
+  `about`,
+  `sort_order`,
+  `iso`,
+  `aperture`,
+  `shutter_speed`,
+  `lens`,
+  `camera`
+) VALUES
+  (
+    'photo-urban-1',
+    'sess-urban-lines',
+    'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=400',
+    'Escalera helicoidal en edificio moderno',
+    'Geometria interior y contraste de sombras.',
+    0,
+    200,
+    'f/4',
+    '1/80',
+    '24-70mm f/2.8',
+    'Canon EOS R5'
+  ),
+  (
+    'photo-urban-2',
+    'sess-urban-lines',
+    'https://images.pexels.com/photos/1838640/pexels-photo-1838640.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    'https://images.pexels.com/photos/1838640/pexels-photo-1838640.jpeg?auto=compress&cs=tinysrgb&w=400',
+    'Rascacielos en contrapicado',
+    'Perspectiva vertical para enfatizar escala.',
+    1,
+    100,
+    'f/8',
+    '1/250',
+    '16-35mm f/4',
+    'Canon EOS R5'
+  ),
+  (
+    'photo-forest-1',
+    'sess-forest-light',
+    'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=400',
+    'Bosque en tonos otono',
+    'Capas de color y niebla ligera.',
+    0,
+    400,
+    'f/5.6',
+    '1/125',
+    '70-200mm f/2.8',
+    'Canon EOS R5'
+  );
+--> statement-breakpoint
+
+-- Photos (expansion)
+INSERT OR IGNORE INTO `photos` (
   `id`,
   `session_id`,
   `url`,
