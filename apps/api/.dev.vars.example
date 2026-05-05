@@ -3,10 +3,8 @@ LOG_LEVEL=debug
 NODE_ENV=development
 
 BETTER_AUTH_SECRET=genera-con-openssl-rand-hex-32
+BETTER_AUTH_URL=http://localhost:8787
 EMAIL_WORKER_URL=http://localhost:8788
 EMAIL_WORKER_API_KEY=coincide-con-WORKER_API_KEY-del-email-worker
 # Canonical admin origin. In local development auth also tolerates configured localhost origins.
 PHOTOS_ADMIN_URL=http://localhost:5173
-
-# AUTH_KV is not required in local development.
-# The auth store falls back to an in-memory Map when AUTH_KV is absent and NODE_ENV is not production.

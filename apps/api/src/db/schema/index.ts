@@ -8,6 +8,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
+export * from "./auth";
+
 export const tags = sqliteTable(
   "tags",
   {

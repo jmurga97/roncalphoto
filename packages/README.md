@@ -10,10 +10,10 @@ Packages are consumed as TypeScript source (no dedicated build step) unless they
 
 | Package | Purpose | Consumed by |
 |---------|---------|-------------|
-| `@roncal/auth` | OTP generation, session-token hashing, KV-store primitives, and a `better-auth` factory. Also exposes a React client entry point (`@roncal/auth/client`). | `apps/api` |
+| `@roncal/auth` | Reusable Better Auth server factory, Email OTP configuration, email-worker sender helper, and React Email OTP client factory. | `apps/api`, `apps/photos-admin` |
 | `@roncal/email-templates` | React Email templates (OTP email) rendered to HTML and plain text. | `apps/email-worker` |
 | `@murga/components` | Lit-based custom elements library with React wrappers for the admin dashboard. | `apps/photos-admin` |
-| `@roncal/shared` | Canonical domain types (`Photo`, `Session`, `Tag`, …), API mappers (`apiPhotoToPhoto`), normalizers, and runtime helpers (`resolveApiBaseUrl`). | `apps/api`, `apps/photos`, `apps/photos-admin`, `@roncal/auth` |
+| `@roncal/shared` | Canonical domain types (`Photo`, `Session`, `Tag`, …), API mappers (`apiPhotoToPhoto`), normalizers, and runtime helpers (`resolveApiBaseUrl`). | `apps/api`, `apps/photos`, `apps/photos-admin` |
 | `@roncal/ui` | Shared React primitives. Currently exports `SuspenseWrapper` (error-boundary + suspense). | `apps/photos` |
 
 ---
@@ -31,12 +31,11 @@ graph TD
   apps/photos-admin --> @roncal/auth
   apps/photos-admin --> @roncal/shared
   apps/photos-admin --> @roncal/ui
-  @roncal/auth --> @roncal/shared
 ```
 
 ### Notes
 
 - `@roncal/shared` is the single source of truth for the domain model. The API transforms D1 rows into these types, and the frontends consume them directly.
-- `@roncal/auth` depends on `@roncal/shared` so that its client entry point can reuse `resolveApiBaseUrl` instead of hard-coding the auth base URL.
+- `@roncal/auth` is intentionally domain-agnostic: callers pass `baseURL`, Drizzle schema, trusted origins, and OTP delivery. It does not depend on `@roncal/shared`.
 - `@murga/components` is the only package with a `sideEffects: true` flag (required for custom-element registration).
 - No circular dependencies exist between packages.

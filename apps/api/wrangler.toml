@@ -10,10 +10,6 @@ database_id = "94ca923e-89fb-4fea-a2d5-b7cef1e71cf6"
 database_name = "roncalphoto"
 migrations_dir = "src/db/migrations"
 
-[[kv_namespaces]]
-binding = "AUTH_KV"
-id = "replace-with-kv-namespace-id"
-
 [[services]]
 binding = "EMAIL_WORKER"
 service = "roncalphoto-email-worker"
@@ -25,4 +21,5 @@ enabled = true
 ALLOWED_ORIGINS = "https://admin.estudioroncal.com,https://estudioroncal.com"
 LOG_LEVEL = "info"
 NODE_ENV = "production"
+BETTER_AUTH_URL = "https://api.murga.ing"
 PHOTOS_ADMIN_URL = "https://admin.estudioroncal.com"

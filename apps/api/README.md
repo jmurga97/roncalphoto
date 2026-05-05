@@ -9,14 +9,14 @@ This package exposes the public REST API consumed by:
 - `@roncal/photos-admin` (protected admin dashboard)
 - `@roncal/email-worker` (OTP delivery for admin auth)
 
-It handles CRUD for sessions, photos, and tags, plus a custom OTP-based authentication flow for the admin panel.
+It handles CRUD for sessions, photos, and tags, plus Better Auth Email OTP authentication for the admin panel.
 
 ## Internal dependencies
 
 | Package | Why it is used |
 |---------|----------------|
 | `@roncal/shared` | Canonical domain types (`ApiPhoto`, `ApiSession`, `Tag`, etc.) and `normalizePhotoMetadata`. Ensures the API and frontends speak the same type language. |
-| `@roncal/auth` | OTP generation, session token hashing, KV store primitives, and cookie constants for the custom auth implementation. |
+| `@roncal/auth` | Reusable Better Auth factory, Email OTP plugin setup, D1/Drizzle adapter wiring, and email-worker OTP sender helper. |
 
 ## Folder structure
 
@@ -28,7 +28,7 @@ src/
 │   ├── routes.ts            # Registers /api/sessions, /api/photos, /api/tags
 │   └── middlewares/
 │       └── cors.ts          # General CORS middleware (skips /api/auth/*)
-├── auth.ts                  # Custom auth handler: OTP send/sign-in, cookie sessions, email worker client
+├── auth.ts                  # Better Auth factory/cache, auth handler, protected-route session middleware
 ├── config/
 │   ├── env.ts               # Zod-based env parsing (public + auth bindings)
 │   ├── types.ts             # Hono context bindings and route handler types
@@ -39,8 +39,8 @@ src/
 ├── db/
 │   ├── index.ts             # Drizzle D1 factory + WeakMap instance cache
 │   └── schema/
-│       ├── index.ts         # Domain tables (tags, sessions, sessionTags, photos, photoUploadJobs)
-│       └── auth.ts          # Better-Auth tables for Drizzle Kit migrations
+│       ├── index.ts         # Domain tables and Better Auth runtime schema exports
+│       └── auth.ts          # Better Auth tables: user, session, account, verification
 ├── modules/
 │   ├── sessions/            # Routes, schemas, service, repository
 │   ├── photos/              # Routes, schemas, service (direct DB access)
@@ -80,7 +80,7 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 ### Patterns
 
 - **Singleton-per-D1Database**: Services and repositories are cached in a `WeakMap<D1Database, Instance>` so repeated requests reuse the same objects without manual lifecycle management.
-- **Response envelope**: Every JSON response follows `{ success: true, data: ... }` or `{ success: false, error: ... }`.
+- **Response envelope**: Domain API JSON responses follow `{ success: true, data: ... }` or `{ success: false, error: ... }`. `/api/auth/*` is delegated to Better Auth and uses Better Auth's native response/cookie contract.
 
 ## Request lifecycle
 
@@ -89,7 +89,7 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
    - Pino logger
    - Env parsing (`parseEnv`)
    - CORS (dedicated middleware for `/api/auth/*`, general middleware for everything else)
-3. **Auth routes** (`/api/auth/*`) are handled by `src/auth.ts`, which dispatches to OTP or session handlers.
+3. **Auth routes** (`/api/auth/*`) are delegated to `auth.handler(c.req.raw)` from Better Auth.
 4. **Business routes** hit `registerRoutes(app)`:
    - Hono validates params, query, and body against Zod schemas.
    - If validation fails, `defaultValidationHook` returns a `400` with a formatted message.
@@ -112,12 +112,12 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 | `ALLOWED_ORIGINS` | string (optional) | Comma-separated list of additional CORS origins. Localhost origins are always allowed in development. |
 | `LOG_LEVEL` | string | Pino log level (`trace`…`fatal`). Defaults to `info`. |
 | `NODE_ENV` | string | `development`, `test`, or `production`. Defaults to `development`. |
-| `BETTER_AUTH_SECRET` | string | Secret for OTP/session token hashing. |
+| `BETTER_AUTH_SECRET` | string | Secret used by Better Auth for signing, hashing, and encryption. |
+| `BETTER_AUTH_URL` | string | Canonical API origin used by Better Auth. Production uses `https://api.murga.ing`. |
 | `PHOTOS_ADMIN_URL` | string | Canonical admin frontend origin (used for auth CORS). |
 | `EMAIL_WORKER` | Service binding (optional) | Direct binding to the email worker for OTP delivery. |
 | `EMAIL_WORKER_URL` | string (optional) | Fallback URL for the email worker in local development. |
 | `EMAIL_WORKER_API_KEY` | string (optional) | API key for the fallback email worker URL. |
-| `AUTH_KV` | KVNamespace binding | KV store for OTP records and session tokens. |
 
 > **Auth requirement**: either the `EMAIL_WORKER` service binding **or** both `EMAIL_WORKER_URL` and `EMAIL_WORKER_API_KEY` must be provided.
 
@@ -144,8 +144,8 @@ bun run check               # Run TypeScript type check
 
 ## Relevant technical decisions
 
-1. **Custom auth instead of Better Auth endpoints**  
-   The package uses `@roncal/auth` primitives (OTP generation, token hashing, KV helpers) but implements its own HTTP handlers in `src/auth.ts`. This keeps the auth flow lightweight and tightly coupled to the email worker, but means auth tables in `db/schema/auth.ts` are only used for Drizzle Kit migrations, not runtime queries.
+1. **Better Auth owns admin auth state**  
+   `/api/auth/*` is mounted through Better Auth. D1 is the source of truth for the Better Auth `user`, `session`, `verification`, and `account` tables; the email-worker only delivers OTP messages. Legacy custom sessions do not migrate, so admins must sign in again after deployment.
 
 2. **Sessions use a repository; photos and tags do not**  
    The sessions module has a full repository layer (`SessionsRepository`) because it manages cross-table transactions (session + session_tags). Photos and tags operate on single tables, so their services query Drizzle directly. This inconsistency is intentional: a repository is introduced only when multi-table transactions are needed.
@@ -153,8 +153,8 @@ bun run check               # Run TypeScript type check
 3. **WeakMap singletons**  
    `getOrCreateInstance` caches DB, service, and repository instances per `D1Database` object. In the Worker runtime this avoids recreating Drizzle instances on every request without requiring global mutable state.
 
-4. **Raw D1 SQL in auth**  
-   `src/auth.ts` queries the `user` table with raw `c.env.DB_RONCALPHOTO.prepare(...)` instead of Drizzle. This is a historical inconsistency relative to the rest of the codebase; changing it would require refactoring the auth module to use Drizzle and the auth schema, which is a larger architectural change.
+4. **Cross-site production cookies**  
+   Production keeps the admin and API on different origins. Better Auth is configured with `SameSite=None`, `Secure`, and `Partitioned` cookies in production, while local development uses same-site cookies.
 
 5. **Pre-existing type issues**  
    `c.req.valid("json")`, `c.req.valid("param")`, and `c.req.valid("query")` currently infer as `never` in several route files due to a known type-level mismatch in the installed versions of `@hono/zod-openapi` and `zod`. These errors exist in the original codebase and do not affect runtime behavior.

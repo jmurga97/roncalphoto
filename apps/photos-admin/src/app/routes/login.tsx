@@ -75,7 +75,7 @@ function LoginRoute() {
     setIsSubmitting(true);
 
     try {
-      const result = await authClient.emailOtp.signIn({
+      const result = await authClient.signIn.emailOtp({
         email,
         otp,
       });

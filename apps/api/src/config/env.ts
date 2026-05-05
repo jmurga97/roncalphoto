@@ -25,12 +25,6 @@ const publicEnvSchema = z.object({
     (value) => typeof value === "object" && value !== null,
     "DB_RONCALPHOTO binding is required",
   ),
-  AUTH_KV: z
-    .custom<KVNamespace>(
-      (value) => typeof value === "object" && value !== null,
-      "AUTH_KV binding is required in production",
-    )
-    .optional(),
   ALLOWED_ORIGINS: z.string().trim().optional(),
   LOG_LEVEL: logLevelSchema.default("info"),
   NODE_ENV: nodeEnvSchema.default("development"),
@@ -39,6 +33,7 @@ const publicEnvSchema = z.object({
 const authEnvSchema = z
   .object({
     BETTER_AUTH_SECRET: z.string().trim().min(1),
+    BETTER_AUTH_URL: z.string().trim().min(1),
     EMAIL_WORKER: z
       .custom<EmailWorkerServiceBinding>(
         (value) =>

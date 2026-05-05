@@ -1,8 +1,15 @@
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { drizzle } from "drizzle-orm/d1";
-import * as schema from "./schema";
+import * as domainSchema from "./schema";
+import * as authSchema from "./schema/auth";
 
 export * from "./schema";
+export * from "./schema/auth";
+
+export const schema: Record<string, unknown> = {
+  ...domainSchema,
+  ...authSchema,
+};
 
 export function createDb(client: D1Database) {
   return drizzle(client, { schema });

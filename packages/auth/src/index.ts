@@ -5,6 +5,7 @@ import {
   OTP_EXPIRES_IN_LABEL,
   OTP_EXPIRES_IN_SECONDS,
   OTP_LENGTH,
+  OTP_MAX_ATTEMPTS,
   SESSION_EXPIRES_IN_SECONDS,
 } from "./store";
 
@@ -14,26 +15,40 @@ const EMAIL_WORKER_OTP_PATH = "https://email-worker.internal/send/otp";
 
 type DrizzleAdapterDatabase = Parameters<typeof drizzleAdapter>[0];
 
-export type AuthDatabase = unknown;
+export type AuthDatabase = DrizzleAdapterDatabase;
+export type AuthSchema = Record<string, unknown>;
+export type AuthCookieMode = "same-site" | "cross-site";
+export type EmailOtpType = "sign-in" | "email-verification" | "forget-password" | "change-email";
 
 export interface EmailWorkerBinding {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
 
-export interface AuthEnv {
-  BETTER_AUTH_SECRET: string;
-  PHOTOS_ADMIN_URL: string;
-  NODE_ENV?: string;
-  EMAIL_WORKER?: EmailWorkerBinding;
-  EMAIL_WORKER_URL?: string;
-  EMAIL_WORKER_API_KEY?: string;
+export interface SendEmailOtpPayload {
+  email: string;
+  otp: string;
+  type: EmailOtpType;
+}
+
+export type EmailOtpSender = (payload: SendEmailOtpPayload) => Promise<void>;
+
+export interface CreateEmailWorkerOtpSenderOptions {
+  apiKey?: string;
+  expiresInLabel?: string;
+  fetcher?: typeof fetch;
+  preferWorkerUrl?: boolean;
+  worker?: EmailWorkerBinding;
+  workerUrl?: string;
 }
 
 export interface CreateAuthOptions {
   db: AuthDatabase;
-  env: AuthEnv;
-  fetcher?: typeof fetch;
+  schema?: AuthSchema;
+  secret: string;
+  baseURL?: string;
   trustedOrigins?: string[];
+  emailOtpSender: EmailOtpSender;
+  cookieMode?: AuthCookieMode;
 }
 
 type BetterAuthInstance = ReturnType<typeof betterAuth>;
@@ -67,21 +82,24 @@ function resolveEmailWorkerOtpUrl(baseUrl: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/send/otp`;
 }
 
-function resolveEmailWorkerFallbackConfig(env: AuthEnv): { url: string; apiKey: string } {
-  const url = env.EMAIL_WORKER_URL?.trim();
-  const apiKey = env.EMAIL_WORKER_API_KEY?.trim();
+function resolveEmailWorkerFallbackConfig(options: CreateEmailWorkerOtpSenderOptions): {
+  apiKey: string;
+  url: string;
+} {
+  const url = options.workerUrl?.trim();
+  const apiKey = options.apiKey?.trim();
 
   if (!url || !apiKey) {
     throw new Error(
-      "Email worker is not configured. Provide the EMAIL_WORKER service binding or EMAIL_WORKER_URL and EMAIL_WORKER_API_KEY.",
+      "Email worker is not configured. Provide a worker binding or workerUrl and apiKey.",
     );
   }
 
   return { url, apiKey };
 }
 
-function shouldUseEmailWorkerUrl(env: AuthEnv): boolean {
-  return env.NODE_ENV !== "production" && Boolean(env.EMAIL_WORKER_URL?.trim());
+function shouldUseEmailWorkerUrl(options: CreateEmailWorkerOtpSenderOptions): boolean {
+  return Boolean(options.preferWorkerUrl && options.workerUrl?.trim());
 }
 
 async function resolveEmailWorkerError(response: Response): Promise<string> {
@@ -108,9 +126,8 @@ async function resolveEmailWorkerError(response: Response): Promise<string> {
 }
 
 async function sendOtpToEmailWorker(
-  env: AuthEnv,
+  options: CreateEmailWorkerOtpSenderOptions,
   payload: SendOtpPayload,
-  fetcher: typeof fetch,
 ): Promise<void> {
   const request: RequestInit = {
     method: "POST",
@@ -122,14 +139,14 @@ async function sendOtpToEmailWorker(
 
   let response: Response;
 
-  if (!shouldUseEmailWorkerUrl(env) && env.EMAIL_WORKER) {
-    response = await env.EMAIL_WORKER.fetch(EMAIL_WORKER_OTP_PATH, request);
+  if (!shouldUseEmailWorkerUrl(options) && options.worker) {
+    response = await options.worker.fetch(EMAIL_WORKER_OTP_PATH, request);
   } else {
-    const fallback = resolveEmailWorkerFallbackConfig(env);
+    const fallback = resolveEmailWorkerFallbackConfig(options);
     const headers = new Headers(request.headers);
     headers.set("X-Api-Key", fallback.apiKey);
 
-    response = await fetcher(resolveEmailWorkerOtpUrl(fallback.url), {
+    response = await (options.fetcher ?? fetch)(resolveEmailWorkerOtpUrl(fallback.url), {
       ...request,
       headers,
     });
@@ -141,31 +158,64 @@ async function sendOtpToEmailWorker(
   }
 }
 
-export function createAuth({ db, env, fetcher = fetch, trustedOrigins }: CreateAuthOptions): Auth {
+export function createEmailWorkerOtpSender(
+  options: CreateEmailWorkerOtpSenderOptions,
+): EmailOtpSender {
+  return async ({ email, otp }) => {
+    await sendOtpToEmailWorker(options, {
+      to: email,
+      otp,
+      expiresIn: options.expiresInLabel ?? OTP_EXPIRES_IN_LABEL,
+    });
+  };
+}
+
+function getAdvancedCookieOptions(cookieMode: AuthCookieMode) {
+  if (cookieMode !== "cross-site") {
+    return undefined;
+  }
+
+  return {
+    defaultCookieAttributes: {
+      partitioned: true,
+      sameSite: "none" as const,
+      secure: true,
+    },
+    useSecureCookies: true,
+  };
+}
+
+export function createAuth({
+  db,
+  schema,
+  secret,
+  baseURL,
+  trustedOrigins,
+  emailOtpSender,
+  cookieMode = "same-site",
+}: CreateAuthOptions): Auth {
   return betterAuth({
-    secret: env.BETTER_AUTH_SECRET,
+    secret,
+    baseURL,
+    basePath: "/api/auth",
     database: drizzleAdapter(db as DrizzleAdapterDatabase, {
       provider: "sqlite",
+      schema,
     }),
     session: {
       expiresIn: SESSION_EXPIRES_IN_SECONDS,
     },
-    trustedOrigins: trustedOrigins ?? [env.PHOTOS_ADMIN_URL],
+    trustedOrigins,
+    advanced: getAdvancedCookieOptions(cookieMode),
     plugins: [
       emailOTP({
         disableSignUp: true,
         otpLength: OTP_LENGTH,
         expiresIn: OTP_EXPIRES_IN_SECONDS,
-        async sendVerificationOTP({ email, otp }) {
-          await sendOtpToEmailWorker(
-            env,
-            {
-              to: email,
-              otp,
-              expiresIn: OTP_EXPIRES_IN_LABEL,
-            },
-            fetcher,
-          );
+        allowedAttempts: OTP_MAX_ATTEMPTS,
+        storeOTP: "hashed",
+        async sendVerificationOTP({ email, otp, type }) {
+          await emailOtpSender({ email, otp, type });
         },
       }),
     ],

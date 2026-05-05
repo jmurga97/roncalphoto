@@ -4,11 +4,14 @@ import type { createAuthClient as createBetterAuthClient } from "better-auth/rea
 export declare const createAuthClient: typeof createBetterAuthClient;
 export declare const emailOtpClient: typeof emailOTPClient;
 
-export declare const authClient: ReturnType<
+export interface CreateEmailOtpAuthClientOptions {
+  baseURL: string;
+}
+
+export declare function createEmailOtpAuthClient(
+  options: CreateEmailOtpAuthClientOptions,
+): ReturnType<
   typeof createBetterAuthClient<{
     plugins: [ReturnType<typeof emailOTPClient>];
   }>
 >;
-
-export declare const signOut: typeof authClient.signOut;
-export declare const useSession: typeof authClient.useSession;
