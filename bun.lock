@@ -58,7 +58,7 @@
       },
     },
     "apps/photos": {
-      "name": "@roncal/photos-app",
+      "name": "@roncal/photos-web",
       "version": "0.0.1",
       "dependencies": {
         "@roncal/shared": "workspace:*",
@@ -545,7 +545,7 @@
 
     "@roncal/photos-admin": ["@roncal/photos-admin@workspace:apps/photos-admin"],
 
-    "@roncal/photos-app": ["@roncal/photos-app@workspace:apps/photos"],
+    "@roncal/photos-web": ["@roncal/photos-web@workspace:apps/photos"],
 
     "@roncal/shared": ["@roncal/shared@workspace:packages/shared"],
 
