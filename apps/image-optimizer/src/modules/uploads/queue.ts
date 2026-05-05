@@ -1,6 +1,6 @@
 import { type EnvBindings, parseEnv } from "@/config/env";
+import type { UploadQueueMessage } from "@/config/types";
 import { createUploadsService } from "./service";
-import type { ImageProcessingMessage } from "./types";
 
 interface QueueBatch<MessageBody> {
   messages: Array<{
@@ -9,7 +9,7 @@ interface QueueBatch<MessageBody> {
 }
 
 export async function processUploadQueueBatch(
-  batch: QueueBatch<ImageProcessingMessage>,
+  batch: QueueBatch<UploadQueueMessage>,
   rawEnv: EnvBindings,
 ) {
   const env = parseEnv(rawEnv);

@@ -16,6 +16,7 @@ export function GalleryView() {
   const pendingProgrammaticPhotoIdRef = useRef<string | undefined>(undefined);
   const sessionSlugRef = useRef(galleryData.sessionSlug);
 
+  // Reset scroll-tracking state when navigating to a different session
   if (sessionSlugRef.current !== galleryData.sessionSlug) {
     sessionSlugRef.current = galleryData.sessionSlug;
     hasInitialScrollAlignedRef.current = false;

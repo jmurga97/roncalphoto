@@ -1,4 +1,4 @@
-export type HttpErrorStatus = 400 | 401 | 404 | 409 | 413 | 415 | 500;
+export type HttpErrorStatus = 400 | 401 | 404 | 409 | 415 | 500;
 
 export class HttpError extends Error {
   constructor(

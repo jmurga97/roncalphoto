@@ -8,11 +8,11 @@ import { defineConfig } from "vite";
 export default defineConfig(({ mode }) => {
   const envDir = path.resolve(__dirname, "../..");
   const env = loadEnv(mode, envDir, "");
-  const apiUrl = env.VITE_API_URL || env.API_URL || "http://localhost:8787";
+  const apiUrl = env.VITE_API_URL || "http://localhost:8787";
 
   return {
     envDir,
-    envPrefix: ["VITE_", "API_"],
+    envPrefix: "VITE_",
     plugins: [
       tanstackRouter({
         generatedRouteTree: "./src/app/route-tree.gen.ts",
@@ -29,8 +29,7 @@ export default defineConfig(({ mode }) => {
         "@app": path.resolve(__dirname, "./src/app"),
         "@components": path.resolve(__dirname, "./src/components"),
         "@lib": path.resolve(__dirname, "./src/lib"),
-        "@modules": path.resolve(__dirname, "./src/modules"),
-        "@styles": path.resolve(__dirname, "./src/styles"),
+
         "@utils": path.resolve(__dirname, "./src/utils"),
       },
     },

@@ -1,10 +1,9 @@
-const CANONICAL_API_BASE_URL = "https://api.roncalphoto.com";
+const CANONICAL_API_BASE_URL = "https://api.murga.ing";
 const LOCAL_API_BASE_URL = "http://localhost:8787";
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
 
 export interface ApiBaseUrlOptions {
   viteApiUrl?: string | null;
-  legacyApiUrl?: string | null;
   currentOrigin?: string | null;
 }
 
@@ -34,7 +33,7 @@ function isLocalOrigin(origin: string): boolean {
 }
 
 export function resolveApiBaseUrl(options: ApiBaseUrlOptions = {}): string {
-  const override = options.viteApiUrl?.trim() || options.legacyApiUrl?.trim();
+  const override = options.viteApiUrl?.trim();
 
   if (override) {
     return normalizeBaseUrl(override);
@@ -47,8 +46,4 @@ export function resolveApiBaseUrl(options: ApiBaseUrlOptions = {}): string {
   }
 
   return CANONICAL_API_BASE_URL;
-}
-
-export function resolveAuthBaseUrl(options: ApiBaseUrlOptions = {}): string {
-  return `${resolveApiBaseUrl(options)}/api/auth`;
 }

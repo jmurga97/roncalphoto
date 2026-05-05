@@ -9,7 +9,7 @@ function sanitizeFilename(filename: string): string {
   return normalized.length > 0 ? normalized : "original";
 }
 
-function encodeKey(key: string): string {
+export function encodeKey(key: string): string {
   return key.split("/").map(encodeURIComponent).join("/");
 }
 

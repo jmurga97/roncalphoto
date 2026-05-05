@@ -116,6 +116,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@better-auth/drizzle-adapter": "^1.6.9",
+        "@roncal/shared": "workspace:*",
         "better-auth": "^1.6.9",
         "drizzle-orm": "^0.45.2",
       },

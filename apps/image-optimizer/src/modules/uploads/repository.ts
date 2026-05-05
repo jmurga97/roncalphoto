@@ -5,6 +5,7 @@ import type {
   CreateUploadJobRecord,
   PhotoMetadataInput,
   PhotoUploadJob,
+  PhotoUpsertInput,
   UploadJobStatus,
 } from "./types";
 
@@ -35,17 +36,6 @@ interface PhotoUploadJobRow {
   completed_at: string | null;
 }
 
-interface PhotoUpsertInput {
-  id: string;
-  sessionId: string;
-  url: string;
-  miniature: string;
-  alt: string;
-  about: string;
-  sortOrder: number;
-  metadata?: PhotoMetadataInput;
-}
-
 export interface UploadJobsStore {
   sessionExists(sessionId: string): Promise<boolean>;
   createJob(job: CreateUploadJobRecord): Promise<PhotoUploadJob>;
@@ -63,6 +53,16 @@ export interface UploadJobsStore {
 function toNullableText(value: string | undefined): string | null {
   const trimmedValue = value?.trim();
   return trimmedValue ? trimmedValue : null;
+}
+
+function bindMetadataValues(metadata?: PhotoMetadataInput): DbValue[] {
+  return [
+    metadata?.iso ?? null,
+    toNullableText(metadata?.aperture),
+    toNullableText(metadata?.shutterSpeed),
+    toNullableText(metadata?.lens),
+    toNullableText(metadata?.camera),
+  ];
 }
 
 function toPhotoUploadJob(row: PhotoUploadJobRow): PhotoUploadJob {
@@ -143,11 +143,7 @@ export class UploadJobsRepository implements UploadJobsStore {
         job.alt,
         job.about,
         job.sortOrder,
-        job.metadata?.iso ?? null,
-        toNullableText(job.metadata?.aperture),
-        toNullableText(job.metadata?.shutterSpeed),
-        toNullableText(job.metadata?.lens),
-        toNullableText(job.metadata?.camera),
+        ...bindMetadataValues(job.metadata),
       )
       .run();
 
@@ -210,11 +206,7 @@ export class UploadJobsRepository implements UploadJobsStore {
       photo.alt,
       photo.about,
       photo.sortOrder,
-      photo.metadata?.iso ?? null,
-      toNullableText(photo.metadata?.aperture),
-      toNullableText(photo.metadata?.shutterSpeed),
-      toNullableText(photo.metadata?.lens),
-      toNullableText(photo.metadata?.camera),
+      ...bindMetadataValues(photo.metadata),
     ];
 
     await this.db

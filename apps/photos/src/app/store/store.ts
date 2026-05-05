@@ -4,18 +4,8 @@ import { useMemo } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
-import {
-  type SidebarSlice,
-  type SidebarSliceActions,
-  type SidebarSliceState,
-  createSidebarSlice,
-} from "./slices/sidebar-slice";
-import {
-  type Theme,
-  type ThemeSlice,
-  type ThemeSliceActions,
-  createThemeSlice,
-} from "./slices/theme-slice";
+import { type SidebarSlice, createSidebarSlice } from "./slices/sidebar-slice";
+import { type ThemeSlice, createThemeSlice } from "./slices/theme-slice";
 
 const LAYOUT_UI_STORAGE_KEY = "roncal-layout-ui";
 
@@ -163,5 +153,3 @@ export function useThemeActions() {
     })),
   );
 }
-
-export type { SidebarSliceActions, SidebarSliceState, Theme, ThemeSliceActions };

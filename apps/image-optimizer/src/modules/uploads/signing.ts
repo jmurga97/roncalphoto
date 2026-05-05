@@ -1,12 +1,9 @@
 import type { RuntimeEnv } from "@/config/env";
 import type { AcceptedImageMimeType } from "@/modules/images/types";
 import { AwsClient } from "aws4fetch";
+import { encodeKey } from "./keys";
 
 const uploadUrlTtlSeconds = 60 * 60;
-
-function encodeKey(key: string): string {
-  return key.split("/").map(encodeURIComponent).join("/");
-}
 
 export async function createPresignedR2PutUrl(
   env: RuntimeEnv,

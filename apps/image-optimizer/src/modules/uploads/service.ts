@@ -3,6 +3,7 @@ import { BAD_REQUEST, CONFLICT, UNSUPPORTED_MEDIA_TYPE } from "@/config/status-c
 import type { QueueBinding, R2BucketBinding, UploadQueueMessage } from "@/config/types";
 import { CloudflareImagesEngine } from "@/modules/images/engine";
 import { portfolioMainProfile, portfolioThumbnailProfile } from "@/modules/images/profiles";
+import type { ImageProfile } from "@/modules/images/types";
 import { acceptedImageMimeTypes } from "@/modules/images/types";
 import { HttpError } from "@/shared/errors/http-error";
 import { createPublicMediaUrl, createUploadObjectKeys } from "./keys";
@@ -11,7 +12,6 @@ import { createPresignedR2PutUrl } from "./signing";
 import type {
   CreateUploadInput,
   CreateUploadJobRecord,
-  ImageProcessingMessage,
   PhotoUploadJob,
   PresignedUpload,
   UploadJobProgress,
@@ -81,10 +81,14 @@ function assertSupportedImageFormat(format: string) {
   }
 }
 
+type R2ObjectWithBody = Awaited<ReturnType<R2BucketBinding["get"]>> & {
+  body: ReadableStream<Uint8Array>;
+};
+
 async function getRequiredR2Object(
   bucket: R2BucketBinding,
   key: string,
-): Promise<Awaited<ReturnType<R2BucketBinding["get"]>> & { body: ReadableStream<Uint8Array> }> {
+): Promise<R2ObjectWithBody> {
   const object = await bucket.get(key);
   const body = object?.body;
 
@@ -224,7 +228,7 @@ export class UploadsService {
     return queuedJob;
   }
 
-  async processMessage(message: ImageProcessingMessage): Promise<void> {
+  async processMessage(message: UploadQueueMessage): Promise<void> {
     const job = await this.repository.getJob(message.uploadId);
 
     if (!job || job.status === "done") {
@@ -247,25 +251,10 @@ export class UploadsService {
     assertSupportedImageFormat(info.format);
 
     const mainObject = await getRequiredR2Object(this.originalsBucket, job.originalKey);
-    const mainImage = await this.engine.transform(mainObject.body, portfolioMainProfile);
-    await this.mediaBucket.put(job.mainKey, mainImage.bytes, {
-      httpMetadata: {
-        contentType: mainImage.contentType,
-        cacheControl: "public, max-age=31536000, immutable",
-      },
-    });
+    await this.transformAndStore(mainObject.body, job.mainKey, portfolioMainProfile);
 
     const thumbnailObject = await getRequiredR2Object(this.originalsBucket, job.originalKey);
-    const thumbnailImage = await this.engine.transform(
-      thumbnailObject.body,
-      portfolioThumbnailProfile,
-    );
-    await this.mediaBucket.put(job.thumbnailKey, thumbnailImage.bytes, {
-      httpMetadata: {
-        contentType: thumbnailImage.contentType,
-        cacheControl: "public, max-age=31536000, immutable",
-      },
-    });
+    await this.transformAndStore(thumbnailObject.body, job.thumbnailKey, portfolioThumbnailProfile);
 
     await this.repository.upsertPhoto({
       id: job.photoId,
@@ -276,6 +265,20 @@ export class UploadsService {
       about: job.about,
       sortOrder: job.sortOrder,
       metadata: job.metadata,
+    });
+  }
+
+  private async transformAndStore(
+    stream: ReadableStream<Uint8Array>,
+    key: string,
+    profile: ImageProfile,
+  ): Promise<void> {
+    const image = await this.engine.transform(stream, profile);
+    await this.mediaBucket.put(key, image.bytes, {
+      httpMetadata: {
+        contentType: image.contentType,
+        cacheControl: "public, max-age=31536000, immutable",
+      },
     });
   }
 }

@@ -1,237 +1,213 @@
 # RoncalPhoto Image Optimizer
 
-Worker interno para preparar imagenes del portfolio. No es una API publica de compresion generica:
-esta pensado para el dashboard del fotografo, subidas grandes a R2 y procesamiento asincrono con
-Cloudflare Queues.
+## Package purpose
 
-## Que hace
+Internal Cloudflare Worker that powers the image upload pipeline for the
+photographer's portfolio dashboard. It is **not** a public generic image
+compression API.
 
-El servicio recibe una solicitud de subida, genera una URL presigned para que el navegador suba el
-original directamente a R2 y, cuando el dashboard confirma que la subida termino, encola un job por
-foto. El consumer de la Queue transforma cada original con Cloudflare Images y persiste los outputs.
+The service orchestrates three things:
 
-Flujo completo:
+1. **Upload negotiation** — receives metadata from the dashboard, creates tracking
+   jobs in D1 and returns presigned R2 URLs so the browser can upload originals
+   directly.
+2. **Completion & enqueueing** — once the browser confirms the upload, the worker
+   verifies the object exists in R2, marks the job as `queued` and pushes a
+   message to a Cloudflare Queue.
+3. **Async processing** — the Queue consumer reads the original, transforms it
+   with the Cloudflare Images binding into two WebP outputs (main and thumbnail)
+   and persists them in the media bucket, then upserts the final `photos` row
+   in D1.
+
+## Internal dependencies
+
+`apps/image-optimizer` is a **leaf app** inside the monorepo. It does **not**
+import any `@roncal/*` package (`shared`, `auth`, `ui`, etc.).
+
+Its only coupling with the rest of the system is the **shared D1 database**
+(`DB_RONCALPHOTO`) that lives in `apps/api`. It reads from `sessions` and
+writes to `photo_upload_jobs` and `photos` using the same schema that the API
+manages.
+
+External runtime dependencies:
+
+- `hono` — HTTP framework.
+- `zod` — environment and request validation.
+- `aws4fetch` — S3-compatible presigned URL signing for R2.
+
+## Folder structure
 
 ```text
-Dashboard
-  -> POST /api/images/uploads
-  <- uploadUrl presigned + uploadId
-
-Browser
-  -> PUT directo a R2 ORIGINALS_BUCKET
-
-Dashboard
-  -> POST /api/images/uploads/complete
-
-Queue consumer
-  -> lee original de R2
-  -> genera main.webp 1920px quality 85
-  -> genera thumb.webp 480px quality 80
-  -> guarda outputs en MEDIA_BUCKET
-  -> upsert en photos.url y photos.miniature
-  -> marca photo_upload_jobs como done o error
+src/
+  index.ts              # Worker entry point: exports fetch (Hono) and queue handlers
+  app/
+    create-app.ts       # Hono app factory: middleware, health check, route registration
+    routes.ts           # Mounts module routers under /api/images
+    middlewares/
+      cors.ts           # Origin validation for dashboard requests
+  config/
+    env.ts              # Environment parsing, validation and runtime context helper
+    types.ts            # App bindings, Hono types and manual Cloudflare platform stubs
+    status-codes.ts     # Named HTTP status code constants
+    handlers.ts         # Global 404 and error handlers (HttpError + ZodError mapping)
+  modules/
+    uploads/            # Upload domain
+      routes.ts         # Route definitions: POST /uploads, /uploads/complete, /uploads/:id/retry, GET /uploads
+      service.ts        # Business logic: job lifecycle, queue integration, image processing orchestration
+      repository.ts     # D1 persistence: jobs CRUD, photo upsert, session existence check
+      queue.ts          # Queue consumer entry point
+      schemas.ts        # Zod request validation schemas
+      types.ts          # Domain types: job statuses, inputs, outputs, progress
+      auth.ts           # Bearer token extraction and verification
+      signing.ts        # Presigned R2 PUT URL generation via aws4fetch
+      keys.ts           # Object key naming and public URL construction utilities
+    images/             # Image optimization abstraction
+      engine.ts         # Wrapper around the Cloudflare Images binding
+      profiles.ts       # Output profiles: main (1920px) and thumbnail (480px)
+      types.ts          # MIME type constants and image profile interfaces
+  shared/
+    errors/
+      http-error.ts     # Typed HTTP error class used across the app
+    lib/
+      http.ts           # `jsonSuccess` helper for consistent response shape
 ```
 
-## Bindings y variables
+## Architecture
 
-`wrangler.toml` espera estos bindings:
+The app follows a **layered architecture** with clear separation of concerns:
 
-- `IMAGES`: Cloudflare Images binding.
-- `DB_RONCALPHOTO`: D1 compartida con la API.
-- `ORIGINALS_BUCKET`: bucket privado para originales.
-- `MEDIA_BUCKET`: bucket publico o con custom domain para imagenes servidas al portfolio.
-- `IMAGE_PROCESSING_QUEUE`: Queue `roncalphoto-image-processing`.
+| Layer | Responsibility |
+|-------|----------------|
+| **Config** | Environment schema (Zod), manual platform type stubs, status codes, global handlers. |
+| **App** | Hono instance, CORS middleware, route mounting, health endpoint. |
+| **Routes** | HTTP surface: auth, input validation, service invocation, response formatting. |
+| **Service** | Business rules: job state machine, R2/Queue coordination, image processing flow. |
+| **Repository** | D1 access abstracted behind the `UploadJobsStore` interface. |
+| **Shared** | Tiny cross-cutting helpers (`HttpError`, `jsonSuccess`). |
 
-Variables configuradas en `wrangler.toml`:
+**Patterns in use:**
 
-- `PUBLIC_MEDIA_BASE_URL`: base publica para construir `photos.url` y `photos.miniature`.
-- `R2_ACCOUNT_ID`: account id de Cloudflare para firmar URLs S3-compatible.
-- `R2_ORIGINALS_BUCKET_NAME`: nombre real del bucket de originales.
-- `ALLOWED_ORIGINS`, `NODE_ENV`.
+- **Factory-based dependency injection** — `createUploadsService(env)` wires the
+  service with its repository and platform bindings (R2, Queue, Images).
+- **Repository pattern** — `UploadJobsRepository` implements `UploadJobsStore`,
+  making the service testable without a real D1 database.
+- **Queue-driven async processing** — The HTTP path only enqueues; a separate
+  `queue` handler processes images asynchronously, keeping upload confirmation
+  latency low.
 
-Secrets requeridos:
+## Request lifecycle
 
-- `ADMIN_UPLOAD_TOKEN`: token bearer para endpoints internos.
-- `R2_ACCESS_KEY_ID`: access key S3-compatible de R2.
-- `R2_SECRET_ACCESS_KEY`: secret key S3-compatible de R2.
+### HTTP request
 
-## Endpoints
-
-Todos los endpoints de upload requieren:
-
-```http
-Authorization: Bearer <ADMIN_UPLOAD_TOKEN>
+```
+Browser/Dashboard
+  → Cloudflare Worker (fetch handler)
+    → Hono app
+      → Middleware: parse env + CORS validation
+      → Route handler
+        → Auth: Bearer token verification
+        → Validation: Zod schema parsing
+        → Service: business logic execution
+          → Repository: D1 queries
+          → R2/Queue: storage or enqueueing
+        → jsonSuccess(response)
+      → (on error) Global error handler
 ```
 
-### `POST /api/images/uploads`
+### Queue message
 
-Crea jobs en D1 y devuelve URLs presigned para subir originales a R2.
-
-Body:
-
-```json
-{
-  "sessionId": "sess-urban-lines",
-  "files": [
-    {
-      "filename": "photo.jpg",
-      "contentType": "image/jpeg",
-      "sizeBytes": 25000000,
-      "alt": "Retrato editorial a contraluz",
-      "about": "Contexto de la imagen",
-      "sortOrder": 0,
-      "metadata": {
-        "iso": 400,
-        "aperture": "f/2.8",
-        "shutterSpeed": "1/250",
-        "lens": "85mm f/1.8",
-        "camera": "Canon EOS R5"
-      }
-    }
-  ]
-}
+```
+Cloudflare Queue
+  → Worker (queue handler)
+    → processUploadQueueBatch(batch, env)
+      → parseEnv + createUploadsService
+      → for each message:
+        → service.processMessage(message)
+          → load job from D1
+          → update status → processing
+          → read original from R2 ORIGINALS_BUCKET
+          → engine.readInfo (validate format)
+          → engine.transform → main.webp → MEDIA_BUCKET
+          → engine.transform → thumb.webp → MEDIA_BUCKET
+          → repository.upsertPhoto (D1)
+          → update status → done
+          → (on error) update status → error + message
 ```
 
-Respuesta:
+## Configuration
 
-```json
-{
-  "success": true,
-  "data": {
-    "uploads": [
-      {
-        "uploadId": "...",
-        "photoId": "...",
-        "uploadUrl": "https://...",
-        "originalKey": "sessions/.../original/photo.jpg",
-        "mainKey": "sessions/.../main.webp",
-        "thumbnailKey": "sessions/.../thumb.webp",
-        "expiresAt": "2026-05-02T12:00:00.000Z",
-        "headers": {
-          "Content-Type": "image/jpeg"
-        }
-      }
-    ]
-  }
-}
-```
+Bindings declared in `wrangler.toml`:
 
-El browser debe hacer `PUT uploadUrl` usando exactamente los headers devueltos.
+| Binding | Type | Purpose |
+|---------|------|---------|
+| `IMAGES` | Cloudflare Images | Image info and transformation engine. |
+| `DB_RONCALPHOTO` | D1 | Shared portfolio database (jobs + photos tables). |
+| `ORIGINALS_BUCKET` | R2 | Private bucket where browsers upload unprocessed originals. |
+| `MEDIA_BUCKET` | R2 | Public bucket that serves processed main and thumbnail images. |
+| `IMAGE_PROCESSING_QUEUE` | Queue | Async pipeline for image transformation jobs. |
 
-### `POST /api/images/uploads/complete`
+Environment variables / secrets:
 
-Confirma que los originales ya estan en R2. El Worker verifica cada objeto, marca el job como
-`queued` y envia un mensaje a la Queue.
+| Variable | Source | Purpose |
+|----------|--------|---------|
+| `ADMIN_UPLOAD_TOKEN` | Secret | Bearer token required by all upload endpoints. |
+| `PUBLIC_MEDIA_BASE_URL` | `wrangler.toml` | Public base URL used to construct final `photos.url` and `photos.miniature`. |
+| `R2_ACCESS_KEY_ID` | Secret | S3-compatible credentials for signing presigned R2 URLs. |
+| `R2_SECRET_ACCESS_KEY` | Secret | S3-compatible secret for signing presigned R2 URLs. |
+| `R2_ACCOUNT_ID` | `wrangler.toml` | Cloudflare account ID for R2 S3-compatible endpoint. |
+| `R2_ORIGINALS_BUCKET_NAME` | `wrangler.toml` | Real bucket name used in the presigned URL path. |
+| `ALLOWED_ORIGINS` | `wrangler.toml` (optional) | Comma-separated list of additional CORS origins. |
+| `NODE_ENV` | `wrangler.toml` | `development` \| `test` \| `production`; controls CORS strictness. |
 
-```json
-{
-  "uploadIds": ["..."]
-}
-```
+Local secrets live in `.dev.vars` (see `.dev.vars.example`).
 
-### `GET /api/images/uploads?sessionId=...`
-
-Devuelve jobs y progreso agregado para que el dashboard pueda pintar estado.
-
-Estados posibles:
-
-- `awaiting_upload`
-- `queued`
-- `processing`
-- `done`
-- `error`
-
-### `POST /api/images/uploads/:uploadId/retry`
-
-Reencola un job en `error`. Solo funciona si el original sigue existiendo en `ORIGINALS_BUCKET`.
-
-## Datos persistidos
-
-La migracion `apps/api/src/db/migrations/0003_photo_upload_jobs.sql` crea
-`photo_upload_jobs`. Esta tabla guarda el estado operativo del pipeline y los datos necesarios para
-crear o actualizar la fila final de `photos`.
-
-La tabla `photos` no cambia. El optimizer escribe:
-
-- `url`: URL publica del `main.webp`.
-- `miniature`: URL publica del `thumb.webp`.
-- copy, orden y metadata tecnica recibidos al crear el upload.
-
-## Perfiles de imagen
-
-Los perfiles viven en `src/modules/images/profiles.ts`.
-
-- `portfolio-main`: width `1920`, fit `scale-down`, WebP, quality `85`.
-- `portfolio-thumbnail`: width `480`, fit `scale-down`, WebP, quality `80`.
-
-RAW no se procesa en v1. El input aceptado es JPEG, PNG o WebP.
-
-## Proximos pasos en Cloudflare
-
-1. Crear buckets R2:
+## Available scripts
 
 ```bash
-wrangler r2 bucket create roncalphoto-originals
-wrangler r2 bucket create roncalphoto-media
-```
+# Local development server with hot reload
+bun run dev
 
-2. Hacer publico el bucket de media o asociarle un custom domain/CDN.
-
-Actualizar `PUBLIC_MEDIA_BASE_URL` con la URL final, por ejemplo:
-
-```bash
-wrangler deploy --var PUBLIC_MEDIA_BASE_URL:https://media.roncalphoto.com
-```
-
-3. Crear la Queue:
-
-```bash
-wrangler queues create roncalphoto-image-processing
-```
-
-4. Crear credenciales S3-compatible de R2 con permisos sobre `roncalphoto-originals`.
-
-Guardar secrets en `apps/image-optimizer/.dev.vars` para local o via `wrangler secret put` para remoto:
-
-```bash
-wrangler secret put ADMIN_UPLOAD_TOKEN
-wrangler secret put R2_ACCESS_KEY_ID
-wrangler secret put R2_SECRET_ACCESS_KEY
-```
-
-5. Sustituir placeholders de `wrangler.toml`:
-
-- `R2_ACCOUNT_ID`
-- `R2_ORIGINALS_BUCKET_NAME`
-- `PUBLIC_MEDIA_BASE_URL`
-
-6. Aplicar migraciones D1:
-
-```bash
-cd ../api
-wrangler d1 migrations apply DB_RONCALPHOTO --remote
-```
-
-7. Desplegar el worker:
-
-```bash
-cd ../image-optimizer
-bun run deploy
-```
-
-8. Conectar el dashboard:
-
-- Pedir presigned URLs con `POST /api/images/uploads`.
-- Subir cada archivo con `PUT uploadUrl`.
-- Confirmar con `POST /api/images/uploads/complete`.
-- Consultar progreso con `GET /api/images/uploads?sessionId=...`.
-
-## Comandos locales utiles
-
-```bash
+# Type check without emitting
 bun run check
+
+# Build / dry-run deploy
 bun run build
+
+# Deploy to Cloudflare
 bun run deploy
+
+# Regenerate Wrangler types from bindings
+bun run cf-typegen
 ```
 
-No hay suite de tests en este paquete por decision actual del proyecto.
+## Relevant technical decisions
+
+1. **Manual Cloudflare platform stubs** (`src/config/types.ts`)
+   The app defines its own minimal interfaces for `R2BucketBinding`,
+   `D1DatabaseBinding`, `ImagesBinding`, etc. instead of importing
+   `@cloudflare/workers-types`. This is intentional because the generic
+   `workers-types` package does not include the `ImagesBinding` shape, and
+   keeping lightweight stubs avoids version mismatches across the monorepo.
+
+2. **Three R2 GETs per job**
+   `processJob` fetches the same original from R2 three times: once for
+   `info`, once for the main transform and once for the thumbnail transform.
+   This is required because `ReadableStream` can only be consumed once and
+   Cloudflare Images processes the stream directly.
+
+3. **No internal package imports**
+   `image-optimizer` deliberately does not depend on `@roncal/shared` or any
+   other workspace package. Its types are self-contained to keep the worker
+   deploy boundary small and avoid leaking frontend or API abstractions into
+   the image pipeline.
+
+4. **Job table as state machine**
+   `photo_upload_jobs` tracks the full lifecycle (`awaiting_upload` → `queued`
+   → `processing` → `done`/`error`). The `photos` table only stores final
+   output metadata. Retries are explicit via `POST /uploads/:uploadId/retry`
+   and only allowed when the original is still present in `ORIGINALS_BUCKET`.
+
+5. **Presigned uploads via `aws4fetch`**
+   The dashboard receives S3-compatible presigned PUT URLs so the browser
+   uploads directly to R2, bypassing the Worker for large binary payloads.
+   This keeps the Worker lightweight and avoids request body size limits.

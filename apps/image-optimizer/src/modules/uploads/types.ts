@@ -1,4 +1,3 @@
-import type { UploadQueueMessage } from "@/config/types";
 import type { AcceptedImageMimeType } from "@/modules/images/types";
 
 export const uploadJobStatuses = [
@@ -85,4 +84,13 @@ export interface UploadJobsResponse {
   progress: UploadJobProgress;
 }
 
-export type ImageProcessingMessage = UploadQueueMessage;
+export interface PhotoUpsertInput {
+  id: string;
+  sessionId: string;
+  url: string;
+  miniature: string;
+  alt: string;
+  about: string;
+  sortOrder: number;
+  metadata?: PhotoMetadataInput;
+}

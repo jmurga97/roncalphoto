@@ -2,7 +2,6 @@ import { type ApiResponse, type PaginatedResponse, resolveApiBaseUrl } from "@ro
 
 const API_URL = resolveApiBaseUrl({
   viteApiUrl: import.meta.env.VITE_API_URL,
-  legacyApiUrl: import.meta.env.API_URL,
 });
 
 export class ApiRequestError extends Error {

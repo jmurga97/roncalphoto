@@ -11,5 +11,5 @@ name = "SEND_EMAIL"
 enabled = true
 
 [vars]
-FROM_EMAIL = "replace-with-verified-sender@example.com"
+FROM_EMAIL = "noreply@mail.murga.ing"
 FROM_NAME = "RoncalPhoto"
