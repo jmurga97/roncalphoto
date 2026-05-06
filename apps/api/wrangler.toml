@@ -18,8 +18,8 @@ service = "roncalphoto-email"
 enabled = true
 
 [vars]
-ALLOWED_ORIGINS = "roncalphoto-web.murgapja-fee.workers.dev,roncalphoto-admin.murgapja-fee.workers.dev"
+ALLOWED_ORIGINS = "https://roncalphoto-web.murgapja-fee.workers.dev,https://roncalphoto-admin.murgapja-fee.workers.dev"
 LOG_LEVEL = "info"
 NODE_ENV = "production"
-BETTER_AUTH_URL = "roncalphoto-api.murgapja-fee.workers.dev"
-PHOTOS_ADMIN_URL = "roncalphoto-admin.murgapja-fee.workers.dev"
+BETTER_AUTH_URL = "https://roncalphoto-api.murgapja-fee.workers.dev"
+PHOTOS_ADMIN_URL = "https://roncalphoto-admin.murgapja-fee.workers.dev"
