@@ -22,7 +22,7 @@ const authInstances = new WeakMap<D1Database, Auth>();
 function createAuthConfigError() {
   return new HttpError(
     BAD_REQUEST,
-    "Auth is not configured. Set BETTER_AUTH_SECRET, BETTER_AUTH_URL, PHOTOS_ADMIN_URL, and configure the EMAIL_WORKER service binding or the EMAIL_WORKER_URL and EMAIL_WORKER_API_KEY fallback.",
+    "Auth is not configured. Set BETTER_AUTH_SECRET, BETTER_AUTH_URL, PHOTOS_ADMIN_URL, and configure the EMAIL_WORKER service binding.",
   );
 }
 
@@ -48,11 +48,7 @@ export function getAuth(c: Context<AppBindings>): Auth {
       cookieMode: isProductionEnv(runtimeEnv) ? "cross-site" : "same-site",
       emailOtpSender: createEmailWorkerOtpSender({
         worker: authEnv.EMAIL_WORKER,
-        workerUrl: authEnv.EMAIL_WORKER_URL,
-        apiKey: authEnv.EMAIL_WORKER_API_KEY,
         expiresInLabel: OTP_EXPIRES_IN_LABEL,
-        preferWorkerUrl:
-          runtimeEnv.NODE_ENV !== "production" && Boolean(authEnv.EMAIL_WORKER_URL?.trim()),
       }),
     }),
   );

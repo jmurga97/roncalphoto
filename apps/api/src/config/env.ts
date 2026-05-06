@@ -43,19 +43,16 @@ const authEnvSchema = z
         "EMAIL_WORKER service binding must implement fetch",
       )
       .optional(),
-    EMAIL_WORKER_URL: z.string().trim().min(1).optional(),
-    EMAIL_WORKER_API_KEY: z.string().trim().min(1).optional(),
     PHOTOS_ADMIN_URL: z.string().trim().min(1),
   })
   .superRefine((env, ctx) => {
-    if (env.EMAIL_WORKER || (env.EMAIL_WORKER_URL && env.EMAIL_WORKER_API_KEY)) {
+    if (env.EMAIL_WORKER) {
       return;
     }
 
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message:
-        "Auth requires the EMAIL_WORKER service binding or EMAIL_WORKER_URL and EMAIL_WORKER_API_KEY.",
+      message: "Auth requires the EMAIL_WORKER service binding.",
       path: ["EMAIL_WORKER"],
     });
   });
@@ -68,7 +65,9 @@ export interface RuntimeEnv extends ParsedPublicEnv {
   allowedOrigins: string[];
 }
 
-export type AuthRuntimeEnv = ParsedAuthEnv;
+export interface AuthRuntimeEnv extends Omit<ParsedAuthEnv, "EMAIL_WORKER"> {
+  EMAIL_WORKER: EmailWorkerServiceBinding;
+}
 
 const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
@@ -150,7 +149,7 @@ export function parseEnv(rawEnv: EnvBindings): RuntimeEnv {
 }
 
 export function parseAuthEnv(rawEnv: EnvBindings): AuthRuntimeEnv {
-  return authEnvSchema.parse(rawEnv);
+  return authEnvSchema.parse(rawEnv) as AuthRuntimeEnv;
 }
 
 export function getRuntimeEnv(c: Context<AppBindings>): RuntimeEnv {

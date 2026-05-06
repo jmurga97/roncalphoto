@@ -115,11 +115,9 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 | `BETTER_AUTH_SECRET` | string | Secret used by Better Auth for signing, hashing, and encryption. |
 | `BETTER_AUTH_URL` | string | Canonical API origin used by Better Auth. Production uses `https://api.murga.ing`. |
 | `PHOTOS_ADMIN_URL` | string | Canonical admin frontend origin (used for auth CORS). |
-| `EMAIL_WORKER` | Service binding (optional) | Direct binding to the email worker for OTP delivery. |
-| `EMAIL_WORKER_URL` | string (optional) | Fallback URL for the email worker in local development. |
-| `EMAIL_WORKER_API_KEY` | string (optional) | API key for the fallback email worker URL. |
+| `EMAIL_WORKER` | Service binding | Direct binding to the email worker for OTP delivery. |
 
-> **Auth requirement**: either the `EMAIL_WORKER` service binding **or** both `EMAIL_WORKER_URL` and `EMAIL_WORKER_API_KEY` must be provided.
+> **Auth requirement**: the `EMAIL_WORKER` service binding must be available whenever `/api/auth/*` is used.
 
 ### Cloudflare deploy credentials
 
@@ -149,6 +147,8 @@ bun run db:studio           # Open Drizzle Studio
 bun run cf-typegen          # Regenerate Wrangler worker types
 bun run check               # Run TypeScript type check
 ```
+
+For local OTP login tests, run `@roncal/email-worker` in parallel so Wrangler can connect the `EMAIL_WORKER` service binding during `wrangler dev`.
 
 ## Relevant technical decisions
 

@@ -90,16 +90,15 @@ bun run --filter=@roncal/api db:migrate:remote
 3. Usar `VITE_API_URL` solo cuando quieras sobreescribir el origen del API. Sin override, el navegador usa `http://localhost:8787` en local y `https://api.murga.ing` fuera de local. `API_URL` sigue aceptandose como alias legacy temporal.
 4. Puertos locales por defecto:
    API `8787`, email worker `8788`, image optimizer `8789`, admin `5173`, photos `5174`
-5. Para Workers usar `wrangler.toml` como contrato de produccion y `*.dev.vars` para overrides locales. El auth admin necesita `apps/api/.dev.vars` con `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `EMAIL_WORKER_URL`, `EMAIL_WORKER_API_KEY` y `PHOTOS_ADMIN_URL`; las rutas publicas (`/api/sessions`, `/api/photos`, `/api/tags`) no dependen de esas variables
+5. Para Workers usar `wrangler.toml` como contrato de produccion y `*.dev.vars` para overrides locales. El auth admin necesita `apps/api/.dev.vars` con `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` y `PHOTOS_ADMIN_URL`; las rutas publicas (`/api/sessions`, `/api/photos`, `/api/tags`) no dependen de esas variables
 6. La matriz operativa completa de Cloudflare, credentials de deploy, secrets, bindings y orden de despliegue vive en [docs/cloudflare-production.md](/Users/murgapja/dev/roncalphoto/docs/cloudflare-production.md). `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID` son variables de build/deploy para Wrangler; no deben vivir en `wrangler.toml [vars]` ni en runtime.
 
 ## Auth admin
 
 - `apps/api` monta Better Auth en `/api/auth/*` y usa OTP por email.
 - Better Auth persiste `user`, `session`, `verification` y `account` en D1; el KV de auth antiguo ya no se usa.
-- En produccion la API llama al worker de email mediante el service binding `EMAIL_WORKER`; en local puede usar el fallback `EMAIL_WORKER_URL` + `EMAIL_WORKER_API_KEY`.
-- `EMAIL_WORKER_URL` debe apuntar al origen base del worker de email, por ejemplo `http://localhost:8788`; la API llamara a `/send/otp`.
-- `EMAIL_WORKER_API_KEY` en la API debe coincidir con el secret `WORKER_API_KEY` del email worker cuando el fallback por URL este activo.
+- La API llama al worker de email exclusivamente mediante el service binding `EMAIL_WORKER`.
+- Para probar el login OTP en local, levanta tambien `@roncal/email-worker` para que `wrangler dev` conecte el binding `EMAIL_WORKER`.
 - `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` y `PHOTOS_ADMIN_URL` son obligatorios para `/api/auth/*`. En produccion `BETTER_AUTH_URL` es `https://api.murga.ing`.
 - `PHOTOS_ADMIN_URL` sigue siendo el origen canonico del dashboard; en desarrollo local el auth tambien tolera otros orígenes `localhost` configurados en `ALLOWED_ORIGINS`, para no depender de un puerto fijo si Vite cambia de `5173` a `5174` u otro permitido.
 - `/api/auth/*` devuelve respuestas y cookies nativas de Better Auth; las APIs de dominio conservan el envelope `{ success, data }`.

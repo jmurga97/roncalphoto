@@ -99,10 +99,7 @@ sequenceDiagram
 | `BETTER_AUTH_SECRET` | `roncalphoto-api` | Secreto de firma, hashing y cifrado de Better Auth. |
 | `BETTER_AUTH_URL` | `roncalphoto-api` | Origen canonico de la API; produccion usa `https://api.murga.ing`. |
 | `PHOTOS_ADMIN_URL` | `roncalphoto-api` | Origen canonico del dashboard para trusted origins y CORS. |
-| `EMAIL_WORKER` | `roncalphoto-api` | Service binding de produccion hacia el email-worker. |
-| `EMAIL_WORKER_URL` | `roncalphoto-api` | Fallback HTTP local, por ejemplo `http://localhost:8788`. |
-| `EMAIL_WORKER_API_KEY` | `roncalphoto-api` | API key para el fallback HTTP local. |
-| `WORKER_API_KEY` | `roncalphoto-email-worker` | Debe coincidir con `EMAIL_WORKER_API_KEY` cuando se use fallback HTTP. |
+| `EMAIL_WORKER` | `roncalphoto-api` | Service binding hacia el email-worker para el envio de OTPs. |
 
 Produccion usa cookies cross-site de Better Auth porque admin y API viven en dominios distintos: `SameSite=None`, `Secure` y `Partitioned`. En local se usan cookies same-site.
 
@@ -152,8 +149,6 @@ Ve a **Workers & Pages > roncalphoto-api > Settings > Variables and Secrets** y 
 | Secret | `BETTER_AUTH_SECRET` | Genera un string aleatorio de 32+ caracteres (por ejemplo con `openssl rand -base64 32`). |
 | Plain text | `BETTER_AUTH_URL` | `https://api.murga.ing` (tu origen canonico de la API). |
 | Plain text | `PHOTOS_ADMIN_URL` | `https://admin.tudominio.com` (origen exacto del dashboard admin). |
-| Secret | `EMAIL_WORKER_API_KEY` | API key compartida con el email-worker (solo necesaria si usas fallback HTTP). |
-| Plain text | `EMAIL_WORKER_URL` | `http://localhost:8788` (solo para local; en produccion se usa el service binding). |
 
 ### 6.4 Configurar el service binding `EMAIL_WORKER`
 
@@ -195,6 +190,7 @@ bun run build
 
 Smoke test local con `wrangler dev`:
 
+- Levanta `apps/email-worker` junto a `apps/api` para que el service binding `EMAIL_WORKER` aparezca conectado durante el desarrollo local.
 - Usuario existente en D1 recibe OTP.
 - Usuario inexistente obtiene respuesta exitosa, no recibe email y no crea usuario.
 - OTP valido crea fila en `session`, usa `verification` y permite CRUD protegido.

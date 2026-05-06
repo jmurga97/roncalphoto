@@ -123,8 +123,6 @@ credentials.
 | `BETTER_AUTH_URL` | `wrangler.toml [vars]` | Canonical API origin. |
 | `PHOTOS_ADMIN_URL` | `wrangler.toml [vars]` | Canonical admin origin. |
 | `BETTER_AUTH_SECRET` | Runtime secret | Required for Better Auth. |
-| `EMAIL_WORKER_API_KEY` | Runtime secret | Required only for fallback HTTP OTP delivery. |
-| `EMAIL_WORKER_URL` | Runtime variable | Local/fallback only; production should prefer `EMAIL_WORKER`. |
 
 ### `roncalphoto-email-worker`
 
@@ -133,7 +131,6 @@ credentials.
 | `SEND_EMAIL` | `wrangler.toml` send_email binding | Sends OTP emails. |
 | `FROM_EMAIL` | `wrangler.toml [vars]` | Verified sender address. |
 | `FROM_NAME` | `wrangler.toml [vars]` | Sender display name. |
-| `WORKER_API_KEY` | Runtime secret | Shared with API fallback HTTP mode. |
 
 ### `roncalphoto-image-optimizer`
 

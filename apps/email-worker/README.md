@@ -4,7 +4,7 @@ Transactional email worker for the RoncalPhoto monorepo. Built as a Cloudflare W
 
 ## Package purpose
 
-This worker sends OTP emails for the admin dashboard authentication flow. It exposes a single protected endpoint that accepts a destination address, an OTP code, and an expiration label, then delivers a rendered email through Cloudflare's `send_email` binding.
+This worker sends OTP emails for the admin dashboard authentication flow. It exposes a single endpoint that accepts a destination address, an OTP code, and an expiration label, then delivers a rendered email through Cloudflare's `send_email` binding.
 
 ## Internal dependencies
 
@@ -20,7 +20,6 @@ src/
 wrangler.toml         # Worker configuration (send_email binding, vars, observability)
 tsconfig.json         # TypeScript config (extends root, jsx required for @roncal/email-templates imports)
 package.json          # Workspace metadata and scripts
-.dev.vars.example     # Local environment variable template
 ```
 
 ## Architecture
@@ -33,7 +32,6 @@ The worker is intentionally kept as a **single-file Hono application**. There is
 |-------|----------------|
 | **Types** | Local interfaces for Cloudflare bindings (`SEND_EMAIL`), request payloads, and email shapes. |
 | **Validation** | Pure functions (`isObject`, `isNonEmptyString`, `isEmail`, `parseOtpRequestBody`) that guard the request body without external schema libraries. |
-| **Middleware** | `app.use("/send/*")` validates the `X-Api-Key` header against `WORKER_API_KEY` when the key is configured. |
 | **Route handler** | `POST /send/otp` renders the email template and calls the Cloudflare email binding. |
 
 ### Patterns
@@ -46,15 +44,14 @@ The worker is intentionally kept as a **single-file Hono application**. There is
 
 1. **Cloudflare Worker** receives the request and invokes `src/index.ts`.
 2. **Hono router** matches the path.
-3. **Auth middleware** (`/send/*`) checks `X-Api-Key` against `WORKER_API_KEY` if the latter is configured. If the key is missing or mismatched, the request is rejected with `401`.
-4. **`POST /send/otp`**:
+3. **`POST /send/otp`**:
    - Parses the JSON body.
    - Validates the shape `{ to, otp, expiresIn }` using `parseOtpRequestBody`.
    - Calls `renderOtpEmail` from `@roncal/email-templates` to produce HTML and text bodies.
    - Sends the message via `c.env.SEND_EMAIL.send`.
    - Returns `{ success: true, data: { messageId } }` on success.
    - Returns `{ success: false, error: { code: "EMAIL_SEND_FAILED", message } }` on failure.
-5. **Any other route** → `404` with `{ success: false, error: { code: "NOT_FOUND", message } }`.
+4. **Any other route** → `404` with `{ success: false, error: { code: "NOT_FOUND", message } }`.
 
 ## Configuration
 
@@ -65,9 +62,6 @@ The worker is intentionally kept as a **single-file Hono application**. There is
 | `SEND_EMAIL` | `send_email` binding | Cloudflare transactional email binding used to deliver messages. |
 | `FROM_EMAIL` | string (via `wrangler.toml` `[vars]`) | Verified sender address. |
 | `FROM_NAME` | string (via `wrangler.toml` `[vars]`) | Display name for the sender. |
-| `WORKER_API_KEY` | string (optional, via `.dev.vars`) | Shared secret required in the `X-Api-Key` header. If omitted, auth middleware is bypassed. |
-
-> **Local development**: copy `.dev.vars.example` to `.dev.vars` and set `WORKER_API_KEY` to the same value configured in `apps/api` (`EMAIL_WORKER_API_KEY`).
 
 ### Cloudflare deploy credentials
 

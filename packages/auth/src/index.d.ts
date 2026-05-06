@@ -16,12 +16,8 @@ export interface SendEmailOtpPayload {
 export type EmailOtpSender = (payload: SendEmailOtpPayload) => Promise<void>;
 
 export interface CreateEmailWorkerOtpSenderOptions {
-  apiKey?: string;
   expiresInLabel?: string;
-  fetcher?: typeof fetch;
-  preferWorkerUrl?: boolean;
-  worker?: EmailWorkerBinding;
-  workerUrl?: string;
+  worker: EmailWorkerBinding;
 }
 
 export interface CreateAuthOptions {

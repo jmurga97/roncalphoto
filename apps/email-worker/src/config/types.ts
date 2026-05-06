@@ -23,7 +23,6 @@ export interface EmailBinding {
 
 export interface Bindings {
   SEND_EMAIL: EmailBinding;
-  WORKER_API_KEY?: string;
   FROM_EMAIL: string;
   FROM_NAME: string;
 }

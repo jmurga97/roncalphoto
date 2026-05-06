@@ -1,7 +1,6 @@
 import { notFoundHandler, onErrorHandler } from "@/config/handlers";
 import type { AppBindings } from "@/config/types";
 import { Hono } from "hono";
-import { apiKeyMiddleware } from "./middlewares/api-key";
 import { registerRoutes } from "./routes";
 
 export function createRouter() {
@@ -10,8 +9,6 @@ export function createRouter() {
 
 export function createApp() {
   const app = createRouter();
-
-  app.use("/send/*", apiKeyMiddleware);
 
   registerRoutes(app);
 

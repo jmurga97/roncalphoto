@@ -33,12 +33,8 @@ export interface SendEmailOtpPayload {
 export type EmailOtpSender = (payload: SendEmailOtpPayload) => Promise<void>;
 
 export interface CreateEmailWorkerOtpSenderOptions {
-  apiKey?: string;
   expiresInLabel?: string;
-  fetcher?: typeof fetch;
-  preferWorkerUrl?: boolean;
-  worker?: EmailWorkerBinding;
-  workerUrl?: string;
+  worker: EmailWorkerBinding;
 }
 
 export interface CreateAuthOptions {
@@ -78,30 +74,6 @@ interface EmailWorkerErrorBody {
   };
 }
 
-function resolveEmailWorkerOtpUrl(baseUrl: string): string {
-  return `${baseUrl.replace(/\/+$/, "")}/send/otp`;
-}
-
-function resolveEmailWorkerFallbackConfig(options: CreateEmailWorkerOtpSenderOptions): {
-  apiKey: string;
-  url: string;
-} {
-  const url = options.workerUrl?.trim();
-  const apiKey = options.apiKey?.trim();
-
-  if (!url || !apiKey) {
-    throw new Error(
-      "Email worker is not configured. Provide a worker binding or workerUrl and apiKey.",
-    );
-  }
-
-  return { url, apiKey };
-}
-
-function shouldUseEmailWorkerUrl(options: CreateEmailWorkerOtpSenderOptions): boolean {
-  return Boolean(options.preferWorkerUrl && options.workerUrl?.trim());
-}
-
 async function resolveEmailWorkerError(response: Response): Promise<string> {
   try {
     const body = (await response.clone().json()) as EmailWorkerErrorBody;
@@ -129,28 +101,13 @@ async function sendOtpToEmailWorker(
   options: CreateEmailWorkerOtpSenderOptions,
   payload: SendOtpPayload,
 ): Promise<void> {
-  const request: RequestInit = {
+  const response = await options.worker.fetch(EMAIL_WORKER_OTP_PATH, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-  };
-
-  let response: Response;
-
-  if (!shouldUseEmailWorkerUrl(options) && options.worker) {
-    response = await options.worker.fetch(EMAIL_WORKER_OTP_PATH, request);
-  } else {
-    const fallback = resolveEmailWorkerFallbackConfig(options);
-    const headers = new Headers(request.headers);
-    headers.set("X-Api-Key", fallback.apiKey);
-
-    response = await (options.fetcher ?? fetch)(resolveEmailWorkerOtpUrl(fallback.url), {
-      ...request,
-      headers,
-    });
-  }
+  });
 
   if (!response.ok) {
     const errorDetails = await resolveEmailWorkerError(response);
