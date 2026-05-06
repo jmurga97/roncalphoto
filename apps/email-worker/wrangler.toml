@@ -1,6 +1,6 @@
 compatibility_date = "2026-05-03"
 main = "src/index.ts"
-name = "roncalphoto-email-worker"
+name = "roncalphoto-email"
 upload_source_maps = true
 workers_dev = false
 
