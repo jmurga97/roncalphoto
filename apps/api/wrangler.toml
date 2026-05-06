@@ -12,7 +12,7 @@ migrations_dir = "src/db/migrations"
 
 [[services]]
 binding = "EMAIL_WORKER"
-service = "roncalphoto-email-worker"
+service = "roncalphoto-email"
 
 [observability]
 enabled = true
