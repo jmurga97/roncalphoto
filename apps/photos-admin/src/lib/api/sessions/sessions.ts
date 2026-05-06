@@ -1,4 +1,4 @@
-import { httpClient, readApiResponse } from "@lib/http-client";
+import { apiClient } from "@lib/api/client";
 import type { ApiSession } from "@roncal/shared";
 
 export interface SessionMutationInput {
@@ -14,35 +14,19 @@ interface GetSessionsOptions {
 
 export const sessionsService = {
   async createSession(input: SessionMutationInput): Promise<ApiSession> {
-    const response = await httpClient("/api/sessions", {
-      body: JSON.stringify(input),
-      method: "POST",
-    });
-
-    return readApiResponse<ApiSession>(response);
+    return apiClient.post<ApiSession>("/api/sessions", input);
   },
   async deleteSession(slug: string) {
-    const response = await httpClient(`/api/sessions/${encodeURIComponent(slug)}`, {
-      method: "DELETE",
-    });
-
-    return readApiResponse<{ deleted: true }>(response);
+    return apiClient.delete<{ deleted: true }>(`/api/sessions/${encodeURIComponent(slug)}`);
   },
   async getSessionBySlug(slug: string): Promise<ApiSession> {
-    const response = await httpClient(`/api/sessions/${encodeURIComponent(slug)}`);
-    return readApiResponse<ApiSession>(response);
+    return apiClient.get<ApiSession>(`/api/sessions/${encodeURIComponent(slug)}`);
   },
   async getSessions(options: GetSessionsOptions = {}): Promise<ApiSession[]> {
     const include = options.includePhotos ? "?include=photos" : "";
-    const response = await httpClient(`/api/sessions${include}`);
-    return readApiResponse<ApiSession[]>(response);
+    return apiClient.get<ApiSession[]>(`/api/sessions${include}`);
   },
   async updateSession(slug: string, input: SessionMutationInput): Promise<ApiSession> {
-    const response = await httpClient(`/api/sessions/${encodeURIComponent(slug)}`, {
-      body: JSON.stringify(input),
-      method: "PUT",
-    });
-
-    return readApiResponse<ApiSession>(response);
+    return apiClient.put<ApiSession>(`/api/sessions/${encodeURIComponent(slug)}`, input);
   },
 };

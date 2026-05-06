@@ -6,7 +6,6 @@ import { invalidateSessionData } from "@lib/api/invalidation";
 import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
 import { type SessionMutationInput, sessionsService } from "@lib/api/sessions/sessions";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
-import { getErrorMessage } from "@lib/http-client";
 import {
   McConfirmAction,
   McInlineMessage,
@@ -15,6 +14,7 @@ import {
   McStatusText,
   McTagList,
 } from "@murga/components/react";
+import { getErrorMessage } from "@roncal/shared";
 import type { ApiSession, Tag } from "@roncal/shared";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";

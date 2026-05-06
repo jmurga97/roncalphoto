@@ -6,7 +6,6 @@ import { invalidatePhotoData } from "@lib/api/invalidation";
 import { type PhotoMutationInput, photosService } from "@lib/api/photos/photos";
 import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
-import { getErrorMessage } from "@lib/http-client";
 import {
   McConfirmAction,
   McInlineMessage,
@@ -14,6 +13,7 @@ import {
   McResourceEditor,
   McStatusText,
 } from "@murga/components/react";
+import { getErrorMessage } from "@roncal/shared";
 import type { ApiPhoto, ApiSession } from "@roncal/shared";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";

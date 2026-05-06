@@ -1,4 +1,4 @@
-import { getErrorMessage } from "@lib/http-client";
+import { getErrorMessage } from "@roncal/shared";
 
 export function RouteErrorState({ error }: { error: Error }) {
   return (

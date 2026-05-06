@@ -14,3 +14,5 @@ export type {
 export { normalizePhotoMetadata } from "./normalizers";
 export { apiPhotoToPhoto, apiSessionToSession } from "./mappers";
 export { resolveApiBaseUrl } from "./runtime";
+export { ApiRequestError, HttpClient, getErrorMessage } from "./http-client";
+export type { HttpClientOptions } from "./http-client";

@@ -1,4 +1,4 @@
-import { httpClient, readApiResponse, readPaginatedApiResponse } from "@lib/http-client";
+import { apiClient } from "@lib/api/client";
 import type { ApiPhoto, PaginatedResponse, PhotoMetadata } from "@roncal/shared";
 
 export interface PhotosListParams {
@@ -18,34 +18,18 @@ export interface PhotoMutationInput {
 
 export const photosService = {
   async createPhoto(input: PhotoMutationInput): Promise<ApiPhoto> {
-    const response = await httpClient("/api/photos", {
-      body: JSON.stringify(input),
-      method: "POST",
-    });
-
-    return readApiResponse<ApiPhoto>(response);
+    return apiClient.post<ApiPhoto>("/api/photos", input);
   },
   async deletePhoto(id: string) {
-    const response = await httpClient(`/api/photos/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
-
-    return readApiResponse<{ deleted: true }>(response);
+    return apiClient.delete<{ deleted: true }>(`/api/photos/${encodeURIComponent(id)}`);
   },
   async getPhotoById(id: string): Promise<ApiPhoto> {
-    const response = await httpClient(`/api/photos/${encodeURIComponent(id)}`);
-    return readApiResponse<ApiPhoto>(response);
+    return apiClient.get<ApiPhoto>(`/api/photos/${encodeURIComponent(id)}`);
   },
   async listPhotos({ page, pageSize }: PhotosListParams): Promise<PaginatedResponse<ApiPhoto>> {
-    const response = await httpClient(`/api/photos?page=${page}&pageSize=${pageSize}`);
-    return readPaginatedApiResponse<ApiPhoto>(response);
+    return apiClient.getPaginated<ApiPhoto>(`/api/photos?page=${page}&pageSize=${pageSize}`);
   },
   async updatePhoto(id: string, input: PhotoMutationInput): Promise<ApiPhoto> {
-    const response = await httpClient(`/api/photos/${encodeURIComponent(id)}`, {
-      body: JSON.stringify(input),
-      method: "PUT",
-    });
-
-    return readApiResponse<ApiPhoto>(response);
+    return apiClient.put<ApiPhoto>(`/api/photos/${encodeURIComponent(id)}`, input);
   },
 };
