@@ -1,4 +1,37 @@
 -- Seed data for local development
+-- Auth users
+INSERT INTO `user` (
+  `id`,
+  `name`,
+  `email`,
+  `emailVerified`,
+  `image`,
+  `createdAt`,
+  `updatedAt`
+) VALUES
+  (
+    'user-murgapj',
+    'Murga PJ',
+    'murgapj@gmail.com',
+    1,
+    NULL,
+    CAST(strftime('%s', 'now') AS INTEGER) * 1000,
+    CAST(strftime('%s', 'now') AS INTEGER) * 1000
+  ),
+  (
+    'user-juanmurga97',
+    'Juan Murga',
+    'juanmurga97@gmail.com',
+    1,
+    NULL,
+    CAST(strftime('%s', 'now') AS INTEGER) * 1000,
+    CAST(strftime('%s', 'now') AS INTEGER) * 1000
+  )
+ON CONFLICT(`email`) DO UPDATE SET
+  `name` = excluded.`name`,
+  `emailVerified` = excluded.`emailVerified`,
+  `updatedAt` = excluded.`updatedAt`;
+--> statement-breakpoint
 -- Tags
 INSERT OR IGNORE INTO `tags` (`id`, `name`, `slug`) VALUES
   ('tag-architecture', 'Arquitectura', 'arquitectura'),

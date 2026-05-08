@@ -6,6 +6,7 @@ workers_dev = false
 
 [[send_email]]
 name = "SEND_EMAIL"
+remote = true
 
 [observability]
 enabled = true
