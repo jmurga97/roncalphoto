@@ -1,6 +1,3 @@
-import { EmptyState } from "@components/empty-state";
-import { photosListQueryOptions } from "@lib/api/photos/query-options";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import {
   McButton,
   McPagination,
@@ -11,6 +8,10 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
+
+import { EmptyState } from "@components/empty-state";
+import { photosListQueryOptions } from "@lib/api/photos/query-options";
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 
 const photosRouteApi = getRouteApi("/_auth/photos");
 
@@ -68,7 +69,7 @@ export function PhotosListView() {
           <McButton
             className="admin-inline-button"
             onClick={() => {
-              navigate({ to: "/photos/new", search: { page: search.page } });
+              void navigate({ to: "/photos/new", search: { page: search.page } });
             }}
             variant="primary"
           >
@@ -85,7 +86,7 @@ export function PhotosListView() {
               { id: "iso", label: "ISO", align: "end", width: "88px" },
             ]}
             onMcRowSelect={(event) => {
-              navigate({
+              void navigate({
                 to: "/photos/$id",
                 params: { id: event.detail.selectedId },
                 search: { page: search.page },
@@ -107,7 +108,7 @@ export function PhotosListView() {
               <McButton
                 className="admin-inline-button"
                 onClick={() => {
-                  navigate({ to: "/photos/new", search: { page: search.page } });
+                  void navigate({ to: "/photos/new", search: { page: search.page } });
                 }}
                 variant="primary"
               >
@@ -123,7 +124,7 @@ export function PhotosListView() {
           disabled={photosPage.pagination.total === 0}
           hasMore={photosPage.pagination.hasMore}
           onMcPageChange={(event) => {
-            navigate({
+            void navigate({
               to: "/photos",
               search: {
                 page: event.detail.page,

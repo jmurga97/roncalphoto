@@ -1,0 +1,10 @@
+.agents
+.opencode
+dist
+node_modules
+.astro
+.wrangler
+apps/*/src/app/route-tree.gen.ts
+apps/*/src/app/routeTree.gen.ts
+worker-configuration.d.ts
+bun.lock

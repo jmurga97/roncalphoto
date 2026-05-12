@@ -1,9 +1,10 @@
-import type { RefObject } from "react";
-import type { GalleryPhotoViewModel } from "../types";
 import { GalleryNextPhotoPeek } from "./gallery-next-photo-peek";
 import { GalleryScrollHint } from "./gallery-scroll-hint";
 import { GallerySlide } from "./gallery-slide";
 import { GalleryThumbnail } from "./gallery-thumbnail";
+
+import type { GalleryPhotoViewModel } from "../types";
+import type { RefObject } from "react";
 
 interface GalleryGridProps {
   containerRef: RefObject<HTMLDivElement | null>;

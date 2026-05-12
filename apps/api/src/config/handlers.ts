@@ -1,10 +1,12 @@
 import { toHttpError } from "@/shared/errors";
 import { formatValidationMessage } from "@/shared/lib/validation";
-import type { OpenAPIHonoOptions } from "@hono/zod-openapi";
-import type { Context, ErrorHandler, NotFoundHandler } from "hono";
+
 import { isProductionEnv } from "./env";
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } from "./status-codes";
+
 import type { AppBindings } from "./types";
+import type { OpenAPIHonoOptions } from "@hono/zod-openapi";
+import type { Context, ErrorHandler, NotFoundHandler } from "hono";
 
 function isProductionContext(c: Context<AppBindings>): boolean {
   const runtimeEnv = c.var.runtimeEnv;

@@ -22,25 +22,30 @@ La ruta principal es `/session/:slug`.
 - Turborepo + Bun workspaces
 - Vite + React 19 + TanStack Router + Tailwind CSS 4
 - Hono + D1
-- Biome para lint y formato
+- ESLint para lint
+- Prettier para formato
 - TypeScript estricto
 
 ## Convenciones
 
 ### Package manager
+
 - Usar solo Bun.
 
 ### TypeScript
+
 - `strict: true`
 - Evitar `any`
 - Mantener tipos no-nullable en `@roncal/shared`
 
 ### Estilos
+
 - Tailwind CSS
 - Evitar duplicacion de clases
 - Priorizar legibilidad
 
 ### Accesibilidad
+
 - HTML semantico
 - ARIA donde aplique
 - Navegacion por teclado completa
@@ -69,7 +74,8 @@ roncalphoto/
 ├── package.json
 ├── turbo.json
 ├── tsconfig.json
-└── biome.json
+├── prettier.config.js
+└── .prettierignore
 ```
 
 ## Modelo de datos

@@ -1,13 +1,13 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McNavItem, McOrientation } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaLabelStyles, murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McNavItem, McOrientation } from "../../internal/contracts";
 
 export const MC_NAV_LIST_TAG_NAME = "mc-nav-list";
 export const TAG_NAME = MC_NAV_LIST_TAG_NAME;

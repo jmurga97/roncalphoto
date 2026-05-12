@@ -1,6 +1,8 @@
-import type { RefObject } from "react";
 import { useEffect } from "react";
+
 import { SIDEBAR_SCROLL_LIST_SELECTOR } from "../utils/sidebar-dom";
+
+import type { RefObject } from "react";
 
 function syncSidebarScrollbarWidth(sidebar: HTMLElement) {
   const menus = sidebar.querySelectorAll<HTMLElement>(SIDEBAR_SCROLL_LIST_SELECTOR);

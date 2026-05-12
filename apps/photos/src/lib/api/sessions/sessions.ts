@@ -1,5 +1,8 @@
+import { apiSessionToSession } from "@roncal/shared";
+
 import { apiClient } from "@lib/api/client";
-import { type ApiSession, type Session, apiSessionToSession } from "@roncal/shared";
+
+import type { ApiSession, Session } from "@roncal/shared";
 
 export const sessionsService = {
   async getSessionBySlug(slug: string): Promise<Session> {

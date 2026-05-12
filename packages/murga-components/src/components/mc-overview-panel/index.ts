@@ -1,18 +1,18 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { styleMap } from "lit/directives/style-map.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
+import { styleMap } from "lit/directives/style-map.js";
 
-import type { McInlineStatus, McStatItem } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import {
   murgaLabelStyles,
   murgaMetaStyles,
   murgaSurfaceStyles,
   murgaThemeStyles,
 } from "../../internal/styles";
+
+import type { McInlineStatus, McStatItem } from "../../internal/contracts";
 
 export const MC_OVERVIEW_PANEL_TAG_NAME = "mc-overview-panel";
 export const TAG_NAME = MC_OVERVIEW_PANEL_TAG_NAME;
@@ -43,14 +43,15 @@ export class McOverviewPanel extends LitElement {
 
   #getStatColor(status?: McStatItem["status"]) {
     switch (status) {
+      case undefined:
+      case "idle":
+        return "var(--text-display)";
       case "success":
         return "var(--success)";
       case "error":
         return "var(--accent)";
       case "loading":
         return "var(--warning)";
-      default:
-        return "var(--text-display)";
     }
   }
 
@@ -70,9 +71,8 @@ export class McOverviewPanel extends LitElement {
           ${this.status ? html`<div class="status">${this.status.label}</div>` : nothing}
         </header>
 
-        ${
-          this.stats.length > 0
-            ? html`
+        ${this.stats.length > 0
+          ? html`
               <div class="stats" part="stats">
                 ${repeat(
                   this.stats,
@@ -88,8 +88,7 @@ export class McOverviewPanel extends LitElement {
                 )}
               </div>
             `
-            : nothing
-        }
+          : nothing}
 
         <div part="body">
           <slot name="content"></slot>

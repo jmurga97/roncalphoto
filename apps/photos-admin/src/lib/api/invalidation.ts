@@ -1,5 +1,6 @@
-import type { QueryClient } from "@tanstack/react-query";
 import { adminQueryKeys } from "./query-keys";
+
+import type { QueryClient } from "@tanstack/react-query";
 
 export async function invalidateSessionData(queryClient: QueryClient) {
   await Promise.all([

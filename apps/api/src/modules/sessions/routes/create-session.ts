@@ -3,6 +3,7 @@ import { requireSession } from "@/auth";
 import { CREATED } from "@/config/status-codes";
 import { jsonSuccess, protectedValidationErrorResponses } from "@/shared/lib/http";
 import { createApiRoute } from "@/shared/lib/openapi";
+
 import { createSessionBodySchema, sessionResponseSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
 

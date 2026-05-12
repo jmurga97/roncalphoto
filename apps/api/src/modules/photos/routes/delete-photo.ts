@@ -3,6 +3,7 @@ import { requireSession } from "@/auth";
 import { OK } from "@/config/status-codes";
 import { jsonSuccess, protectedValidationNotFoundErrorResponses } from "@/shared/lib/http";
 import { createApiRoute } from "@/shared/lib/openapi";
+
 import { deletePhotoResponseSchema, photoIdParamsSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 

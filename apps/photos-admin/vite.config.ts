@@ -55,10 +55,10 @@ export default defineConfig(({ mode }) => {
             react: ["react", "react-dom"],
             tanstack: ["@tanstack/react-router", "@tanstack/react-query"],
             forms: ["zod", "react-hook-form", "@hookform/resolvers"],
-            state: ["zustand"]
+            state: ["zustand"],
           },
         },
       },
-    }
+    },
   };
 });

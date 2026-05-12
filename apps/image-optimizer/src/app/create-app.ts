@@ -1,10 +1,13 @@
+import { Hono } from "hono";
+
 import { parseEnv } from "@/config/env";
 import { notFoundHandler, onErrorHandler } from "@/config/handlers";
 import { OK } from "@/config/status-codes";
-import type { AppBindings } from "@/config/types";
-import { Hono } from "hono";
+
 import { corsMiddleware } from "./middlewares/cors";
 import { registerRoutes } from "./routes";
+
+import type { AppBindings } from "@/config/types";
 
 export function createApp() {
   const app = new Hono<AppBindings>({ strict: false });

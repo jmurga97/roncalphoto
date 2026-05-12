@@ -1,10 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
+
 import { sessionsService } from "./sessions";
 
 export function sessionsListQueryOptions() {
   return queryOptions({
     queryKey: ["gallery", "sessions"],
-    queryFn: sessionsService.getSessions,
+    queryFn: () => sessionsService.getSessions(),
     staleTime: 5 * 60 * 1000,
   });
 }

@@ -1,6 +1,8 @@
+import { useEffect, useRef } from "react";
+
 import { isEditableTarget } from "@utils/is-editable-target";
 import { resolveNextIndexFromKey } from "@utils/resolve-next-index-from-key";
-import { useEffect, useRef } from "react";
+
 import type { GalleryPhotoViewModel } from "../types";
 
 interface UseGalleryKeyboardNavOptions {

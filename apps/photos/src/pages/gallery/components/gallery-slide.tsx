@@ -1,5 +1,6 @@
-import type { GalleryPhotoViewModel } from "../types";
 import { GalleryCard } from "./gallery-card";
+
+import type { GalleryPhotoViewModel } from "../types";
 
 interface GallerySlideProps {
   loading?: "lazy";

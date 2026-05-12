@@ -1,6 +1,9 @@
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { type ReactNode, Suspense } from "react";
+import { Suspense } from "react";
+
 import { ErrorBoundary } from "./error-boundary";
+
+import type { ReactNode } from "react";
 
 interface SuspenseWrapperProps {
   children: ReactNode;

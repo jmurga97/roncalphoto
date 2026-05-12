@@ -1,5 +1,5 @@
-import { ABOUT_PANEL_ID, ABOUT_TRIGGER_ID } from "@/pages/about/constants";
 import { useSidebarAboutOpen, useSidebarActions, useTheme, useThemeActions } from "@app/store";
+import { ABOUT_PANEL_ID, ABOUT_TRIGGER_ID } from "@components/sidebar/constants";
 
 export function SidebarFooter() {
   const isAboutOpen = useSidebarAboutOpen();

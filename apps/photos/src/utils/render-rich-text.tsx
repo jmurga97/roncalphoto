@@ -61,10 +61,10 @@ const ENTITY_MAP: Record<string, string> = {
 };
 
 function decodeHtmlEntities(value: string) {
-  return value.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (entity, code) => {
-    const normalizedCode = code.toLowerCase();
+  return value.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (entity, rawCode: string) => {
+    const normalizedCode = rawCode.toLowerCase();
 
-    if (normalizedCode in ENTITY_MAP) {
+    if (Object.hasOwn(ENTITY_MAP, normalizedCode)) {
       return ENTITY_MAP[normalizedCode];
     }
 
@@ -215,7 +215,12 @@ function toInlineNodes(nodes: ParsedNode[]): RichTextInline[] {
           children: collapseInlineNodes(toInlineNodes(node.children)),
         });
         break;
-      default:
+      case "h2":
+      case "h3":
+      case "li":
+      case "ol":
+      case "p":
+      case "ul":
         inlineNodes.push(...toInlineNodes(node.children));
         break;
     }
@@ -305,7 +310,13 @@ export function parseRichText(html: string): RichTextDocument {
           children: sanitizeParagraphChildren(toInlineNodes(node.children)),
         });
         break;
-      default:
+      case "a":
+      case "b":
+      case "br":
+      case "em":
+      case "i":
+      case "li":
+      case "strong":
         blocks.push({
           type: "paragraph",
           children: sanitizeParagraphChildren(toInlineNodes([node])),

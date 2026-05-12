@@ -1,3 +1,6 @@
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { cors } from "hono/cors";
+
 import { authHandler } from "@/auth";
 import {
   getRuntimeEnv,
@@ -7,11 +10,11 @@ import {
 } from "@/config/env";
 import { defaultValidationHook, notFoundHandler, onErrorHandler } from "@/config/handlers";
 import { createPinoLogger } from "@/config/pino-logger";
-import type { AppBindings } from "@/config/types";
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { cors } from "hono/cors";
+
 import { corsMiddleware } from "./middlewares/cors";
 import { registerRoutes } from "./routes";
+
+import type { AppBindings } from "@/config/types";
 
 export function createRouter() {
   return new OpenAPIHono<AppBindings>({
@@ -22,29 +25,32 @@ export function createRouter() {
 
 export function createApp() {
   const app = createRouter();
+  const authCorsMiddleware = cors({
+    origin: (origin, c) => {
+      const runtimeEnv = getRuntimeEnv(c as Parameters<typeof getRuntimeEnv>[0]);
+      const authBindings = c.env as { PHOTOS_ADMIN_URL?: string | null };
+      const authAllowedOrigins = resolveAuthAllowedOrigins(
+        runtimeEnv,
+        authBindings.PHOTOS_ADMIN_URL,
+      );
+
+      return resolveAllowedOrigin(origin, authAllowedOrigins, {
+        missingOriginValue: null,
+      });
+    },
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+    credentials: true,
+  });
 
   app.use("*", createPinoLogger());
   app.use("*", async (c, next) => {
     c.set("runtimeEnv", parseEnv(c.env));
     await next();
   });
-  app.use("/api/auth/*", async (c, next) => {
-    const runtimeEnv = getRuntimeEnv(c);
-    const authAllowedOrigins = resolveAuthAllowedOrigins(runtimeEnv, c.env.PHOTOS_ADMIN_URL);
-    const middleware = cors({
-      origin: (origin) =>
-        resolveAllowedOrigin(origin, authAllowedOrigins, {
-          missingOriginValue: null,
-        }),
-      allowHeaders: ["Content-Type", "Authorization"],
-      allowMethods: ["GET", "POST", "OPTIONS"],
-      exposeHeaders: ["Content-Length"],
-      maxAge: 600,
-      credentials: true,
-    });
-
-    return middleware(c, next);
-  });
+  app.use("/api/auth/*", authCorsMiddleware);
   app.use("*", corsMiddleware);
   app.on(["GET", "POST"], "/api/auth/*", authHandler);
 

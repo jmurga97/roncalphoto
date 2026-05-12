@@ -1,13 +1,11 @@
-import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { ifDefined } from "lit/directives/if-defined.js";
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
+import componentStylesText from "./styles.css?inline";
 import { syncAriaAttributes, syncAttribute } from "../../internal/attributes";
-import type { McOption } from "../../internal/contracts";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { findItemById } from "../../internal/selection";
 import {
@@ -16,6 +14,9 @@ import {
   murgaPanelStyles,
   murgaThemeStyles,
 } from "../../internal/styles";
+
+import type { McOption } from "../../internal/contracts";
+import type { PropertyValues } from "lit";
 
 const SELECT_LISTBOX_PREFIX = "mc-select-listbox";
 let selectListboxCount = 0;
@@ -103,11 +104,11 @@ export class McSelect extends LitElement {
     }
   }
 
-  #handleTriggerClick() {
+  #handleTriggerClick = () => {
     dispatchMcEvent(this, "mc-open-change", { open: !this.open });
-  }
+  };
 
-  #handleTriggerKeyDown(event: KeyboardEvent) {
+  #handleTriggerKeyDown = (event: KeyboardEvent) => {
     if (
       event.key === "ArrowDown" ||
       event.key === "Enter" ||
@@ -117,9 +118,9 @@ export class McSelect extends LitElement {
       event.preventDefault();
       dispatchMcEvent(this, "mc-open-change", { open: true });
     }
-  }
+  };
 
-  #handlePanelKeyDown(event: KeyboardEvent) {
+  #handlePanelKeyDown = (event: KeyboardEvent) => {
     const optionElements = Array.from(
       this.panelElement?.querySelectorAll<HTMLButtonElement>(".option") ?? [],
     );
@@ -144,7 +145,7 @@ export class McSelect extends LitElement {
         ? 0
         : Math.max(0, Math.min(optionElements.length - 1, currentIndex + delta));
     optionElements[nextIndex]?.focus();
-  }
+  };
 
   #handleOptionClick(option: McOption) {
     dispatchMcEvent(this, "mc-change", { selectedId: option.id });
@@ -171,13 +172,14 @@ export class McSelect extends LitElement {
           @click=${this.#handleTriggerClick}
           @keydown=${this.#handleTriggerKeyDown}
         >
-          <span class=${this.selectedOption ? "value" : "value placeholder"}>${this.displayLabel}</span>
+          <span class=${this.selectedOption ? "value" : "value placeholder"}
+            >${this.displayLabel}</span
+          >
           <span>${this.open ? "[OPEN]" : "[CLOSED]"}</span>
         </button>
 
-        ${
-          this.open
-            ? html`
+        ${this.open
+          ? html`
               <div
                 id=${this.#listboxId}
                 class="panel"
@@ -200,18 +202,15 @@ export class McSelect extends LitElement {
                       @click=${() => this.#handleOptionClick(option)}
                     >
                       <span>${option.label}</span>
-                      ${
-                        option.description
-                          ? html`<span class="description">${option.description}</span>`
-                          : nothing
-                      }
+                      ${option.description
+                        ? html`<span class="description">${option.description}</span>`
+                        : nothing}
                     </button>
                   `,
                 )}
               </div>
             `
-            : nothing
-        }
+          : nothing}
       </div>
     `;
   }

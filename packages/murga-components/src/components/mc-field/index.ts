@@ -1,9 +1,8 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import componentStylesText from "./styles.css?inline";
-
 import { createComponentStyles } from "../../internal/component-styles";
-
 import { murgaLabelStyles, murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
 
 export const MC_FIELD_TAG_NAME = "mc-field";
@@ -38,32 +37,26 @@ export class McField extends LitElement {
 
   render() {
     return html`
-      ${
-        this.label
-          ? html`
+      ${this.label
+        ? html`
             <label for=${this.inputId ?? nothing} part="label">
               <span>${this.label}</span>
-              ${
-                this.required
-                  ? html`<span class="meta">[REQUIRED]</span>`
-                  : this.optional
-                    ? html`<span class="meta">[OPTIONAL]</span>`
-                    : nothing
-              }
+              ${this.required
+                ? html`<span class="meta">[REQUIRED]</span>`
+                : this.optional
+                  ? html`<span class="meta">[OPTIONAL]</span>`
+                  : nothing}
             </label>
           `
-          : nothing
-      }
+        : nothing}
       <div part="content">
         <slot></slot>
       </div>
-      ${
-        this.error
-          ? html`<div class="error" part="error">${this.error}</div>`
-          : this.hint
-            ? html`<div class="hint" part="hint">${this.hint}</div>`
-            : nothing
-      }
+      ${this.error
+        ? html`<div class="error" part="error">${this.error}</div>`
+        : this.hint
+          ? html`<div class="hint" part="hint">${this.hint}</div>`
+          : nothing}
     `;
   }
 }

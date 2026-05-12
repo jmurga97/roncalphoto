@@ -1,11 +1,14 @@
-import type { AppDb } from "@/db";
-import { getDb, sessionTags, sessions, tags } from "@/db";
+import { asc, desc, eq } from "drizzle-orm";
+
+import { getDb, sessions, sessionTags, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
-import { type SessionRecord, toApiSession, toTag } from "@/shared/lib/api-mappers";
+import { toApiSession, toTag } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { listTagsBySessionIds } from "@/shared/lib/session-relations";
+
+import type { AppDb } from "@/db";
+import type { SessionRecord } from "@/shared/lib/api-mappers";
 import type { ApiSession, ApiTagWithSessions, Tag } from "@roncal/shared";
-import { asc, desc, eq } from "drizzle-orm";
 
 export class TagsService {
   constructor(private readonly db: AppDb) {}

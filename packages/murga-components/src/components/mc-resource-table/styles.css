@@ -26,8 +26,10 @@ tbody tr {
   border-inline-start: 2px solid transparent;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: background-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1), border-color 180ms
-    cubic-bezier(0.25, 0.1, 0.25, 1), color 180ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition:
+    background-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    border-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 180ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 tbody tr:hover {

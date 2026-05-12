@@ -1,8 +1,9 @@
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { McButton, McOverviewPanel } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 
 interface OverviewViewProps {
   userEmail: string;
@@ -84,7 +85,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
             <McButton
               className="admin-inline-button"
               onClick={() => {
-                navigate({ to: "/sessions/new" });
+                void navigate({ to: "/sessions/new" });
               }}
               variant="primary"
             >
@@ -93,7 +94,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
             <McButton
               className="admin-inline-button"
               onClick={() => {
-                navigate({ to: "/photos/new", search: { page: 1 } });
+                void navigate({ to: "/photos/new", search: { page: 1 } });
               }}
               variant="secondary"
             >

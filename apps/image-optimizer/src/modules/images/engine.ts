@@ -1,6 +1,7 @@
-import type { ImagesBinding } from "@/config/types";
-import type { ImageInfo, ImageProfile, TransformedImage } from "./types";
 import { WEBP_MIME_TYPE } from "./types";
+
+import type { ImageInfo, ImageProfile, TransformedImage } from "./types";
+import type { ImagesBinding } from "@/config/types";
 
 export interface ImageOptimizationEngine {
   readInfo(stream: ReadableStream<Uint8Array>, fallbackSize?: number): Promise<ImageInfo>;

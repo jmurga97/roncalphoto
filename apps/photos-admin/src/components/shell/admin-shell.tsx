@@ -1,11 +1,11 @@
+import { McAppShell, McButton, McSidebarNav, McStatusText } from "@murga/components/react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+
 import { useShellActions, useShellMobile, useSidebarOpen } from "@app/store/shell-store";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { signOut } from "@lib/auth-client";
-import { McAppShell, McButton, McSidebarNav, McStatusText } from "@murga/components/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 
 function getCurrentSectionLabel(pathname: string) {
   if (pathname.startsWith("/components")) {
@@ -105,36 +105,38 @@ export function AdminShell() {
           ariaLabel="Dashboard navigation"
           footerItems={getFooterItems()}
           items={getNavigationItems(location.pathname, sessions.length, totalPhotos, tags.length)}
-          onMcSelect={async (event) => {
-            switch (event.detail.selectedId) {
-              case "public-site":
-                window.open("/", "_blank", "noopener,noreferrer");
-                break;
-              case "logout":
-                await signOut();
-                queryClient.clear();
-                await navigate({ to: "/login" });
-                break;
-              case "components":
-                navigate({ to: "/components" });
-                break;
-              case "sessions":
-                navigate({ to: "/sessions" });
-                break;
-              case "photos":
-                navigate({ to: "/photos", search: { page: 1 } });
-                break;
-              case "tags":
-                navigate({ to: "/tags" });
-                break;
-              default:
-                navigate({ to: "/" });
-                break;
-            }
+          onMcSelect={(event) => {
+            void (async () => {
+              switch (event.detail.selectedId) {
+                case "public-site":
+                  window.open("/", "_blank", "noopener,noreferrer");
+                  break;
+                case "logout":
+                  await signOut();
+                  queryClient.clear();
+                  await navigate({ to: "/login" });
+                  break;
+                case "components":
+                  await navigate({ to: "/components" });
+                  break;
+                case "sessions":
+                  await navigate({ to: "/sessions" });
+                  break;
+                case "photos":
+                  await navigate({ to: "/photos", search: { page: 1 } });
+                  break;
+                case "tags":
+                  await navigate({ to: "/tags" });
+                  break;
+                default:
+                  await navigate({ to: "/" });
+                  break;
+              }
 
-            if (isMobile) {
-              closeSidebar();
-            }
+              if (isMobile) {
+                closeSidebar();
+              }
+            })();
           }}
           open={false}
         >
@@ -163,7 +165,7 @@ export function AdminShell() {
           <McButton
             className="admin-inline-button"
             onClick={() => {
-              navigate({ to: "/photos/new", search: { page: 1 } });
+              void navigate({ to: "/photos/new", search: { page: 1 } });
             }}
             variant="primary"
           >

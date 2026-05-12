@@ -1,11 +1,4 @@
-import { FormSelect } from "@components/forms/adapters/form-select";
-import { FormTextInput } from "@components/forms/adapters/form-text-input";
-import { FormTextarea } from "@components/forms/adapters/form-textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { invalidatePhotoData } from "@lib/api/invalidation";
-import { type PhotoMutationInput, photosService } from "@lib/api/photos/photos";
-import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import {
   McConfirmAction,
   McInlineMessage,
@@ -14,12 +7,22 @@ import {
   McStatusText,
 } from "@murga/components/react";
 import { getErrorMessage } from "@roncal/shared";
-import type { ApiPhoto, ApiSession } from "@roncal/shared";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { FormSelect } from "@components/forms/adapters/form-select";
+import { FormTextInput } from "@components/forms/adapters/form-text-input";
+import { FormTextarea } from "@components/forms/adapters/form-textarea";
+import { invalidatePhotoData } from "@lib/api/invalidation";
+import { photosService } from "@lib/api/photos/photos";
+import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+
+import type { PhotoMutationInput } from "@lib/api/photos/photos";
+import type { ApiPhoto, ApiSession } from "@roncal/shared";
 
 const photoSchema = z.object({
   sessionId: z.string().trim().min(1, "Selecciona una sesión."),
@@ -100,20 +103,21 @@ function CreatePhotoEditor() {
   const queryClient = useQueryClient();
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const saveMutation = useMutation({
-    mutationFn: photosService.createPhoto,
+    mutationFn: (input: PhotoMutationInput) => photosService.createPhoto(input),
   });
 
   return (
     <PhotoEditorForm
       mode="create"
-      onDeleteAction={async () => {
-        navigate({ to: "/photos", search: { page: 1 } });
+      onDeleteAction={() => {
+        void navigate({ to: "/photos", search: { page: 1 } });
+        return Promise.resolve();
       }}
       onSaveAction={async (input) => {
         const photo = await saveMutation.mutateAsync(input);
         await invalidatePhotoData(queryClient);
         queryClient.setQueryData(photoDetailQueryOptions(photo.id).queryKey, photo);
-        navigate({
+        await navigate({
           to: "/photos/$id",
           params: { id: photo.id },
           search: { page: 1 },
@@ -146,7 +150,7 @@ function EditPhotoEditor() {
       onDeleteAction={async () => {
         await deleteMutation.mutateAsync();
         await invalidatePhotoData(queryClient);
-        navigate({ to: "/photos", search: { page: 1 } });
+        await navigate({ to: "/photos", search: { page: 1 } });
       }}
       onSaveAction={async (input) => {
         const nextPhoto = await saveMutation.mutateAsync(input);

@@ -5,6 +5,7 @@ REST API for the RoncalPhoto photography portfolio. Built as a Cloudflare Worker
 ## Package purpose
 
 This package exposes the public REST API consumed by:
+
 - `@roncal/photos-app` (public portfolio frontend)
 - `@roncal/photos-admin` (protected admin dashboard)
 - `@roncal/email-worker` (OTP delivery for admin auth)
@@ -13,10 +14,10 @@ It handles CRUD for sessions, photos, and tags, plus Better Auth Email OTP authe
 
 ## Internal dependencies
 
-| Package | Why it is used |
-|---------|----------------|
+| Package          | Why it is used                                                                                                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@roncal/shared` | Canonical domain types (`ApiPhoto`, `ApiSession`, `Tag`, etc.) and `normalizePhotoMetadata`. Ensures the API and frontends speak the same type language. |
-| `@roncal/auth` | Reusable Better Auth factory, Email OTP plugin setup, D1/Drizzle adapter wiring, and email-worker OTP sender helper. |
+| `@roncal/auth`   | Reusable Better Auth factory, Email OTP plugin setup, D1/Drizzle adapter wiring, and email-worker OTP sender helper.                                     |
 
 ## Folder structure
 
@@ -69,13 +70,13 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 
 ### Layers
 
-| Layer | Responsibility |
-|-------|----------------|
-| **Routes** (`modules/*/routes/*.ts`) | Define OpenAPI route metadata (method, path, Zod schemas, error responses) and wire handlers. |
-| **Services** (`modules/*/services/*.service.ts`) | Orchestrate business logic, hydrate related data, and enforce rules (e.g. unique slug generation). |
+| Layer                                             | Responsibility                                                                                                                     |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Routes** (`modules/*/routes/*.ts`)              | Define OpenAPI route metadata (method, path, Zod schemas, error responses) and wire handlers.                                      |
+| **Services** (`modules/*/services/*.service.ts`)  | Orchestrate business logic, hydrate related data, and enforce rules (e.g. unique slug generation).                                 |
 | **Repository** (`modules/sessions/repositories/`) | Encapsulates Drizzle queries and transactions. Only the sessions module uses a repository; photos and tags access the DB directly. |
-| **DB** (`db/`) | Drizzle ORM schemas and D1 client factory. |
-| **Shared** (`shared/`) | Cross-cutting concerns: error types, mappers, utilities, and OpenAPI helpers. |
+| **DB** (`db/`)                                    | Drizzle ORM schemas and D1 client factory.                                                                                         |
+| **Shared** (`shared/`)                            | Cross-cutting concerns: error types, mappers, utilities, and OpenAPI helpers.                                                      |
 
 ### Patterns
 
@@ -106,16 +107,16 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 
 ### Required environment variables / bindings
 
-| Name | Type | Purpose |
-|------|------|---------|
-| `DB_RONCALPHOTO` | D1Database binding | Main database for sessions, photos, and tags. |
-| `ALLOWED_ORIGINS` | string (optional) | Comma-separated list of additional CORS origins. Localhost origins are always allowed in development. |
-| `LOG_LEVEL` | string | Pino log level (`trace`…`fatal`). Defaults to `info`. |
-| `NODE_ENV` | string | `development`, `test`, or `production`. Defaults to `development`. |
-| `BETTER_AUTH_SECRET` | string | Secret used by Better Auth for signing, hashing, and encryption. |
-| `BETTER_AUTH_URL` | string | Canonical API origin used by Better Auth. Production uses `https://api.murga.ing`. |
-| `PHOTOS_ADMIN_URL` | string | Canonical admin frontend origin (used for auth CORS). |
-| `EMAIL_WORKER` | Service binding | Direct binding to the email worker for OTP delivery. |
+| Name                 | Type               | Purpose                                                                                               |
+| -------------------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `DB_RONCALPHOTO`     | D1Database binding | Main database for sessions, photos, and tags.                                                         |
+| `ALLOWED_ORIGINS`    | string (optional)  | Comma-separated list of additional CORS origins. Localhost origins are always allowed in development. |
+| `LOG_LEVEL`          | string             | Pino log level (`trace`…`fatal`). Defaults to `info`.                                                 |
+| `NODE_ENV`           | string             | `development`, `test`, or `production`. Defaults to `development`.                                    |
+| `BETTER_AUTH_SECRET` | string             | Secret used by Better Auth for signing, hashing, and encryption.                                      |
+| `BETTER_AUTH_URL`    | string             | Canonical API origin used by Better Auth. Production uses `https://api.murga.ing`.                    |
+| `PHOTOS_ADMIN_URL`   | string             | Canonical admin frontend origin (used for auth CORS).                                                 |
+| `EMAIL_WORKER`       | Service binding    | Direct binding to the email worker for OTP delivery.                                                  |
 
 > **Auth requirement**: the `EMAIL_WORKER` service binding must be available whenever `/api/auth/*` is used.
 

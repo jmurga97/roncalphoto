@@ -1,5 +1,5 @@
-import type { Hono } from "hono";
 import type { EnvBindings, RuntimeEnv } from "./env";
+import type { Hono } from "hono";
 
 export interface R2ObjectBody {
   body: ReadableStream<Uint8Array> | null;

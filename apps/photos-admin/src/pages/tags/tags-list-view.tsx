@@ -1,9 +1,10 @@
-import { EmptyState } from "@components/empty-state";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { McInlineMessage, McResourceTable, McSearchField } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
+
+import { EmptyState } from "@components/empty-state";
+import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 
 export function TagsListView() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ export function TagsListView() {
               { id: "slug", label: "Slug" },
             ]}
             onMcRowSelect={(event) => {
-              navigate({
+              void navigate({
                 to: "/tags/$slug",
                 params: { slug: event.detail.selectedId },
               });

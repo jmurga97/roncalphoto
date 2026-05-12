@@ -1,14 +1,15 @@
-import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McNavItem } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { createFocusTrap } from "../../internal/focus";
 import { murgaLabelStyles, murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McNavItem } from "../../internal/contracts";
+import type { PropertyValues } from "lit";
 
 export const MC_SIDEBAR_NAV_TAG_NAME = "mc-sidebar-nav";
 export const TAG_NAME = MC_SIDEBAR_NAV_TAG_NAME;
@@ -76,9 +77,9 @@ export class McSidebarNav extends LitElement {
     });
   }
 
-  #handleOverlayClick() {
+  #handleOverlayClick = () => {
     dispatchMcEvent(this, "mc-open-change", { open: false });
-  }
+  };
 
   #handleSelect(itemId: string) {
     dispatchMcEvent(this, "mc-select", { selectedId: itemId });
@@ -100,7 +101,9 @@ export class McSidebarNav extends LitElement {
         >
           <span class="item-content">
             <span>${item.label}</span>
-            ${item.description ? html`<span class="item-description">${item.description}</span>` : nothing}
+            ${item.description
+              ? html`<span class="item-description">${item.description}</span>`
+              : nothing}
           </span>
           ${item.count !== undefined ? html`<span>${item.count}</span>` : nothing}
         </button>
@@ -115,9 +118,8 @@ export class McSidebarNav extends LitElement {
 
     return html`
       <div class="root" part="root">
-        ${
-          this.open
-            ? html`
+        ${this.open
+          ? html`
               <button
                 class="overlay"
                 part="overlay"
@@ -126,39 +128,36 @@ export class McSidebarNav extends LitElement {
                 @click=${this.#handleOverlayClick}
               ></button>
             `
-            : nothing
-        }
+          : nothing}
         <aside class="panel" part="panel">
           <header class="header" part="header">
             <slot name="header">
-              ${
-                this.title || this.subtitle
-                  ? html`
-                  <div class="heading">
-                    ${this.title ? html`<div>${this.title}</div>` : nothing}
-                    ${this.subtitle ? html`<div class="subtitle">${this.subtitle}</div>` : nothing}
-                  </div>
-                `
-                  : nothing
-              }
+              ${this.title || this.subtitle
+                ? html`
+                    <div class="heading">
+                      ${this.title ? html`<div>${this.title}</div>` : nothing}
+                      ${this.subtitle
+                        ? html`<div class="subtitle">${this.subtitle}</div>`
+                        : nothing}
+                    </div>
+                  `
+                : nothing}
             </slot>
           </header>
           <nav class="navigation" part="navigation" aria-label=${this.ariaLabel}>
             <slot name="navigation">
               <div class="section" part="section">${this.#renderItems(items)}</div>
-              ${
-                secondaryItems.length > 0
-                  ? html`<div class="section" part="section">${this.#renderItems(secondaryItems)}</div>`
-                  : nothing
-              }
+              ${secondaryItems.length > 0
+                ? html`<div class="section" part="section">
+                    ${this.#renderItems(secondaryItems)}
+                  </div>`
+                : nothing}
             </slot>
           </nav>
           <footer class="footer" part="footer">
-            ${
-              footerItems.length > 0
-                ? html`<div class="footer-actions">${this.#renderItems(footerItems, "footer")}</div>`
-                : nothing
-            }
+            ${footerItems.length > 0
+              ? html`<div class="footer-actions">${this.#renderItems(footerItems, "footer")}</div>`
+              : nothing}
             <slot name="footer"></slot>
           </footer>
         </aside>

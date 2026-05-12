@@ -1,13 +1,13 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { ifDefined } from "lit/directives/if-defined.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McThumbnailRatio } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McThumbnailRatio } from "../../internal/contracts";
 
 export const MC_THUMBNAIL_TAG_NAME = "mc-thumbnail";
 export const TAG_NAME = MC_THUMBNAIL_TAG_NAME;
@@ -39,13 +39,13 @@ export class McThumbnail extends LitElement {
   @property({ type: String })
   ratio: McThumbnailRatio = "square";
 
-  #handleClick() {
+  #handleClick = () => {
     if (this.disabled || this.itemId.length === 0) {
       return;
     }
 
     dispatchMcEvent(this, "mc-select", { selectedId: this.itemId });
-  }
+  };
 
   render() {
     return html`
@@ -58,11 +58,9 @@ export class McThumbnail extends LitElement {
         @click=${this.#handleClick}
       >
         <span class="frame" data-ratio=${this.ratio}>
-          ${
-            this.src && !this.loading
-              ? html`<img part="image" src=${this.src} alt=${this.alt} />`
-              : html`<span class="placeholder">${this.loading ? "[LOADING]" : "[EMPTY]"}</span>`
-          }
+          ${this.src && !this.loading
+            ? html`<img part="image" src=${this.src} alt=${this.alt} />`
+            : html`<span class="placeholder">${this.loading ? "[LOADING]" : "[EMPTY]"}</span>`}
         </span>
       </button>
     `;

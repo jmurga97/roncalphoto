@@ -1,4 +1,5 @@
 import { createRouter } from "@/app/create-app";
+
 import createPhotoRoute from "./routes/create-photo";
 import deletePhotoRoute from "./routes/delete-photo";
 import getPhotoRoute from "./routes/get-photo";

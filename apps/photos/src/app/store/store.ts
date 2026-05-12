@@ -1,11 +1,16 @@
-import { MOBILE_MEDIA_QUERY } from "@utils/media-queries";
-import { useMediaQuery } from "@utils/use-media-query";
 import { useMemo } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
-import { type SidebarSlice, createSidebarSlice } from "./slices/sidebar-slice";
-import { type ThemeSlice, createThemeSlice } from "./slices/theme-slice";
+
+import { MOBILE_MEDIA_QUERY } from "@utils/media-queries";
+import { useMediaQuery } from "@utils/use-media-query";
+
+import { createSidebarSlice } from "./slices/sidebar-slice";
+import { createThemeSlice } from "./slices/theme-slice";
+
+import type { SidebarSlice } from "./slices/sidebar-slice";
+import type { ThemeSlice } from "./slices/theme-slice";
 
 const LAYOUT_UI_STORAGE_KEY = "roncal-layout-ui";
 

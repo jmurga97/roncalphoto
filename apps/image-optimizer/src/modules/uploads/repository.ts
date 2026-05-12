@@ -1,6 +1,6 @@
 import { NOT_FOUND } from "@/config/status-codes";
-import type { D1DatabaseBinding } from "@/config/types";
 import { HttpError } from "@/shared/errors/http-error";
+
 import type {
   CreateUploadJobRecord,
   PhotoMetadataInput,
@@ -8,6 +8,7 @@ import type {
   PhotoUpsertInput,
   UploadJobStatus,
 } from "./types";
+import type { D1DatabaseBinding } from "@/config/types";
 
 type DbValue = string | number | null;
 

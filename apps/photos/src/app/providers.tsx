@@ -1,6 +1,8 @@
+import { QueryClientProvider } from "@tanstack/react-query";
+
 import { useApplyThemeFromStore } from "@app/store";
 import { queryClient } from "@lib/query-client";
-import { QueryClientProvider } from "@tanstack/react-query";
+
 import type { ReactNode } from "react";
 
 function LayoutUiEffects() {

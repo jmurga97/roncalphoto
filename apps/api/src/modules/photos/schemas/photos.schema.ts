@@ -1,6 +1,7 @@
+import { z } from "@hono/zod-openapi";
+
 import { apiPhotoSchema, deleteResultSchema } from "@/shared/lib/contracts";
 import { createPaginatedResponseSchema, createSuccessResponseSchema } from "@/shared/lib/http";
-import { z } from "@hono/zod-openapi";
 
 const defaultPage = 1;
 const defaultPageSize = 20;

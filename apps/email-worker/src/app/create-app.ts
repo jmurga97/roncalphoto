@@ -1,7 +1,10 @@
-import { notFoundHandler, onErrorHandler } from "@/config/handlers";
-import type { AppBindings } from "@/config/types";
 import { Hono } from "hono";
+
+import { notFoundHandler, onErrorHandler } from "@/config/handlers";
+
 import { registerRoutes } from "./routes";
+
+import type { AppBindings } from "@/config/types";
 
 export function createRouter() {
   return new Hono<AppBindings>({ strict: false });

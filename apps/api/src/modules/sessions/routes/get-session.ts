@@ -2,6 +2,7 @@ import { createRouter } from "@/app/create-app";
 import { OK } from "@/config/status-codes";
 import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
 import { createApiRoute } from "@/shared/lib/openapi";
+
 import { sessionResponseSchema, sessionSlugParamsSchema } from "../schemas/sessions.schema";
 import { getSessionsService } from "../services/sessions.service";
 

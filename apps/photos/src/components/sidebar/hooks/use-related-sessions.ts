@@ -1,10 +1,12 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+
 import {
   sessionDetailQueryOptions,
   sessionsListQueryOptions,
 } from "@lib/api/sessions/query-options";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRelatedSessions } from "@utils/get-related-sessions";
-import { useMemo } from "react";
+
 import { toSidebarNavigationItem } from "../utils/sidebar-mappers";
 
 export function useRelatedSessions(slug: string) {

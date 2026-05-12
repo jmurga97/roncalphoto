@@ -1,11 +1,12 @@
+import { createBrowserHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+
 import { AppProviders } from "@app/providers";
 import { routeTree } from "@app/route-tree.gen";
 import { RouteErrorState } from "@components/error/error-state";
 import { LoadingState } from "@components/loading/loading-state";
 import { queryClient } from "@lib/query-client";
-import { RouterProvider, createBrowserHistory, createRouter } from "@tanstack/react-router";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
 import "./styles/global.css";
 
 const router = createRouter({

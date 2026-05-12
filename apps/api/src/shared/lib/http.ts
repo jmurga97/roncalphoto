@@ -1,16 +1,19 @@
+import { z } from "@hono/zod-openapi";
+
 import {
   BAD_REQUEST,
-  type CREATED,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
   OK,
   UNAUTHORIZED,
 } from "@/config/status-codes";
+
+import { paginationSchema } from "./contracts";
+
+import type { CREATED } from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
-import { z } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import type { ZodTypeAny } from "zod";
-import { paginationSchema } from "./contracts";
 
 export const errorResponseSchema = z
   .object({

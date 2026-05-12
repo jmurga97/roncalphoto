@@ -1,5 +1,7 @@
-import { useSidebarActions, useSidebarMobile } from "@app/store";
 import { useEffect, useRef } from "react";
+
+import { useSidebarActions, useSidebarMobile } from "@app/store";
+
 import { SidebarOverlay } from "./components/sidebar-overlay";
 import { SidebarPanel } from "./components/sidebar-panel";
 import { SidebarToggle } from "./components/sidebar-toggle";

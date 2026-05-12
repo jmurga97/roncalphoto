@@ -1,8 +1,11 @@
-import { HttpError } from "@/shared/errors/http-error";
-import type { ErrorHandler, NotFoundHandler } from "hono";
 import { z } from "zod";
+
+import { HttpError } from "@/shared/errors/http-error";
+
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } from "./status-codes";
+
 import type { AppBindings } from "./types";
+import type { ErrorHandler, NotFoundHandler } from "hono";
 
 export const notFoundHandler: NotFoundHandler<AppBindings> = (c) =>
   c.json(

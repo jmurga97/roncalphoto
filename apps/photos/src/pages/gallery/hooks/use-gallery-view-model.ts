@@ -1,8 +1,10 @@
-import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { resolvePhotoSelection } from "@utils/resolve-photo-selection";
 import { useEffect, useMemo } from "react";
+
+import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
+import { resolvePhotoSelection } from "@utils/resolve-photo-selection";
+
 import type { GalleryData } from "../types";
 
 const sessionRouteApi = getRouteApi("/_app/session/$slug");

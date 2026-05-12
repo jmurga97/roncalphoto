@@ -81,8 +81,9 @@
   line-height: 1.2;
   text-align: left;
   text-transform: uppercase;
-  transition: border-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1), color 180ms
-    cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition:
+    border-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 180ms cubic-bezier(0.25, 0.1, 0.25, 1);
   cursor: pointer;
 }
 

@@ -1,14 +1,14 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { styleMap } from "lit/directives/style-map.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
+import { styleMap } from "lit/directives/style-map.js";
 
-import type { McTableColumn, McTableRow } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaLabelStyles, murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McTableColumn, McTableRow } from "../../internal/contracts";
 
 export const MC_RESOURCE_TABLE_TAG_NAME = "mc-resource-table";
 export const TAG_NAME = MC_RESOURCE_TABLE_TAG_NAME;
@@ -90,9 +90,8 @@ export class McResourceTable extends LitElement {
                 (column) => column.id,
                 (column) => html`
                   <th style=${this.#getColumnHeaderStyles(column)}>
-                    ${
-                      column.sortable
-                        ? html`
+                    ${column.sortable
+                      ? html`
                           <button
                             class="sort-button"
                             type="button"
@@ -102,8 +101,7 @@ export class McResourceTable extends LitElement {
                             ${column.label}
                           </button>
                         `
-                        : column.label
-                    }
+                      : column.label}
                   </th>
                 `,
               )}

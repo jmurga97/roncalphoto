@@ -1,4 +1,5 @@
 import { apiClient } from "@lib/api/client";
+
 import type { ApiTagWithSessions, Tag } from "@roncal/shared";
 
 export const tagsService = {

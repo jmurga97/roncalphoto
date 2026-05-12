@@ -1,6 +1,7 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { tagDetailQueryOptions } from "@lib/api/tags/query-options";
 import { TagDetailView } from "@pages/tags/tag-detail-view";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_auth/tags/$slug")({
   component: TagDetailView,

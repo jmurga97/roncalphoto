@@ -1,11 +1,4 @@
-import { FormTagPicker } from "@components/forms/adapters/form-tag-picker";
-import { FormTextInput } from "@components/forms/adapters/form-text-input";
-import { FormTextarea } from "@components/forms/adapters/form-textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { invalidateSessionData } from "@lib/api/invalidation";
-import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
-import { type SessionMutationInput, sessionsService } from "@lib/api/sessions/sessions";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import {
   McConfirmAction,
   McInlineMessage,
@@ -15,12 +8,22 @@ import {
   McTagList,
 } from "@murga/components/react";
 import { getErrorMessage } from "@roncal/shared";
-import type { ApiSession, Tag } from "@roncal/shared";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { FormTagPicker } from "@components/forms/adapters/form-tag-picker";
+import { FormTextInput } from "@components/forms/adapters/form-text-input";
+import { FormTextarea } from "@components/forms/adapters/form-textarea";
+import { invalidateSessionData } from "@lib/api/invalidation";
+import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
+import { sessionsService } from "@lib/api/sessions/sessions";
+import { tagsListQueryOptions } from "@lib/api/tags/query-options";
+
+import type { SessionMutationInput } from "@lib/api/sessions/sessions";
+import type { ApiSession, Tag } from "@roncal/shared";
 
 const sessionSchema = z.object({
   title: z.string().trim().min(1, "El título es obligatorio."),
@@ -60,23 +63,24 @@ function CreateSessionEditor() {
   const queryClient = useQueryClient();
   const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
   const saveMutation = useMutation({
-    mutationFn: sessionsService.createSession,
+    mutationFn: (input: SessionMutationInput) => sessionsService.createSession(input),
   });
 
   return (
     <SessionEditorForm
       mode="create"
       onCancelAction={() => {
-        navigate({ to: "/sessions" });
+        void navigate({ to: "/sessions" });
       }}
-      onDeleteAction={async () => {
-        navigate({ to: "/sessions" });
+      onDeleteAction={() => {
+        void navigate({ to: "/sessions" });
+        return Promise.resolve();
       }}
       onSaveAction={async (input) => {
         const session = await saveMutation.mutateAsync(input);
         await invalidateSessionData(queryClient);
         queryClient.setQueryData(sessionDetailQueryOptions(session.slug).queryKey, session);
-        navigate({
+        await navigate({
           to: "/sessions/$slug",
           params: { slug: session.slug },
         });
@@ -108,7 +112,7 @@ function EditSessionEditor() {
       onDeleteAction={async () => {
         await deleteMutation.mutateAsync();
         await invalidateSessionData(queryClient);
-        navigate({ to: "/sessions" });
+        await navigate({ to: "/sessions" });
       }}
       onSaveAction={async (input) => {
         const nextSession = await saveMutation.mutateAsync(input);
@@ -116,7 +120,7 @@ function EditSessionEditor() {
         queryClient.setQueryData(sessionDetailQueryOptions(nextSession.slug).queryKey, nextSession);
 
         if (nextSession.slug !== session.slug) {
-          navigate({
+          await navigate({
             to: "/sessions/$slug",
             params: { slug: nextSession.slug },
           });
@@ -312,7 +316,7 @@ function SessionEditorForm({
                 count: photo.metadata.iso || undefined,
               }))}
               onMcSelect={(event) => {
-                navigate({
+                void navigate({
                   to: "/photos/$id",
                   params: { id: event.detail.selectedId },
                   search: { page: 1 },

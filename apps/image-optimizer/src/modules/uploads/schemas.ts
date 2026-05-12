@@ -1,5 +1,6 @@
-import { acceptedImageMimeTypes } from "@/modules/images/types";
 import { z } from "zod";
+
+import { acceptedImageMimeTypes } from "@/modules/images/types";
 
 const nonEmptyStringSchema = z.string().trim().min(1);
 

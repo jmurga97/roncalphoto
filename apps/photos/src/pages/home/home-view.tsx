@@ -1,6 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+
 import { RoncalPhotoBrand } from "@components/brand/roncalphoto-brand";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
-import { useSuspenseQuery } from "@tanstack/react-query";
+
 import { HomeEmptyState } from "./components/home-empty-state";
 import { HomeSessionCard } from "./components/home-session-card";
 

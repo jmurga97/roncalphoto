@@ -28,8 +28,9 @@
   min-block-size: 44px;
   padding-inline: var(--space-sm);
   color: var(--text-primary);
-  transition: border-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1), color 180ms
-    cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition:
+    border-color 180ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 180ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .option:hover {

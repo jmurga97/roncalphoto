@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+
 import { adminQueryKeys } from "../query-keys";
 import { photosService } from "./photos";
 

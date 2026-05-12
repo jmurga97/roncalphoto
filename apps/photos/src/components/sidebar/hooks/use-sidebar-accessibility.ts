@@ -1,8 +1,11 @@
+import { useEffect, useEffectEvent, useRef } from "react";
+
 import { useSidebarActions, useSidebarMobile, useSidebarOpen } from "@app/store";
 import { isEditableTarget } from "@utils/is-editable-target";
-import type { RefObject } from "react";
-import { useEffect, useEffectEvent, useRef } from "react";
+
 import { focusSidebarTarget, focusSidebarToggle } from "../utils/sidebar-dom";
+
+import type { RefObject } from "react";
 
 interface UseSidebarAccessibilityOptions {
   sidebarRef: RefObject<HTMLElement | null>;
@@ -35,7 +38,7 @@ export function useSidebarAccessibility({ sidebarRef }: UseSidebarAccessibilityO
     return () => {
       document.removeEventListener("keydown", onDocumentKeydown);
     };
-  }, [handleKeydown]);
+  }, []);
 
   useEffect(() => {
     if (!isMobile || !isSidebarOpen) {

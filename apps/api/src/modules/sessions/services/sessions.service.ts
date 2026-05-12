@@ -1,13 +1,14 @@
 import { HttpError } from "@/shared/errors";
-import { type SessionRecord, toApiSession } from "@/shared/lib/api-mappers";
+import { toApiSession } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { generateId } from "@/shared/utils/id";
 import { pickNextAvailableSlug, slugify } from "@/shared/utils/slug";
+
+import { getSessionsRepository } from "../repositories/sessions.repository";
+
+import type { SessionsRepository } from "../repositories/sessions.repository";
+import type { SessionRecord } from "@/shared/lib/api-mappers";
 import type { ApiSession } from "@roncal/shared";
-import {
-  type SessionsRepository,
-  getSessionsRepository,
-} from "../repositories/sessions.repository";
 
 interface HydrateOptions {
   includePhotos?: boolean;

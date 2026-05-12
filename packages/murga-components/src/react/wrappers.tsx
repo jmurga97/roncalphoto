@@ -1,3 +1,6 @@
+import { createReactWrapper } from "./create-react-wrapper";
+
+import type { ReactWrapperProps } from "./create-react-wrapper";
 import type { McAppShell as McAppShellElement } from "../components/mc-app-shell";
 import type { McBadge as McBadgeElement } from "../components/mc-badge";
 import type { McButton as McButtonElement } from "../components/mc-button";
@@ -22,7 +25,6 @@ import type { McTagPicker as McTagPickerElement } from "../components/mc-tag-pic
 import type { McTextarea as McTextareaElement } from "../components/mc-textarea";
 import type { McThumbnail as McThumbnailElement } from "../components/mc-thumbnail";
 import type { McThumbnailRail as McThumbnailRailElement } from "../components/mc-thumbnail-rail";
-import { type ReactWrapperProps, createReactWrapper } from "./create-react-wrapper";
 
 type ChangeHandler = (event: CustomEvent<{ value: string }>) => void;
 type CheckboxChangeHandler = (event: CustomEvent<{ checked: boolean; value: string }>) => void;

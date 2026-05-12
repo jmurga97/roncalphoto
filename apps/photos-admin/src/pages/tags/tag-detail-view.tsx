@@ -1,7 +1,8 @@
-import { tagDetailQueryOptions } from "@lib/api/tags/query-options";
 import { McInlineMessage, McRelationshipPanel } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
+
+import { tagDetailQueryOptions } from "@lib/api/tags/query-options";
 
 export function TagDetailView() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export function TagDetailView() {
           label: session.title,
         }))}
         onMcSelect={(event) => {
-          navigate({
+          void navigate({
             to: "/sessions/$slug",
             params: { slug: event.detail.selectedId },
           });

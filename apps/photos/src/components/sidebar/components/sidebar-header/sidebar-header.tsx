@@ -1,9 +1,10 @@
 import { SuspenseWrapper } from "@roncal/ui";
-import { useSidebarData } from "../../hooks/use-sidebar-data";
+
 import { SidebarHeaderError } from "./sidebar-header-error";
 import { SidebarHeaderLoading } from "./sidebar-header-loading";
 import { SidebarHeaderQueryContent } from "./sidebar-header-query-content";
 import { SidebarHeaderStaticContent } from "./sidebar-header-static-content";
+import { useSidebarData } from "../../hooks/use-sidebar-data";
 
 export function SidebarHeader() {
   const { slug } = useSidebarData();

@@ -1,6 +1,7 @@
 import { z } from "@hono/zod-openapi";
-import type { Context } from "hono";
+
 import type { AppBindings } from "./types";
+import type { Context } from "hono";
 
 const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:4321",
@@ -98,10 +99,10 @@ export function resolveAllowedOrigin(
   allowedOrigins: readonly string[],
   options?: {
     allowLocalDevelopmentOrigin?: boolean;
-    missingOriginValue?: "*" | null;
+    missingOriginValue?: string | null;
     nodeEnv?: string;
   },
-): string | "*" | null {
+): string | null {
   if (!origin) {
     return options?.missingOriginValue ?? "*";
   }

@@ -1,10 +1,10 @@
+import { Hono } from "hono";
+
 import { getRuntimeEnv } from "@/config/env";
 import { BAD_REQUEST } from "@/config/status-codes";
-import type { AppBindings } from "@/config/types";
 import { HttpError } from "@/shared/errors/http-error";
 import { jsonSuccess } from "@/shared/lib/http";
-import type { Context } from "hono";
-import { Hono } from "hono";
+
 import { requireAdminUploadAuth } from "./auth";
 import {
   completeUploadsBodySchema,
@@ -14,11 +14,15 @@ import {
 } from "./schemas";
 import { createUploadsService } from "./service";
 
+import type { AppBindings } from "@/config/types";
+import type { Context } from "hono";
+
 const routes = new Hono<AppBindings>({ strict: false });
 
 async function readJson(c: Context<AppBindings>) {
   try {
-    return await c.req.json();
+    const body: unknown = await c.req.json();
+    return body;
   } catch {
     throw new HttpError(BAD_REQUEST, "Request body must be valid JSON");
   }

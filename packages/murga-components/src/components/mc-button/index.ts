@@ -1,11 +1,11 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
 
+import componentStylesText from "./styles.css?inline";
 import { createComponentStyles } from "../../internal/component-styles";
+import { murgaButtonStyles, murgaThemeStyles } from "../../internal/styles";
 
 import type { McButtonSize, McButtonVariant } from "../../internal/contracts";
-import { murgaButtonStyles, murgaThemeStyles } from "../../internal/styles";
 
 export const MC_BUTTON_TAG_NAME = "mc-button";
 export const TAG_NAME = MC_BUTTON_TAG_NAME;

@@ -8,8 +8,8 @@ This worker sends OTP emails for the admin dashboard authentication flow. It exp
 
 ## Internal dependencies
 
-| Package | Why it is used |
-|---------|----------------|
+| Package                   | Why it is used                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `@roncal/email-templates` | Renders the OTP email into HTML and plain text using React Email. Keeps template markup out of the worker. |
 
 ## Folder structure
@@ -28,11 +28,11 @@ The worker is intentionally kept as a **single-file Hono application**. There is
 
 ### Layers
 
-| Layer | Responsibility |
-|-------|----------------|
-| **Types** | Local interfaces for Cloudflare bindings (`SEND_EMAIL`), request payloads, and email shapes. |
-| **Validation** | Pure functions (`isObject`, `isNonEmptyString`, `isEmail`, `parseOtpRequestBody`) that guard the request body without external schema libraries. |
-| **Route handler** | `POST /send/otp` renders the email template and calls the Cloudflare email binding. |
+| Layer             | Responsibility                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Types**         | Local interfaces for Cloudflare bindings (`SEND_EMAIL`), request payloads, and email shapes.                                                     |
+| **Validation**    | Pure functions (`isObject`, `isNonEmptyString`, `isEmail`, `parseOtpRequestBody`) that guard the request body without external schema libraries. |
+| **Route handler** | `POST /send/otp` renders the email template and calls the Cloudflare email binding.                                                              |
 
 ### Patterns
 
@@ -57,11 +57,11 @@ The worker is intentionally kept as a **single-file Hono application**. There is
 
 ### Required environment variables / bindings
 
-| Name | Type | Purpose |
-|------|------|---------|
-| `SEND_EMAIL` | `send_email` binding | Cloudflare transactional email binding used to deliver messages. |
-| `FROM_EMAIL` | string (via `wrangler.toml` `[vars]`) | Verified sender address. |
-| `FROM_NAME` | string (via `wrangler.toml` `[vars]`) | Display name for the sender. |
+| Name         | Type                                  | Purpose                                                          |
+| ------------ | ------------------------------------- | ---------------------------------------------------------------- |
+| `SEND_EMAIL` | `send_email` binding                  | Cloudflare transactional email binding used to deliver messages. |
+| `FROM_EMAIL` | string (via `wrangler.toml` `[vars]`) | Verified sender address.                                         |
+| `FROM_NAME`  | string (via `wrangler.toml` `[vars]`) | Display name for the sender.                                     |
 
 ### Cloudflare deploy credentials
 

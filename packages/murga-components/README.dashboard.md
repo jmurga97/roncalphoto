@@ -114,15 +114,15 @@ La documentacion del dashboard debe organizarse por estas areas:
 
 Este dashboard debe traducir los patrones existentes a piezas de libreria UI:
 
-| Patron en `apps/photos` | Uso futuro en `apps/photos-admin` | Familia UI en `@murga/components` |
-| --- | --- | --- |
-| Sidebar persistente y overlay mobile | Shell administrativo y navegacion contextual | shell/navigation |
-| Cards y listados de sesiones | Overview, listados editoriales y accesos rapidos | data display |
-| Header y bloques relacionados del sidebar | Contexto, metadata y relaciones laterales | shell/navigation + data display |
-| Gallery detail con foco en media | Preview principal y rail de miniaturas | media surfaces |
-| Controles de tema/about/footer | Acciones de sistema y utilidades globales | shell/navigation + feedback |
-| Formularios y acciones editoriales | Edicion de sesiones, fotos y tags | inputs/formularios |
-| Estados vacios y errores | Respuesta inline en cada pantalla | feedback/estados |
+| Patron en `apps/photos`                   | Uso futuro en `apps/photos-admin`                | Familia UI en `@murga/components` |
+| ----------------------------------------- | ------------------------------------------------ | --------------------------------- |
+| Sidebar persistente y overlay mobile      | Shell administrativo y navegacion contextual     | shell/navigation                  |
+| Cards y listados de sesiones              | Overview, listados editoriales y accesos rapidos | data display                      |
+| Header y bloques relacionados del sidebar | Contexto, metadata y relaciones laterales        | shell/navigation + data display   |
+| Gallery detail con foco en media          | Preview principal y rail de miniaturas           | media surfaces                    |
+| Controles de tema/about/footer            | Acciones de sistema y utilidades globales        | shell/navigation + feedback       |
+| Formularios y acciones editoriales        | Edicion de sesiones, fotos y tags                | inputs/formularios                |
+| Estados vacios y errores                  | Respuesta inline en cada pantalla                | feedback/estados                  |
 
 ## Responsabilidad entre app y libreria
 

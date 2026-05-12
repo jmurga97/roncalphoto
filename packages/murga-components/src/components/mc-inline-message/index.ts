@@ -1,11 +1,11 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
 
+import componentStylesText from "./styles.css?inline";
 import { createComponentStyles } from "../../internal/component-styles";
+import { murgaMetaStyles, murgaPanelStyles, murgaThemeStyles } from "../../internal/styles";
 
 import type { McStatusTone } from "../../internal/contracts";
-import { murgaMetaStyles, murgaPanelStyles, murgaThemeStyles } from "../../internal/styles";
 
 export const MC_INLINE_MESSAGE_TAG_NAME = "mc-inline-message";
 export const TAG_NAME = MC_INLINE_MESSAGE_TAG_NAME;

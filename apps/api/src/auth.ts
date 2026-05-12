@@ -1,3 +1,5 @@
+import { createAuth, createEmailWorkerOtpSender, OTP_EXPIRES_IN_LABEL } from "@roncal/auth";
+
 import {
   getAuthRuntimeEnv,
   getRuntimeEnv,
@@ -5,16 +7,12 @@ import {
   resolveAuthAllowedOrigins,
 } from "@/config/env";
 import { BAD_REQUEST, UNAUTHORIZED } from "@/config/status-codes";
-import type { AppBindings } from "@/config/types";
 import { getDb, schema } from "@/db";
 import { HttpError } from "@/shared/errors";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
-import {
-  type Auth,
-  OTP_EXPIRES_IN_LABEL,
-  createAuth,
-  createEmailWorkerOtpSender,
-} from "@roncal/auth";
+
+import type { AppBindings } from "@/config/types";
+import type { Auth } from "@roncal/auth";
 import type { Context, Next } from "hono";
 
 const authInstances = new WeakMap<D1Database, Auth>();

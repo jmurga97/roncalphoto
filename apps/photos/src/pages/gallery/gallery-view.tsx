@@ -1,5 +1,7 @@
-import { prefersReducedMotion } from "@utils/prefers-reduced-motion";
 import { useEffect, useRef } from "react";
+
+import { prefersReducedMotion } from "@utils/prefers-reduced-motion";
+
 import { GalleryEmptyState } from "./components/gallery-empty-state";
 import { GalleryGrid } from "./components/gallery-grid";
 import { useGalleryKeyboardNav } from "./hooks/use-gallery-keyboard-nav";

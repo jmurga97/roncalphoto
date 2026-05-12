@@ -1,5 +1,5 @@
-import type { Session } from "@roncal/shared";
 import type { SidebarNavigationItem } from "../types";
+import type { Session } from "@roncal/shared";
 
 export function toSidebarNavigationItem(
   session: Pick<Session, "id" | "photos" | "slug" | "title">,

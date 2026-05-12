@@ -1,6 +1,7 @@
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
+
 import { photosListQueryOptions } from "@lib/api/photos/query-options";
 import { PhotosListView } from "@pages/photos/photos-list-view";
-import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router";
 
 function validatePhotosSearch(search: Record<string, unknown>) {
   const page =

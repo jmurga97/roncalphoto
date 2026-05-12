@@ -1,13 +1,13 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McMediaItem, McOrientation } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaThemeStyles } from "../../internal/styles";
+
+import type { McMediaItem, McOrientation } from "../../internal/contracts";
 
 import "../mc-thumbnail";
 
@@ -32,10 +32,10 @@ export class McThumbnailRail extends LitElement {
   @property({ type: String, reflect: true })
   orientation: McOrientation = "horizontal";
 
-  #handleSelect(event: Event) {
+  #handleSelect = (event: Event) => {
     const detail = (event as CustomEvent<{ selectedId: string }>).detail;
     dispatchMcEvent(this, "mc-select", { selectedId: detail.selectedId });
-  }
+  };
 
   render() {
     return html`

@@ -8,10 +8,10 @@ This is the customer-facing photo gallery. It displays photography sessions in a
 
 ## Internal dependencies
 
-| Package | Usage |
-|---------|-------|
+| Package          | Usage                                                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `@roncal/shared` | Domain types (`Session`, `Photo`, etc.), API mappers (`apiSessionToSession`) and runtime helpers (`resolveApiBaseUrl`). |
-| `@roncal/ui` | `SuspenseWrapper` component used inside the sidebar to isolate data-fetching errors with error boundaries. |
+| `@roncal/ui`     | `SuspenseWrapper` component used inside the sidebar to isolate data-fetching errors with error boundaries.              |
 
 ## Folder structure
 
@@ -61,8 +61,8 @@ src/
 
 ## Configuration
 
-| Variable | Purpose |
-|----------|---------|
+| Variable       | Purpose                                               |
+| -------------- | ----------------------------------------------------- |
 | `VITE_API_URL` | Base URL for API requests (used in `http-client.ts`). |
 
 The Vite dev server proxies `/api` and `/health` to this URL automatically.

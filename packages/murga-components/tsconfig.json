@@ -4,8 +4,7 @@
     "experimentalDecorators": true,
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vitest/globals"],
     "useDefineForClassFields": false
   },
-  "include": ["src", "tests", "vitest.config.ts"]
+  "include": ["src"]
 }

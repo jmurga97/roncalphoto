@@ -1,12 +1,6 @@
-import {
-  type HTMLAttributes,
-  type ReactNode,
-  createElement,
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { createElement, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+
+import type { HTMLAttributes, ReactNode } from "react";
 
 export type ReactWrapperProps<
   TElement extends HTMLElement,

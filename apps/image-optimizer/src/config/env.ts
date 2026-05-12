@@ -1,5 +1,5 @@
-import type { Context } from "hono";
 import { z } from "zod";
+
 import type {
   AppBindings,
   D1DatabaseBinding,
@@ -7,6 +7,7 @@ import type {
   QueueBinding,
   R2BucketBinding,
 } from "./types";
+import type { Context } from "hono";
 
 const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:4321",

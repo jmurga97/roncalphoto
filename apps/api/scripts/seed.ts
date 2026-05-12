@@ -7,13 +7,13 @@
  *   bun run scripts/seed.ts --remote  # seeds remote D1
  */
 
-import { $ } from 'bun';
+import { $ } from "bun";
 
-const isRemote = process.argv.includes('--remote');
-const target = isRemote ? 'remote' : 'local';
-const flag = isRemote ? '--remote' : '--local';
-const dbName = 'DB_RONCALPHOTO';
-const seedFile = 'scripts/seed-data.sql';
+const isRemote = process.argv.includes("--remote");
+const target = isRemote ? "remote" : "local";
+const flag = isRemote ? "--remote" : "--local";
+const dbName = "DB_RONCALPHOTO";
+const seedFile = "scripts/seed-data.sql";
 
 console.log(`🌱 Seeding ${target} database...`);
 

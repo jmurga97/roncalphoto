@@ -1,6 +1,9 @@
-import { type EnvBindings, parseEnv } from "@/config/env";
-import type { UploadQueueMessage } from "@/config/types";
+import { parseEnv } from "@/config/env";
+
 import { createUploadsService } from "./service";
+
+import type { EnvBindings } from "@/config/env";
+import type { UploadQueueMessage } from "@/config/types";
 
 interface QueueBatch<MessageBody> {
   messages: Array<{

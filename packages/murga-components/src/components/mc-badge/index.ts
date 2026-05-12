@@ -1,11 +1,11 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
 
+import componentStylesText from "./styles.css?inline";
 import { createComponentStyles } from "../../internal/component-styles";
+import { murgaLabelStyles, murgaThemeStyles } from "../../internal/styles";
 
 import type { McBadgeTone } from "../../internal/contracts";
-import { murgaLabelStyles, murgaThemeStyles } from "../../internal/styles";
 
 export const MC_BADGE_TAG_NAME = "mc-badge";
 export const TAG_NAME = MC_BADGE_TAG_NAME;

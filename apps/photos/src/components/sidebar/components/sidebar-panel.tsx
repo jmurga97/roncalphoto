@@ -1,9 +1,11 @@
 import { useSidebarMobile, useSidebarOpen } from "@app/store";
-import type { RefObject } from "react";
+
 import { SidebarFooter } from "./sidebar-footer";
 import { SidebarHeader } from "./sidebar-header/sidebar-header";
 import { SidebarNavigationMenu } from "./sidebar-navigation-menu";
 import { SidebarRelatedSection } from "./sidebar-related-section/sidebar-related-section";
+
+import type { RefObject } from "react";
 
 interface SidebarPanelProps {
   sidebarRef: RefObject<HTMLElement | null>;

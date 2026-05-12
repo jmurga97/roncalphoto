@@ -1,5 +1,7 @@
-import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { drizzle } from "drizzle-orm/d1";
+
+import { getOrCreateInstance } from "@/shared/lib/instance-cache";
+
 import * as domainSchema from "./schema";
 import * as authSchema from "./schema/auth";
 

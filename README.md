@@ -8,7 +8,8 @@ Portfolio web para fotografo profesional. Monorepo con Bun workspaces, frontend 
 - Frontend (`apps/photos`): Vite, React 19, TanStack Router, Tailwind CSS 4
 - API (`apps/api`): Hono, Cloudflare Workers, D1
 - Shared (`packages/shared`): TypeScript domain types y mappers
-- Lint/format: Biome
+- Lint: ESLint
+- Format: Prettier
 - Runtime: Bun
 
 ## Modelo de dominio
@@ -51,7 +52,8 @@ roncalphoto/
 ├── package.json
 ├── turbo.json
 ├── tsconfig.json
-└── biome.json
+├── prettier.config.js
+└── .prettierignore
 ```
 
 ## Comandos

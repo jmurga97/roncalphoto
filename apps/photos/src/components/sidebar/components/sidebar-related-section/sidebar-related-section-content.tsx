@@ -1,7 +1,8 @@
 import { useRelatedSessions } from "../../hooks/use-related-sessions";
 import { useSidebarData } from "../../hooks/use-sidebar-data";
-import type { SidebarNavigationItem } from "../../types";
 import { SidebarItem } from "../sidebar-item";
+
+import type { SidebarNavigationItem } from "../../types";
 
 export function SidebarRelatedSectionContent() {
   const { slug } = useSidebarData();
@@ -10,6 +11,10 @@ export function SidebarRelatedSectionContent() {
     return null;
   }
 
+  return <SidebarRelatedSectionContentBody slug={slug} />;
+}
+
+function SidebarRelatedSectionContentBody({ slug }: { slug: string }) {
   const { items, notice } = useRelatedSessions(slug);
   const visibleNotice = notice;
   const isEmpty = items.length === 0 && !visibleNotice;

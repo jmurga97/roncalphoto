@@ -1,5 +1,5 @@
-import type { StateCreator } from "zustand";
 import type { AppStore } from "../store";
+import type { StateCreator } from "zustand";
 
 export type Theme = "dark" | "light";
 

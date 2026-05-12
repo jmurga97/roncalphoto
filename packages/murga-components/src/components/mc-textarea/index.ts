@@ -1,11 +1,10 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { ifDefined } from "lit/directives/if-defined.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
+import componentStylesText from "./styles.css?inline";
 import { syncAriaAttributes, syncAttribute } from "../../internal/attributes";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaInputSurfaceStyles, murgaThemeStyles } from "../../internal/styles";
 
@@ -64,15 +63,15 @@ export class McTextarea extends LitElement {
     syncAttribute(this.textareaElement, "aria-label", this.ariaLabel);
   }
 
-  #handleInput(event: Event) {
+  #handleInput = (event: Event) => {
     const target = event.currentTarget as HTMLTextAreaElement;
     dispatchMcEvent(this, "mc-input", { value: target.value });
-  }
+  };
 
-  #handleChange(event: Event) {
+  #handleChange = (event: Event) => {
     const target = event.currentTarget as HTMLTextAreaElement;
     dispatchMcEvent(this, "mc-change", { value: target.value });
-  }
+  };
 
   render() {
     return html`

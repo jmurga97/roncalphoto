@@ -1,8 +1,9 @@
-import { MOBILE_MEDIA_QUERY } from "@utils/media-queries";
-import { useMediaQuery } from "@utils/use-media-query";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
+
+import { MOBILE_MEDIA_QUERY } from "@utils/media-queries";
+import { useMediaQuery } from "@utils/use-media-query";
 
 interface ShellStoreState {
   isSidebarOpenDesktop: boolean;

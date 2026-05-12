@@ -1,6 +1,7 @@
+import { z } from "@hono/zod-openapi";
+
 import { apiTagWithSessionsSchema, tagSchema } from "@/shared/lib/contracts";
 import { createSuccessResponseSchema } from "@/shared/lib/http";
-import { z } from "@hono/zod-openapi";
 
 export const tagSlugParamsSchema = z
   .object({

@@ -1,14 +1,15 @@
-import { LitElement, type PropertyValues, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McTagItem } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { normalizeSelectedIds, toggleSelectedId } from "../../internal/selection";
 import { murgaLabelStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McTagItem } from "../../internal/contracts";
+import type { PropertyValues } from "lit";
 
 export const MC_TAG_LIST_TAG_NAME = "mc-tag-list";
 export const TAG_NAME = MC_TAG_LIST_TAG_NAME;

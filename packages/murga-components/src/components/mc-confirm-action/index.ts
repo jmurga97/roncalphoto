@@ -1,12 +1,12 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import componentStylesText from "./styles.css?inline";
-
 import { createComponentStyles } from "../../internal/component-styles";
-
-import type { McStatusTone } from "../../internal/contracts";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaButtonStyles, murgaPanelStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McStatusTone } from "../../internal/contracts";
 
 export const MC_CONFIRM_ACTION_TAG_NAME = "mc-confirm-action";
 export const TAG_NAME = MC_CONFIRM_ACTION_TAG_NAME;
@@ -38,14 +38,14 @@ export class McConfirmAction extends LitElement {
   @property({ type: Boolean, reflect: true })
   pending = false;
 
-  #handleConfirm() {
+  #handleConfirm = () => {
     dispatchMcEvent(this, "mc-confirm", { confirmed: true });
-  }
+  };
 
-  #handleCancel() {
+  #handleCancel = () => {
     dispatchMcEvent(this, "mc-cancel", { open: false });
     dispatchMcEvent(this, "mc-open-change", { open: false });
-  }
+  };
 
   render() {
     if (!this.open) {
@@ -64,7 +64,11 @@ export class McConfirmAction extends LitElement {
           >
             ${this.pending ? "[LOADING]" : this.confirmLabel}
           </button>
-          <button type="button" ?disabled=${this.disabled || this.pending} @click=${this.#handleCancel}>
+          <button
+            type="button"
+            ?disabled=${this.disabled || this.pending}
+            @click=${this.#handleCancel}
+          >
             ${this.cancelLabel}
           </button>
         </div>

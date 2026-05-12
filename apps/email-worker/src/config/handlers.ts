@@ -1,6 +1,7 @@
 import { errorResponse } from "@/shared/http/responses";
-import type { ErrorHandler, NotFoundHandler } from "hono";
+
 import type { AppBindings } from "./types";
+import type { ErrorHandler, NotFoundHandler } from "hono";
 
 export const notFoundHandler: NotFoundHandler<AppBindings> = () =>
   errorResponse("NOT_FOUND", "Not found", 404);

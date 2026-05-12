@@ -1,10 +1,16 @@
+import { useCallback, useEffect, useRef } from "react";
+
 import { useSidebarAboutOpen, useSidebarActions } from "@app/store";
+import {
+  ABOUT_PANEL_ID,
+  ABOUT_PANEL_TITLE_ID,
+  ABOUT_TRIGGER_ID,
+} from "@components/sidebar/constants";
 import { focusSidebarToggle } from "@components/sidebar/utils/sidebar-dom";
 import { isEditableTarget } from "@utils/is-editable-target";
-import { useEffect, useEffectEvent, useRef } from "react";
+
 import { AboutPanelContent } from "./components/about-panel-content";
 import { AboutPanelShell } from "./components/about-panel-shell";
-import { ABOUT_PANEL_ID, ABOUT_PANEL_TITLE_ID, ABOUT_TRIGGER_ID } from "./constants";
 
 function focusAboutTrigger() {
   const trigger = document.getElementById(ABOUT_TRIGGER_ID);
@@ -24,25 +30,21 @@ export function AboutPanel() {
   const shouldRestoreFocusRef = useRef(false);
   const triggerToRestoreRef = useRef<HTMLElement | null>(null);
 
-  const requestClose = useEffectEvent(() => {
+  const requestClose = useCallback(() => {
     shouldRestoreFocusRef.current = true;
     closeAbout();
-  });
-
-  const handleDocumentKeydown = useEffectEvent((event: KeyboardEvent) => {
-    if (!isOpen || isEditableTarget(event.target)) {
-      return;
-    }
-
-    if (event.key === "Escape") {
-      event.preventDefault();
-      requestClose();
-    }
-  });
+  }, [closeAbout]);
 
   useEffect(() => {
     const onDocumentKeydown = (event: KeyboardEvent) => {
-      handleDocumentKeydown(event);
+      if (!isOpen || isEditableTarget(event.target)) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        requestClose();
+      }
     };
 
     document.addEventListener("keydown", onDocumentKeydown);
@@ -50,7 +52,7 @@ export function AboutPanel() {
     return () => {
       document.removeEventListener("keydown", onDocumentKeydown);
     };
-  }, [handleDocumentKeydown]);
+  }, [isOpen, requestClose]);
 
   useEffect(() => {
     if (!isOpen) {

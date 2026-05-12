@@ -1,12 +1,13 @@
-import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
+
 import componentStylesText from "./styles.css?inline";
-
 import { createComponentStyles } from "../../internal/component-styles";
-
 import { dispatchMcEvent } from "../../internal/events";
 import { createFocusTrap } from "../../internal/focus";
 import { murgaPanelStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { PropertyValues } from "lit";
 
 export const MC_APP_SHELL_TAG_NAME = "mc-app-shell";
 export const TAG_NAME = MC_APP_SHELL_TAG_NAME;
@@ -59,18 +60,17 @@ export class McAppShell extends LitElement {
     });
   }
 
-  #handleOverlayClick() {
+  #handleOverlayClick = () => {
     dispatchMcEvent(this, "mc-sidebar-open-change", { open: false });
-  }
+  };
 
   render() {
     const showOverlay = this.mobileOverlay && this.sidebarOpen;
 
     return html`
       <div class="root" part="root">
-        ${
-          showOverlay
-            ? html`
+        ${showOverlay
+          ? html`
               <button
                 class="overlay"
                 part="overlay"
@@ -79,8 +79,7 @@ export class McAppShell extends LitElement {
                 @click=${this.#handleOverlayClick}
               ></button>
             `
-            : nothing
-        }
+          : nothing}
         <aside class="sidebar" part="sidebar">
           <slot name="sidebar"></slot>
         </aside>

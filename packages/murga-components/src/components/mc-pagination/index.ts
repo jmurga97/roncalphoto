@@ -1,11 +1,12 @@
-import { LitElement, type PropertyValues, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+
 import componentStylesText from "./styles.css?inline";
-
 import { createComponentStyles } from "../../internal/component-styles";
-
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaButtonStyles, murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { PropertyValues } from "lit";
 
 export const MC_PAGINATION_TAG_NAME = "mc-pagination";
 export const TAG_NAME = MC_PAGINATION_TAG_NAME;
@@ -75,9 +76,9 @@ export class McPagination extends LitElement {
           [PREV]
         </button>
         <span class="meta" part="meta">
-          ${
-            this.totalPages > 0 ? `[PAGE ${this.page} / ${this.totalPages}]` : `[PAGE ${this.page}]`
-          }
+          ${this.totalPages > 0
+            ? `[PAGE ${this.page} / ${this.totalPages}]`
+            : `[PAGE ${this.page}]`}
         </span>
         <button
           part="next-button"

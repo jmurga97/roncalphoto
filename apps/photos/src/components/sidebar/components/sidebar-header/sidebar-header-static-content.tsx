@@ -1,6 +1,7 @@
 import { RichTextRenderer } from "@utils/render-rich-text";
-import { DEFAULT_DESCRIPTION_DOCUMENT } from "../../constants";
+
 import { SidebarHeaderContent } from "./sidebar-header-content";
+import { DEFAULT_DESCRIPTION_DOCUMENT } from "../../constants";
 
 export function SidebarHeaderStaticContent() {
   return (

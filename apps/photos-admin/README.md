@@ -11,8 +11,8 @@ the same public/domain API contracts as the public photos app.
 
 ## Configuration
 
-| Variable | Purpose |
-|----------|---------|
+| Variable       | Purpose                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------- |
 | `VITE_API_URL` | Base URL for API requests. Optional in production unless a non-default API origin is required. |
 
 ### Cloudflare Workers deploy credentials

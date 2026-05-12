@@ -2,6 +2,7 @@ import { createRouter } from "@/app/create-app";
 import { OK } from "@/config/status-codes";
 import { jsonSuccess, validationNotFoundErrorResponses } from "@/shared/lib/http";
 import { createApiRoute } from "@/shared/lib/openapi";
+
 import { photoIdParamsSchema, photoResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 

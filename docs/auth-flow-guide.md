@@ -79,27 +79,27 @@ sequenceDiagram
 
 ## 4. Componentes
 
-| Archivo | Responsabilidad |
-|---------|-----------------|
-| `packages/auth/src/index.ts` | Factory `createAuth(...)`, configuracion de Drizzle adapter, Email OTP y helper `createEmailWorkerOtpSender(...)`. |
-| `packages/auth/src/client.ts` | Factory `createEmailOtpAuthClient({ baseURL })` con `better-auth/react` y `emailOTPClient()`. |
-| `apps/api/src/auth.ts` | Cachea instancias por `D1Database`, delega `/api/auth/*` a Better Auth y expone `requireSession`. |
-| `apps/api/src/db/schema/auth.ts` | Tablas Better Auth `user`, `session`, `account`, `verification`. |
-| `apps/api/src/db/schema/index.ts` | Exporta tambien el schema Better Auth para que Drizzle runtime lo entregue al adapter. |
-| `apps/api/src/app/create-app.ts` | CORS dedicado para `/api/auth/*` con `credentials: true` y montaje de `authHandler`. |
-| `apps/api/src/config/env.ts` | Valida `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PHOTOS_ADMIN_URL` y configuracion del email-worker. |
-| `apps/photos-admin/src/lib/auth-client.ts` | Crea el cliente Better Auth apuntando a `${resolveApiBaseUrl(...)}/api/auth`. |
-| `apps/photos-admin/src/app/routes/login.tsx` | Usa `authClient.emailOtp.sendVerificationOtp(...)` y `authClient.signIn.emailOtp(...)`. |
+| Archivo                                      | Responsabilidad                                                                                                    |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `packages/auth/src/index.ts`                 | Factory `createAuth(...)`, configuracion de Drizzle adapter, Email OTP y helper `createEmailWorkerOtpSender(...)`. |
+| `packages/auth/src/client.ts`                | Factory `createEmailOtpAuthClient({ baseURL })` con `better-auth/react` y `emailOTPClient()`.                      |
+| `apps/api/src/auth.ts`                       | Cachea instancias por `D1Database`, delega `/api/auth/*` a Better Auth y expone `requireSession`.                  |
+| `apps/api/src/db/schema/auth.ts`             | Tablas Better Auth `user`, `session`, `account`, `verification`.                                                   |
+| `apps/api/src/db/schema/index.ts`            | Exporta tambien el schema Better Auth para que Drizzle runtime lo entregue al adapter.                             |
+| `apps/api/src/app/create-app.ts`             | CORS dedicado para `/api/auth/*` con `credentials: true` y montaje de `authHandler`.                               |
+| `apps/api/src/config/env.ts`                 | Valida `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PHOTOS_ADMIN_URL` y configuracion del email-worker.               |
+| `apps/photos-admin/src/lib/auth-client.ts`   | Crea el cliente Better Auth apuntando a `${resolveApiBaseUrl(...)}/api/auth`.                                      |
+| `apps/photos-admin/src/app/routes/login.tsx` | Usa `authClient.emailOtp.sendVerificationOtp(...)` y `authClient.signIn.emailOtp(...)`.                            |
 
 ## 5. Configuracion
 
-| Variable / binding | Worker | Uso |
-|--------------------|--------|-----|
-| `DB_RONCALPHOTO` | `roncalphoto-api` | D1 con tablas de dominio y Better Auth. |
-| `BETTER_AUTH_SECRET` | `roncalphoto-api` | Secreto de firma, hashing y cifrado de Better Auth. |
-| `BETTER_AUTH_URL` | `roncalphoto-api` | Origen canonico de la API; produccion usa `https://api.murga.ing`. |
-| `PHOTOS_ADMIN_URL` | `roncalphoto-api` | Origen canonico del dashboard para trusted origins y CORS. |
-| `EMAIL_WORKER` | `roncalphoto-api` | Service binding hacia el email-worker para el envio de OTPs. |
+| Variable / binding   | Worker            | Uso                                                                |
+| -------------------- | ----------------- | ------------------------------------------------------------------ |
+| `DB_RONCALPHOTO`     | `roncalphoto-api` | D1 con tablas de dominio y Better Auth.                            |
+| `BETTER_AUTH_SECRET` | `roncalphoto-api` | Secreto de firma, hashing y cifrado de Better Auth.                |
+| `BETTER_AUTH_URL`    | `roncalphoto-api` | Origen canonico de la API; produccion usa `https://api.murga.ing`. |
+| `PHOTOS_ADMIN_URL`   | `roncalphoto-api` | Origen canonico del dashboard para trusted origins y CORS.         |
+| `EMAIL_WORKER`       | `roncalphoto-api` | Service binding hacia el email-worker para el envio de OTPs.       |
 
 Produccion usa cookies cross-site de Better Auth porque admin y API viven en dominios distintos: `SameSite=None`, `Secure` y `Partitioned`. En local se usan cookies same-site.
 
@@ -144,11 +144,11 @@ Ajusta `email` al correo real del administrador. El valor de `createdAt` y `upda
 
 Ve a **Workers & Pages > roncalphoto-api > Settings > Variables and Secrets** y configura:
 
-| Tipo | Nombre | Valor de ejemplo / instruccion |
-|------|--------|-------------------------------|
-| Secret | `BETTER_AUTH_SECRET` | Genera un string aleatorio de 32+ caracteres (por ejemplo con `openssl rand -base64 32`). |
-| Plain text | `BETTER_AUTH_URL` | `https://api.murga.ing` (tu origen canonico de la API). |
-| Plain text | `PHOTOS_ADMIN_URL` | `https://admin.tudominio.com` (origen exacto del dashboard admin). |
+| Tipo       | Nombre               | Valor de ejemplo / instruccion                                                            |
+| ---------- | -------------------- | ----------------------------------------------------------------------------------------- |
+| Secret     | `BETTER_AUTH_SECRET` | Genera un string aleatorio de 32+ caracteres (por ejemplo con `openssl rand -base64 32`). |
+| Plain text | `BETTER_AUTH_URL`    | `https://api.murga.ing` (tu origen canonico de la API).                                   |
+| Plain text | `PHOTOS_ADMIN_URL`   | `https://admin.tudominio.com` (origen exacto del dashboard admin).                        |
 
 ### 6.4 Configurar el service binding `EMAIL_WORKER`
 

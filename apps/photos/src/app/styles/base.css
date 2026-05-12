@@ -16,7 +16,8 @@ html {
 }
 
 body {
-  background: radial-gradient(
+  background:
+    radial-gradient(
       circle at 14% 18%,
       color-mix(in srgb, var(--color-surface) 80%, transparent),
       transparent 54%
@@ -25,7 +26,8 @@ body {
       circle at 92% 4%,
       color-mix(in srgb, var(--color-surface-2) 72%, transparent),
       transparent 42%
-    ), var(--color-bg);
+    ),
+    var(--color-bg);
   color: var(--color-text);
   line-height: 1.55;
 }

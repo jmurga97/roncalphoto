@@ -1,6 +1,7 @@
 import { UNAUTHORIZED } from "@/config/status-codes";
-import type { AppBindings } from "@/config/types";
 import { HttpError } from "@/shared/errors/http-error";
+
+import type { AppBindings } from "@/config/types";
 import type { Context } from "hono";
 
 function readBearerToken(headerValue: string | undefined): string | undefined {

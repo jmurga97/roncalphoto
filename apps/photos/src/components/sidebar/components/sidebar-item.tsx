@@ -1,6 +1,8 @@
-import { useSidebarActions, useSidebarMobile } from "@app/store";
 import { Link } from "@tanstack/react-router";
+
+import { useSidebarActions, useSidebarMobile } from "@app/store";
 import { prefersReducedMotion } from "@utils/prefers-reduced-motion";
+
 import type { SidebarNavigationItem } from "../types";
 
 interface SidebarItemProps {

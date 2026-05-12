@@ -1,5 +1,6 @@
 import { pinoLogger } from "hono-pino";
 import pino from "pino";
+
 import { parseEnv } from "./env";
 
 function prettyWrite(payload: unknown) {
@@ -14,7 +15,7 @@ function prettyWrite(payload: unknown) {
 export function createPinoLogger() {
   return pinoLogger({
     pino: (c) => {
-      const env = parseEnv(c.env);
+      const env = parseEnv(c.env as Parameters<typeof parseEnv>[0]);
 
       return pino({
         base: undefined,

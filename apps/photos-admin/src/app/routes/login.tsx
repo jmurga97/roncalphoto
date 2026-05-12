@@ -1,6 +1,9 @@
-import { authClient } from "@lib/auth-client";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useId, useState } from "react";
+import { useId, useState } from "react";
+
+import { authClient } from "@lib/auth-client";
+
+import type { FormEvent } from "react";
 
 type LoginStep = "email" | "otp";
 
@@ -32,7 +35,7 @@ export const Route = createFileRoute("/login")({
     const { data: session } = await authClient.getSession();
 
     if (session) {
-      throw redirect({ to: "/" });
+      redirect({ to: "/", throw: true });
     }
   },
   component: LoginRoute,
@@ -103,7 +106,12 @@ function LoginRoute() {
         </div>
 
         {step === "email" ? (
-          <form className="admin-login-form" onSubmit={handleEmailSubmit}>
+          <form
+            className="admin-login-form"
+            onSubmit={(event) => {
+              void handleEmailSubmit(event);
+            }}
+          >
             <label className="admin-login-field" htmlFor={emailInputId}>
               <span>Email</span>
               <input
@@ -131,7 +139,12 @@ function LoginRoute() {
             </button>
           </form>
         ) : (
-          <form className="admin-login-form" onSubmit={handleOtpSubmit}>
+          <form
+            className="admin-login-form"
+            onSubmit={(event) => {
+              void handleOtpSubmit(event);
+            }}
+          >
             <label className="admin-login-field" htmlFor={otpInputId}>
               <span>Código OTP</span>
               <input

@@ -11,7 +11,7 @@ export class ApiRequestError extends Error {
 }
 
 function shouldSetJsonContentType(body: BodyInit | null | undefined): boolean {
-  if (body == null) return false;
+  if (body === null || body === undefined) return false;
   return !(
     body instanceof FormData ||
     body instanceof URLSearchParams ||

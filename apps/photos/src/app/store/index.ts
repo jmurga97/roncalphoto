@@ -1,4 +1,6 @@
+export { useApplyThemeFromStore } from "./effects/use-apply-theme-from-store";
 export {
+  type AppStore,
   useAppStore,
   useSidebarAboutOpen,
   useSidebarActions,
@@ -6,6 +8,4 @@ export {
   useSidebarOpen,
   useTheme,
   useThemeActions,
-  type AppStore,
 } from "./store";
-export { useApplyThemeFromStore } from "./effects/use-apply-theme-from-store";

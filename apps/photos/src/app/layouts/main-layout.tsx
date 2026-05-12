@@ -1,7 +1,8 @@
+import { Outlet } from "@tanstack/react-router";
+
 import { AboutPanel } from "@/pages/about";
 import { useSidebarMobile, useSidebarOpen } from "@app/store";
 import { Sidebar } from "@components/sidebar/sidebar";
-import { Outlet } from "@tanstack/react-router";
 
 export function MainLayout() {
   const isSidebarOpen = useSidebarOpen();

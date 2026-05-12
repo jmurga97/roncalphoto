@@ -1,11 +1,10 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { ifDefined } from "lit/directives/if-defined.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
+import componentStylesText from "./styles.css?inline";
 import { syncAriaAttributes, syncAttribute } from "../../internal/attributes";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { murgaThemeStyles } from "../../internal/styles";
 
@@ -48,13 +47,13 @@ export class McCheckbox extends LitElement {
     syncAttribute(this.inputElement, "aria-label", this.ariaLabel);
   }
 
-  #handleChange(event: Event) {
+  #handleChange = (event: Event) => {
     const target = event.currentTarget as HTMLInputElement;
     dispatchMcEvent(this, "mc-change", {
       checked: target.checked,
       value: target.value,
     });
-  }
+  };
 
   render() {
     return html`

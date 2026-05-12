@@ -186,7 +186,9 @@ select {
   color: var(--admin-text-display);
   padding: 0.75rem 0.875rem;
   outline: none;
-  transition: border-color 180ms var(--admin-ease), background 180ms var(--admin-ease);
+  transition:
+    border-color 180ms var(--admin-ease),
+    background 180ms var(--admin-ease);
 }
 
 .admin-login-field input:focus {
@@ -213,8 +215,10 @@ select {
   padding: 0.75rem 1rem;
   color: var(--admin-text-display);
   cursor: pointer;
-  transition: opacity 180ms var(--admin-ease), border-color 180ms var(--admin-ease), background
-    180ms var(--admin-ease);
+  transition:
+    opacity 180ms var(--admin-ease),
+    border-color 180ms var(--admin-ease),
+    background 180ms var(--admin-ease);
 }
 
 .admin-login-button {

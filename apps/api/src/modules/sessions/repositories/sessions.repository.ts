@@ -1,10 +1,12 @@
-import type { AppDb, AppTransaction, DbExecutor } from "@/db";
-import { getDb, sessionTags, sessions, tags } from "@/db";
+import { and, desc, eq, inArray, like, ne, or } from "drizzle-orm";
+
+import { getDb, sessions, sessionTags, tags } from "@/db";
 import { HttpError } from "@/shared/errors";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { listPhotosBySessionIds, listTagsBySessionIds } from "@/shared/lib/session-relations";
+
+import type { AppDb, AppTransaction, DbExecutor } from "@/db";
 import type { Tag } from "@roncal/shared";
-import { and, desc, eq, inArray, like, ne, or } from "drizzle-orm";
 
 function uniqueTagIds(tagIds: string[]): string[] {
   return Array.from(new Set(tagIds));

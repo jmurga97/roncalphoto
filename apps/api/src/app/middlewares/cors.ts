@@ -1,20 +1,21 @@
-import { getRuntimeEnv, resolveAllowedOrigin } from "@/config/env";
-import type { AppBindings } from "@/config/types";
-import type { Next } from "hono";
 import { cors } from "hono/cors";
 
-export async function corsMiddleware(c: import("hono").Context<AppBindings>, next: Next) {
+import { getRuntimeEnv, resolveAllowedOrigin } from "@/config/env";
+
+import type { AppBindings } from "@/config/types";
+import type { MiddlewareHandler } from "hono";
+
+export const corsMiddleware: MiddlewareHandler<AppBindings> = async (c, next) => {
   if (c.req.path === "/api/auth" || c.req.path.startsWith("/api/auth/")) {
     await next();
     return;
   }
 
-  const runtimeEnv = getRuntimeEnv(c);
-  const allowedOrigins = runtimeEnv.allowedOrigins;
+  return cors({
+    origin: (origin, context) => {
+      const runtimeEnv = getRuntimeEnv(context as Parameters<typeof getRuntimeEnv>[0]);
 
-  const middleware = cors({
-    origin: (origin) => {
-      return resolveAllowedOrigin(origin, allowedOrigins, {
+      return resolveAllowedOrigin(origin, runtimeEnv.allowedOrigins, {
         allowLocalDevelopmentOrigin: true,
         missingOriginValue: null,
         nodeEnv: runtimeEnv.NODE_ENV,
@@ -25,7 +26,5 @@ export async function corsMiddleware(c: import("hono").Context<AppBindings>, nex
     exposeHeaders: ["Content-Length"],
     maxAge: 86400,
     credentials: true,
-  });
-
-  return middleware(c, next);
-}
+  })(c, next);
+};

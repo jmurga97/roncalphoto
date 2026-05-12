@@ -1,11 +1,11 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
 
+import componentStylesText from "./styles.css?inline";
 import { createComponentStyles } from "../../internal/component-styles";
+import { murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
 
 import type { McStatusTone } from "../../internal/contracts";
-import { murgaMetaStyles, murgaThemeStyles } from "../../internal/styles";
 
 export const MC_STATUS_TEXT_TAG_NAME = "mc-status-text";
 export const TAG_NAME = MC_STATUS_TEXT_TAG_NAME;
@@ -14,14 +14,14 @@ const componentStyles = createComponentStyles(componentStylesText);
 
 function getDefaultLabel(tone: McStatusTone) {
   switch (tone) {
+    case "idle":
+      return "[IDLE]";
     case "loading":
       return "[LOADING]";
     case "success":
       return "[SAVED]";
     case "error":
       return "[ERROR]";
-    default:
-      return "[IDLE]";
   }
 }
 

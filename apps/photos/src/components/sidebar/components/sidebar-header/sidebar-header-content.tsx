@@ -1,4 +1,5 @@
 import { RoncalPhotoBrand } from "@components/brand/roncalphoto-brand";
+
 import type { ReactNode } from "react";
 
 export interface SidebarHeaderTag {

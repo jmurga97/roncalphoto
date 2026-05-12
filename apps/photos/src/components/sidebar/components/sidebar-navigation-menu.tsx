@@ -1,8 +1,10 @@
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { useQuery } from "@tanstack/react-query";
+
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+
+import { SidebarItem } from "./sidebar-item";
 import { useSidebarData } from "../hooks/use-sidebar-data";
 import { toSidebarNavigationItem } from "../utils/sidebar-mappers";
-import { SidebarItem } from "./sidebar-item";
 
 export function SidebarNavigationMenu() {
   const { slug } = useSidebarData();

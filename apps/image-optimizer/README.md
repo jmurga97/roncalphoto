@@ -76,14 +76,14 @@ src/
 
 The app follows a **layered architecture** with clear separation of concerns:
 
-| Layer | Responsibility |
-|-------|----------------|
-| **Config** | Environment schema (Zod), manual platform type stubs, status codes, global handlers. |
-| **App** | Hono instance, CORS middleware, route mounting, health endpoint. |
-| **Routes** | HTTP surface: auth, input validation, service invocation, response formatting. |
-| **Service** | Business rules: job state machine, R2/Queue coordination, image processing flow. |
-| **Repository** | D1 access abstracted behind the `UploadJobsStore` interface. |
-| **Shared** | Tiny cross-cutting helpers (`HttpError`, `jsonSuccess`). |
+| Layer          | Responsibility                                                                       |
+| -------------- | ------------------------------------------------------------------------------------ |
+| **Config**     | Environment schema (Zod), manual platform type stubs, status codes, global handlers. |
+| **App**        | Hono instance, CORS middleware, route mounting, health endpoint.                     |
+| **Routes**     | HTTP surface: auth, input validation, service invocation, response formatting.       |
+| **Service**    | Business rules: job state machine, R2/Queue coordination, image processing flow.     |
+| **Repository** | D1 access abstracted behind the `UploadJobsStore` interface.                         |
+| **Shared**     | Tiny cross-cutting helpers (`HttpError`, `jsonSuccess`).                             |
 
 **Patterns in use:**
 
@@ -138,26 +138,26 @@ Cloudflare Queue
 
 Bindings declared in `wrangler.toml`:
 
-| Binding | Type | Purpose |
-|---------|------|---------|
-| `IMAGES` | Cloudflare Images | Image info and transformation engine. |
-| `DB_RONCALPHOTO` | D1 | Shared portfolio database (jobs + photos tables). |
-| `ORIGINALS_BUCKET` | R2 | Private bucket where browsers upload unprocessed originals. |
-| `MEDIA_BUCKET` | R2 | Public bucket that serves processed main and thumbnail images. |
-| `IMAGE_PROCESSING_QUEUE` | Queue | Async pipeline for image transformation jobs. |
+| Binding                  | Type              | Purpose                                                        |
+| ------------------------ | ----------------- | -------------------------------------------------------------- |
+| `IMAGES`                 | Cloudflare Images | Image info and transformation engine.                          |
+| `DB_RONCALPHOTO`         | D1                | Shared portfolio database (jobs + photos tables).              |
+| `ORIGINALS_BUCKET`       | R2                | Private bucket where browsers upload unprocessed originals.    |
+| `MEDIA_BUCKET`           | R2                | Public bucket that serves processed main and thumbnail images. |
+| `IMAGE_PROCESSING_QUEUE` | Queue             | Async pipeline for image transformation jobs.                  |
 
 Environment variables / secrets:
 
-| Variable | Source | Purpose |
-|----------|--------|---------|
-| `ADMIN_UPLOAD_TOKEN` | Secret | Bearer token required by all upload endpoints. |
-| `PUBLIC_MEDIA_BASE_URL` | `wrangler.toml` | Public base URL used to construct final `photos.url` and `photos.miniature`. |
-| `R2_ACCESS_KEY_ID` | Secret | S3-compatible credentials for signing presigned R2 URLs. |
-| `R2_SECRET_ACCESS_KEY` | Secret | S3-compatible secret for signing presigned R2 URLs. |
-| `R2_ACCOUNT_ID` | `wrangler.toml` | Cloudflare account ID for R2 S3-compatible endpoint. |
-| `R2_ORIGINALS_BUCKET_NAME` | `wrangler.toml` | Real bucket name used in the presigned URL path. |
-| `ALLOWED_ORIGINS` | `wrangler.toml` (optional) | Comma-separated list of additional CORS origins. |
-| `NODE_ENV` | `wrangler.toml` | `development` \| `test` \| `production`; controls CORS strictness. |
+| Variable                   | Source                     | Purpose                                                                      |
+| -------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
+| `ADMIN_UPLOAD_TOKEN`       | Secret                     | Bearer token required by all upload endpoints.                               |
+| `PUBLIC_MEDIA_BASE_URL`    | `wrangler.toml`            | Public base URL used to construct final `photos.url` and `photos.miniature`. |
+| `R2_ACCESS_KEY_ID`         | Secret                     | S3-compatible credentials for signing presigned R2 URLs.                     |
+| `R2_SECRET_ACCESS_KEY`     | Secret                     | S3-compatible secret for signing presigned R2 URLs.                          |
+| `R2_ACCOUNT_ID`            | `wrangler.toml`            | Cloudflare account ID for R2 S3-compatible endpoint.                         |
+| `R2_ORIGINALS_BUCKET_NAME` | `wrangler.toml`            | Real bucket name used in the presigned URL path.                             |
+| `ALLOWED_ORIGINS`          | `wrangler.toml` (optional) | Comma-separated list of additional CORS origins.                             |
+| `NODE_ENV`                 | `wrangler.toml`            | `development` \| `test` \| `production`; controls CORS strictness.           |
 
 Local secrets live in `.dev.vars` (see `.dev.vars.example`).
 

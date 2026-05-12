@@ -1,9 +1,11 @@
-import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
 import { useSuspenseQuery } from "@tanstack/react-query";
+
+import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
 import { RichTextRenderer } from "@utils/render-rich-text";
-import { useSidebarData } from "../../hooks/use-sidebar-data";
+
 import { mapSessionToSidebarHeader } from "./map-session-to-sidebar-header";
 import { SidebarHeaderContent } from "./sidebar-header-content";
+import { useSidebarData } from "../../hooks/use-sidebar-data";
 
 export function SidebarHeaderQueryContent() {
   const { slug, photo: photoId } = useSidebarData();
@@ -12,6 +14,10 @@ export function SidebarHeaderQueryContent() {
     return null;
   }
 
+  return <SidebarHeaderQueryContentBody photoId={photoId} slug={slug} />;
+}
+
+function SidebarHeaderQueryContentBody({ photoId, slug }: { photoId?: string; slug: string }) {
   const {
     data: { activePhotoAbout, descriptionDocument, tags, title },
   } = useSuspenseQuery({

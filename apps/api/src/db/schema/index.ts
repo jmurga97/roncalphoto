@@ -27,7 +27,9 @@ export const sessions = sqliteTable(
     slug: text("slug").notNull(),
     title: text("title").notNull(),
     description: text("description").notNull(),
-    created_at: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    created_at: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
     uniqueIndex("sessions_slug_unique").on(table.slug),
@@ -105,8 +107,12 @@ export const photoUploadJobs = sqliteTable(
       .notNull()
       .default("awaiting_upload"),
     error_message: text("error_message"),
-    created_at: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
-    updated_at: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    created_at: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updated_at: text("updated_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     completed_at: text("completed_at"),
   },
   (table) => [

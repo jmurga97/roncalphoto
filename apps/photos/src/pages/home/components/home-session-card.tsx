@@ -1,5 +1,6 @@
-import type { Photo, Session } from "@roncal/shared";
 import { Link } from "@tanstack/react-router";
+
+import type { Photo, Session } from "@roncal/shared";
 
 const CARD_HEIGHT_VARIANTS = [
   "h-[18rem] sm:h-[20rem] lg:h-[21rem]",

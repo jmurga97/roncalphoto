@@ -1,5 +1,7 @@
-import { formatValidationMessage } from "@/shared/lib/validation";
 import { ZodError } from "zod";
+
+import { formatValidationMessage } from "@/shared/lib/validation";
+
 import { HttpError, isHttpError } from "./http-error";
 
 export function toHttpError(error: unknown, fallbackMessage = "Internal server error"): HttpError {

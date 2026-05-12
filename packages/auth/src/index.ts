@@ -1,6 +1,7 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins/email-otp";
+
 import {
   OTP_EXPIRES_IN_LABEL,
   OTP_EXPIRES_IN_SECONDS,
@@ -74,9 +75,18 @@ interface EmailWorkerErrorBody {
   };
 }
 
+function isEmailWorkerErrorBody(value: unknown): value is EmailWorkerErrorBody {
+  return typeof value === "object" && value !== null;
+}
+
 async function resolveEmailWorkerError(response: Response): Promise<string> {
   try {
-    const body = (await response.clone().json()) as EmailWorkerErrorBody;
+    const body: unknown = await response.clone().json();
+
+    if (!isEmailWorkerErrorBody(body)) {
+      return response.statusText || `HTTP ${response.status}`;
+    }
+
     const details = body.error ?? body.data;
 
     if (details?.code && details.message) {
@@ -155,7 +165,7 @@ export function createAuth({
     secret,
     baseURL,
     basePath: "/api/auth",
-    database: drizzleAdapter(db as DrizzleAdapterDatabase, {
+    database: drizzleAdapter(db, {
       provider: "sqlite",
       schema,
     }),

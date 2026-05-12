@@ -1,6 +1,7 @@
 import { createRouter } from "@/app/create-app";
 import { toEmailServiceError } from "@/shared/errors";
 import { errorResponse, successResponse } from "@/shared/http/responses";
+
 import { parseOtpRequestBody } from "../schemas/otp.schema";
 import { sendOtpEmail } from "../services/otp-email.service";
 

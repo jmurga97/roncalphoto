@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import type { MutableRefObject, RefObject } from "react";
+
 import type { GalleryPhotoViewModel } from "../types";
+import type { MutableRefObject, RefObject } from "react";
 
 interface UseVisibleSlideObserverOptions {
   containerRef: RefObject<HTMLDivElement | null>;

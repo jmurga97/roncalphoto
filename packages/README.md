@@ -8,13 +8,13 @@ Packages are consumed as TypeScript source (no dedicated build step) unless they
 
 ## Package Index
 
-| Package | Purpose | Consumed by |
-|---------|---------|-------------|
-| `@roncal/auth` | Reusable Better Auth server factory, Email OTP configuration, email-worker sender helper, and React Email OTP client factory. | `apps/api`, `apps/photos-admin` |
-| `@roncal/email-templates` | React Email templates (OTP email) rendered to HTML and plain text. | `apps/email-worker` |
-| `@murga/components` | Lit-based custom elements library with React wrappers for the admin dashboard. | `apps/photos-admin` |
-| `@roncal/shared` | Canonical domain types (`Photo`, `Session`, `Tag`, …), API mappers (`apiPhotoToPhoto`), normalizers, and runtime helpers (`resolveApiBaseUrl`). | `apps/api`, `apps/photos`, `apps/photos-admin` |
-| `@roncal/ui` | Shared React primitives. Currently exports `SuspenseWrapper` (error-boundary + suspense). | `apps/photos` |
+| Package                   | Purpose                                                                                                                                         | Consumed by                                    |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `@roncal/auth`            | Reusable Better Auth server factory, Email OTP configuration, email-worker sender helper, and React Email OTP client factory.                   | `apps/api`, `apps/photos-admin`                |
+| `@roncal/email-templates` | React Email templates (OTP email) rendered to HTML and plain text.                                                                              | `apps/email-worker`                            |
+| `@murga/components`       | Lit-based custom elements library with React wrappers for the admin dashboard.                                                                  | `apps/photos-admin`                            |
+| `@roncal/shared`          | Canonical domain types (`Photo`, `Session`, `Tag`, …), API mappers (`apiPhotoToPhoto`), normalizers, and runtime helpers (`resolveApiBaseUrl`). | `apps/api`, `apps/photos`, `apps/photos-admin` |
+| `@roncal/ui`              | Shared React primitives. Currently exports `SuspenseWrapper` (error-boundary + suspense).                                                       | `apps/photos`                                  |
 
 ---
 

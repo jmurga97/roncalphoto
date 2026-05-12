@@ -1,16 +1,13 @@
+import { createRoute } from "@hono/zod-openapi";
+
 import { validationErrorResponses } from "@/shared/lib/http";
-import { type RouteConfig, createRoute } from "@hono/zod-openapi";
+
+import type { RouteConfig } from "@hono/zod-openapi";
+
 type RouteResponses = RouteConfig["responses"];
 
 type ApiRouteOptions = RouteConfig & {
   errorResponses?: RouteResponses;
-};
-
-type ApiRouteWithErrors<Route extends ApiRouteOptions> = Omit<
-  Route,
-  "errorResponses" | "responses"
-> & {
-  responses: Route["responses"] & RouteResponses;
 };
 
 export function createApiRoute<const Route extends ApiRouteOptions>(route: Route) {
@@ -22,5 +19,5 @@ export function createApiRoute<const Route extends ApiRouteOptions>(route: Route
       ...responses,
       ...errorResponses,
     },
-  } as ApiRouteWithErrors<Route>);
+  });
 }

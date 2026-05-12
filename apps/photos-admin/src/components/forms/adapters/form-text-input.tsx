@@ -1,6 +1,8 @@
 import { McField, McInput } from "@murga/components/react";
 import { useId } from "react";
-import { type FieldPath, type FieldValues, useController, useFormContext } from "react-hook-form";
+import { useController, useFormContext } from "react-hook-form";
+
+import type { FieldPath, FieldValues } from "react-hook-form";
 
 interface FormTextInputProps<TValues extends FieldValues> {
   autocomplete?: string;

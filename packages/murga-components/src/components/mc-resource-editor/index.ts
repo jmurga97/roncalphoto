@@ -1,10 +1,8 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import componentStylesText from "./styles.css?inline";
-
 import { createComponentStyles } from "../../internal/component-styles";
-
-import type { McInlineStatus } from "../../internal/contracts";
 import { dispatchMcEvent } from "../../internal/events";
 import {
   murgaButtonStyles,
@@ -12,6 +10,8 @@ import {
   murgaSurfaceStyles,
   murgaThemeStyles,
 } from "../../internal/styles";
+
+import type { McInlineStatus } from "../../internal/contracts";
 
 export const MC_RESOURCE_EDITOR_TAG_NAME = "mc-resource-editor";
 export const TAG_NAME = MC_RESOURCE_EDITOR_TAG_NAME;
@@ -54,7 +54,11 @@ export class McResourceEditor extends LitElement {
       <section class="root" part="root">
         <header part="header">
           <div>${this.resourceTitle}</div>
-          ${this.status ? html`<div>${this.status.label}</div>` : this.dirty ? html`<div>[DIRTY]</div>` : nothing}
+          ${this.status
+            ? html`<div>${this.status.label}</div>`
+            : this.dirty
+              ? html`<div>[DIRTY]</div>`
+              : nothing}
         </header>
 
         <div class="layout">
@@ -68,13 +72,25 @@ export class McResourceEditor extends LitElement {
 
         <footer class="footer" part="footer">
           <slot name="actions"></slot>
-          <button type="button" ?disabled=${this.saving || this.deleting} @click=${() => this.#handleAction("save")}>
+          <button
+            type="button"
+            ?disabled=${this.saving || this.deleting}
+            @click=${() => this.#handleAction("save")}
+          >
             ${this.saving ? "[LOADING]" : "[SAVE]"}
           </button>
-          <button type="button" ?disabled=${this.saving || this.deleting} @click=${() => this.#handleAction("cancel")}>
+          <button
+            type="button"
+            ?disabled=${this.saving || this.deleting}
+            @click=${() => this.#handleAction("cancel")}
+          >
             [CANCEL]
           </button>
-          <button type="button" ?disabled=${this.saving || this.deleting} @click=${() => this.#handleAction("delete")}>
+          <button
+            type="button"
+            ?disabled=${this.saving || this.deleting}
+            @click=${() => this.#handleAction("delete")}
+          >
             ${this.deleting ? "[LOADING]" : "[DELETE]"}
           </button>
         </footer>

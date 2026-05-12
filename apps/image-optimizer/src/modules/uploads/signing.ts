@@ -1,7 +1,9 @@
+import { AwsClient } from "aws4fetch";
+
+import { encodeKey } from "./keys";
+
 import type { RuntimeEnv } from "@/config/env";
 import type { AcceptedImageMimeType } from "@/modules/images/types";
-import { AwsClient } from "aws4fetch";
-import { encodeKey } from "./keys";
 
 const uploadUrlTtlSeconds = 60 * 60;
 

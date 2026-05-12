@@ -1,10 +1,13 @@
-import type { AppDb } from "@/db";
-import { photos, sessionTags, tags } from "@/db";
-import type { ApiPhoto, Tag } from "@roncal/shared";
 import { asc, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
+
+import { photos, sessionTags, tags } from "@/db";
+
 import { toApiPhoto, toTag } from "./api-mappers";
 import { groupValuesBy } from "./collections";
+
+import type { AppDb } from "@/db";
+import type { ApiPhoto, Tag } from "@roncal/shared";
 
 export async function listTagsBySessionIds(
   db: AppDb,

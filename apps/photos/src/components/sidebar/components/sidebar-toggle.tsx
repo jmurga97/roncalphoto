@@ -1,4 +1,5 @@
 import { useSidebarActions, useSidebarOpen } from "@app/store";
+
 import { SIDEBAR_TOGGLE_ID } from "../utils/sidebar-dom";
 
 export function SidebarToggle() {

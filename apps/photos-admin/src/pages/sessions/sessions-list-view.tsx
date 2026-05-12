@@ -1,9 +1,10 @@
-import { EmptyState } from "@components/empty-state";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { McButton, McResourceTable, McSearchField } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
+
+import { EmptyState } from "@components/empty-state";
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es-ES", {
@@ -57,7 +58,7 @@ export function SessionsListView() {
           <McButton
             className="admin-inline-button"
             onClick={() => {
-              navigate({ to: "/sessions/new" });
+              void navigate({ to: "/sessions/new" });
             }}
             variant="primary"
           >
@@ -75,7 +76,7 @@ export function SessionsListView() {
               { id: "createdAt", label: "Creada" },
             ]}
             onMcRowSelect={(event) => {
-              navigate({
+              void navigate({
                 to: "/sessions/$slug",
                 params: { slug: event.detail.selectedId },
               });
@@ -97,7 +98,7 @@ export function SessionsListView() {
               <McButton
                 className="admin-inline-button"
                 onClick={() => {
-                  navigate({ to: "/sessions/new" });
+                  void navigate({ to: "/sessions/new" });
                 }}
                 variant="primary"
               >

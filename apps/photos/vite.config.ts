@@ -54,10 +54,10 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             react: ["react", "react-dom"],
             tanstack: ["@tanstack/react-router", "@tanstack/react-query", "zod"],
-            state: ["zustand"]
+            state: ["zustand"],
           },
         },
       },
-    }
+    },
   };
 });

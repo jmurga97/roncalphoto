@@ -1,7 +1,9 @@
-import { getRuntimeEnv } from "@/config/env";
-import type { AppBindings } from "@/config/types";
-import type { Context, Next } from "hono";
 import { cors } from "hono/cors";
+
+import { getRuntimeEnv } from "@/config/env";
+
+import type { AppBindings } from "@/config/types";
+import type { Context, MiddlewareHandler, Next } from "hono";
 
 const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
@@ -16,11 +18,11 @@ function isLocalDevelopmentOrigin(origin: string): boolean {
   }
 }
 
-export async function corsMiddleware(c: Context<AppBindings>, next: Next) {
-  const runtimeEnv = getRuntimeEnv(c);
-
+export async function corsMiddleware(c: Context<AppBindings, string>, next: Next) {
   const middleware = cors({
     origin: (origin) => {
+      const runtimeEnv = getRuntimeEnv(c);
+
       if (!origin) {
         return "*";
       }
@@ -39,7 +41,7 @@ export async function corsMiddleware(c: Context<AppBindings>, next: Next) {
     allowHeaders: ["Content-Type"],
     exposeHeaders: ["Content-Length"],
     maxAge: 86400,
-  });
+  }) as MiddlewareHandler<AppBindings>;
 
   return middleware(c, next);
 }

@@ -1,11 +1,9 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McNavItem } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import {
   murgaLabelStyles,
@@ -13,6 +11,8 @@ import {
   murgaSurfaceStyles,
   murgaThemeStyles,
 } from "../../internal/styles";
+
+import type { McNavItem } from "../../internal/contracts";
 
 export const MC_RELATIONSHIP_PANEL_TAG_NAME = "mc-relationship-panel";
 export const TAG_NAME = MC_RELATIONSHIP_PANEL_TAG_NAME;
@@ -47,9 +47,8 @@ export class McRelationshipPanel extends LitElement {
       <aside class="root" part="root">
         <slot name="header"></slot>
         <div part="header">${this.title}</div>
-        ${
-          this.items.length > 0
-            ? html`
+        ${this.items.length > 0
+          ? html`
               <div class="list" part="list">
                 ${repeat(
                   this.items,
@@ -63,8 +62,7 @@ export class McRelationshipPanel extends LitElement {
                 )}
               </div>
             `
-            : html`<div class="empty" part="empty">${this.emptyLabel}</div>`
-        }
+          : html`<div class="empty" part="empty">${this.emptyLabel}</div>`}
         <slot name="footer"></slot>
       </aside>
     `;

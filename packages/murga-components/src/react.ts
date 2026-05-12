@@ -1,5 +1,4 @@
 export { registerMurgaComponents } from "./index";
-export { reactWrapperEntryPoint } from "./react-entry";
 export {
   McAppShell,
   type McAppShellProps,
@@ -50,3 +49,4 @@ export {
   McThumbnailRail,
   type McThumbnailRailProps,
 } from "./react/wrappers";
+export { reactWrapperEntryPoint } from "./react-entry";

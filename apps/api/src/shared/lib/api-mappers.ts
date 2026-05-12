@@ -1,5 +1,7 @@
+import { normalizePhotoMetadata } from "@roncal/shared";
+
 import type { photos, sessions } from "@/db";
-import { type ApiPhoto, type ApiSession, type Tag, normalizePhotoMetadata } from "@roncal/shared";
+import type { ApiPhoto, ApiSession, Tag } from "@roncal/shared";
 
 export type SessionRecord = Pick<
   typeof sessions.$inferSelect,

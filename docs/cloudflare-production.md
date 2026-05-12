@@ -7,23 +7,23 @@ environments.
 
 ## Deploy targets
 
-| App | Cloudflare project | Type | Project path |
-|-----|--------------------|------|--------------|
-| `apps/photos` | `roncalphoto-photos` | Worker (static assets SPA) | `apps/photos` |
-| `apps/photos-admin` | `roncalphoto-admin` | Worker (static assets SPA) | `apps/photos-admin` |
-| `apps/api` | `roncalphoto-api` | Worker | `apps/api` |
-| `apps/email-worker` | `roncalphoto-email-worker` | Worker | `apps/email-worker` |
-| `apps/image-optimizer` | `roncalphoto-image-optimizer` | Worker | `apps/image-optimizer` |
+| App                    | Cloudflare project            | Type                       | Project path           |
+| ---------------------- | ----------------------------- | -------------------------- | ---------------------- |
+| `apps/photos`          | `roncalphoto-photos`          | Worker (static assets SPA) | `apps/photos`          |
+| `apps/photos-admin`    | `roncalphoto-admin`           | Worker (static assets SPA) | `apps/photos-admin`    |
+| `apps/api`             | `roncalphoto-api`             | Worker                     | `apps/api`             |
+| `apps/email-worker`    | `roncalphoto-email-worker`    | Worker                     | `apps/email-worker`    |
+| `apps/image-optimizer` | `roncalphoto-image-optimizer` | Worker                     | `apps/image-optimizer` |
 
 ## Wrangler build/deploy credentials
 
 Configure these as Cloudflare build/deploy environment variables for every
 project above. They are consumed by Wrangler during deploy commands.
 
-| Name | Cloudflare type | Scope | Purpose |
-|------|-----------------|-------|---------|
-| `CLOUDFLARE_ACCOUNT_ID` | Plain text variable | Build/deploy only | Selects the Cloudflare account for Wrangler operations. |
-| `CLOUDFLARE_API_TOKEN` | Secret | Build/deploy only | Authenticates Wrangler deploy, D1 migration, and Worker upload commands. |
+| Name                    | Cloudflare type     | Scope             | Purpose                                                                  |
+| ----------------------- | ------------------- | ----------------- | ------------------------------------------------------------------------ |
+| `CLOUDFLARE_ACCOUNT_ID` | Plain text variable | Build/deploy only | Selects the Cloudflare account for Wrangler operations.                  |
+| `CLOUDFLARE_API_TOKEN`  | Secret              | Build/deploy only | Authenticates Wrangler deploy, D1 migration, and Worker upload commands. |
 
 Do not add either value to `wrangler.toml [vars]`, Worker runtime variables,
 `.dev.vars`, or `.env.example`. `CLOUDFLARE_API_TOKEN` is a deployment
@@ -113,47 +113,47 @@ credentials.
 
 ### `roncalphoto-api`
 
-| Name | Source | Notes |
-|------|--------|-------|
-| `DB_RONCALPHOTO` | `wrangler.toml` D1 binding | Portfolio database. |
-| `EMAIL_WORKER` | `wrangler.toml` service binding | Preferred production OTP delivery path. |
-| `ALLOWED_ORIGINS` | `wrangler.toml [vars]` | Additional CORS origins. |
-| `LOG_LEVEL` | `wrangler.toml [vars]` | Production log level. |
-| `NODE_ENV` | `wrangler.toml [vars]` | `production` in Cloudflare. |
-| `BETTER_AUTH_URL` | `wrangler.toml [vars]` | Canonical API origin. |
-| `PHOTOS_ADMIN_URL` | `wrangler.toml [vars]` | Canonical admin origin. |
-| `BETTER_AUTH_SECRET` | Runtime secret | Required for Better Auth. |
+| Name                 | Source                          | Notes                                   |
+| -------------------- | ------------------------------- | --------------------------------------- |
+| `DB_RONCALPHOTO`     | `wrangler.toml` D1 binding      | Portfolio database.                     |
+| `EMAIL_WORKER`       | `wrangler.toml` service binding | Preferred production OTP delivery path. |
+| `ALLOWED_ORIGINS`    | `wrangler.toml [vars]`          | Additional CORS origins.                |
+| `LOG_LEVEL`          | `wrangler.toml [vars]`          | Production log level.                   |
+| `NODE_ENV`           | `wrangler.toml [vars]`          | `production` in Cloudflare.             |
+| `BETTER_AUTH_URL`    | `wrangler.toml [vars]`          | Canonical API origin.                   |
+| `PHOTOS_ADMIN_URL`   | `wrangler.toml [vars]`          | Canonical admin origin.                 |
+| `BETTER_AUTH_SECRET` | Runtime secret                  | Required for Better Auth.               |
 
 ### `roncalphoto-email-worker`
 
-| Name | Source | Notes |
-|------|--------|-------|
-| `SEND_EMAIL` | `wrangler.toml` send_email binding | Sends OTP emails. |
-| `FROM_EMAIL` | `wrangler.toml [vars]` | Verified sender address. |
-| `FROM_NAME` | `wrangler.toml [vars]` | Sender display name. |
+| Name         | Source                             | Notes                    |
+| ------------ | ---------------------------------- | ------------------------ |
+| `SEND_EMAIL` | `wrangler.toml` send_email binding | Sends OTP emails.        |
+| `FROM_EMAIL` | `wrangler.toml [vars]`             | Verified sender address. |
+| `FROM_NAME`  | `wrangler.toml [vars]`             | Sender display name.     |
 
 ### `roncalphoto-image-optimizer`
 
-| Name | Source | Notes |
-|------|--------|-------|
-| `IMAGES` | `wrangler.toml` Images binding | Reads and transforms images. |
-| `DB_RONCALPHOTO` | `wrangler.toml` D1 binding | Upload jobs and photos. |
-| `ORIGINALS_BUCKET` | `wrangler.toml` R2 binding | Original uploads. |
-| `MEDIA_BUCKET` | `wrangler.toml` R2 binding | Processed public media. |
-| `IMAGE_PROCESSING_QUEUE` | `wrangler.toml` Queue binding | Async processing. |
-| `ALLOWED_ORIGINS` | `wrangler.toml [vars]` | Admin CORS origins. |
-| `NODE_ENV` | `wrangler.toml [vars]` | `production` in Cloudflare. |
-| `PUBLIC_MEDIA_BASE_URL` | `wrangler.toml [vars]` | Public media URL. |
-| `R2_ACCOUNT_ID` | `wrangler.toml [vars]` | R2 S3-compatible endpoint account ID. |
-| `R2_ORIGINALS_BUCKET_NAME` | `wrangler.toml [vars]` | Bucket name used in presigned URLs. |
-| `ADMIN_UPLOAD_TOKEN` | Runtime secret | Bearer token for upload endpoints. |
-| `R2_ACCESS_KEY_ID` | Runtime secret | R2 S3-compatible signing key. |
-| `R2_SECRET_ACCESS_KEY` | Runtime secret | R2 S3-compatible signing secret. |
+| Name                       | Source                         | Notes                                 |
+| -------------------------- | ------------------------------ | ------------------------------------- |
+| `IMAGES`                   | `wrangler.toml` Images binding | Reads and transforms images.          |
+| `DB_RONCALPHOTO`           | `wrangler.toml` D1 binding     | Upload jobs and photos.               |
+| `ORIGINALS_BUCKET`         | `wrangler.toml` R2 binding     | Original uploads.                     |
+| `MEDIA_BUCKET`             | `wrangler.toml` R2 binding     | Processed public media.               |
+| `IMAGE_PROCESSING_QUEUE`   | `wrangler.toml` Queue binding  | Async processing.                     |
+| `ALLOWED_ORIGINS`          | `wrangler.toml [vars]`         | Admin CORS origins.                   |
+| `NODE_ENV`                 | `wrangler.toml [vars]`         | `production` in Cloudflare.           |
+| `PUBLIC_MEDIA_BASE_URL`    | `wrangler.toml [vars]`         | Public media URL.                     |
+| `R2_ACCOUNT_ID`            | `wrangler.toml [vars]`         | R2 S3-compatible endpoint account ID. |
+| `R2_ORIGINALS_BUCKET_NAME` | `wrangler.toml [vars]`         | Bucket name used in presigned URLs.   |
+| `ADMIN_UPLOAD_TOKEN`       | Runtime secret                 | Bearer token for upload endpoints.    |
+| `R2_ACCESS_KEY_ID`         | Runtime secret                 | R2 S3-compatible signing key.         |
+| `R2_SECRET_ACCESS_KEY`     | Runtime secret                 | R2 S3-compatible signing secret.      |
 
 ### Frontend Workers
 
-| Name | Source | Notes |
-|------|--------|-------|
+| Name           | Source                   | Notes                                            |
+| -------------- | ------------------------ | ------------------------------------------------ |
 | `VITE_API_URL` | Build variable, optional | Overrides the API origin at frontend build time. |
 
 If omitted, the frontend uses the repository default API origin outside local

@@ -1,6 +1,7 @@
+import { z } from "@hono/zod-openapi";
+
 import { apiSessionSchema, deleteResultSchema } from "@/shared/lib/contracts";
 import { createSuccessResponseSchema } from "@/shared/lib/http";
-import { z } from "@hono/zod-openapi";
 
 const optionalNonEmptyStringSchema = z.string().trim().min(1);
 const sessionTagIdsSchema = z

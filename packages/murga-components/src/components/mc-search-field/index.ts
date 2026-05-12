@@ -1,11 +1,10 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { ifDefined } from "lit/directives/if-defined.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
+import componentStylesText from "./styles.css?inline";
 import { syncAriaAttributes } from "../../internal/attributes";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import {
   murgaButtonStyles,
@@ -49,19 +48,19 @@ export class McSearchField extends LitElement {
     }
   }
 
-  #handleInput(event: Event) {
+  #handleInput = (event: Event) => {
     const target = event.currentTarget as HTMLInputElement;
     dispatchMcEvent(this, "mc-input", { value: target.value });
-  }
+  };
 
-  #handleChange(event: Event) {
+  #handleChange = (event: Event) => {
     const target = event.currentTarget as HTMLInputElement;
     dispatchMcEvent(this, "mc-change", { value: target.value });
-  }
+  };
 
-  #handleClear() {
+  #handleClear = () => {
     dispatchMcEvent(this, "mc-clear", { value: "" });
-  }
+  };
 
   render() {
     return html`

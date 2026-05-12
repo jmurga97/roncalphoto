@@ -1,13 +1,14 @@
-import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+
 import componentStylesText from "./styles.css?inline";
-
 import { createComponentStyles } from "../../internal/component-styles";
-
-import type { McMediaItem } from "../../internal/contracts";
 import { dispatchMcEvent } from "../../internal/events";
 import { findItemById, resolveNextItemId } from "../../internal/selection";
 import { murgaMetaStyles, murgaSurfaceStyles, murgaThemeStyles } from "../../internal/styles";
+
+import type { McMediaItem } from "../../internal/contracts";
+import type { PropertyValues } from "lit";
 
 import "../mc-thumbnail-rail";
 
@@ -41,12 +42,12 @@ export class McMediaBrowser extends LitElement {
     }
   }
 
-  #handleSelect(event: Event) {
+  #handleSelect = (event: Event) => {
     const detail = (event as CustomEvent<{ selectedId: string }>).detail;
     dispatchMcEvent(this, "mc-select", { selectedId: detail.selectedId });
-  }
+  };
 
-  #handleKeyDown(event: KeyboardEvent) {
+  #handleKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
       return;
     }
@@ -60,7 +61,7 @@ export class McMediaBrowser extends LitElement {
 
     event.preventDefault();
     dispatchMcEvent(this, "mc-select", { selectedId: nextId });
-  }
+  };
 
   render() {
     if (!this.selectedItem) {
@@ -77,16 +78,13 @@ export class McMediaBrowser extends LitElement {
           <div class="media" part="media">
             <img src=${this.selectedItem.src} alt=${this.selectedItem.alt} />
           </div>
-          ${
-            this.selectedItem.caption
-              ? html`<div class="caption">${this.selectedItem.caption}</div>`
-              : nothing
-          }
+          ${this.selectedItem.caption
+            ? html`<div class="caption">${this.selectedItem.caption}</div>`
+            : nothing}
           <slot name="meta"></slot>
         </div>
-        ${
-          this.showRail
-            ? html`
+        ${this.showRail
+          ? html`
               <mc-thumbnail-rail
                 part="rail"
                 .items=${this.items}
@@ -94,8 +92,7 @@ export class McMediaBrowser extends LitElement {
                 @mc-select=${this.#handleSelect}
               ></mc-thumbnail-rail>
             `
-            : nothing
-        }
+          : nothing}
       </section>
     `;
   }

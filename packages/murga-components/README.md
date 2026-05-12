@@ -73,11 +73,11 @@ registerMurgaComponents();
 
 ## Mapa de APIs actual
 
-| Recurso | Endpoints disponibles hoy | Implicacion para la libreria |
-| --- | --- | --- |
+| Recurso  | Endpoints disponibles hoy                                                                                                        | Implicacion para la libreria                                                                                                                                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Sessions | `GET /api/sessions`, `GET /api/sessions/{slug}`, `POST /api/sessions`, `PUT /api/sessions/{slug}`, `DELETE /api/sessions/{slug}` | Cubre listados, detalle, formularios de alta/edicion y confirmaciones de borrado. `GET /api/sessions?include=photos` habilita shells editoriales con preview. |
-| Photos | `GET /api/photos`, `GET /api/photos/{id}`, `POST /api/photos`, `PUT /api/photos/{id}`, `DELETE /api/photos/{id}` | Cubre tabla/listado paginado, editor de foto, browser de media y confirmaciones de borrado. |
-| Tags | `GET /api/tags`, `GET /api/tags/{slug}` | Permite lectura, navegacion, seleccion y relaciones. No existe CRUD de tags, asi que `mc-tag-editor` queda diferido. |
+| Photos   | `GET /api/photos`, `GET /api/photos/{id}`, `POST /api/photos`, `PUT /api/photos/{id}`, `DELETE /api/photos/{id}`                 | Cubre tabla/listado paginado, editor de foto, browser de media y confirmaciones de borrado.                                                                   |
+| Tags     | `GET /api/tags`, `GET /api/tags/{slug}`                                                                                          | Permite lectura, navegacion, seleccion y relaciones. No existe CRUD de tags, asi que `mc-tag-editor` queda diferido.                                          |
 
 ## Contratos UI planeados
 

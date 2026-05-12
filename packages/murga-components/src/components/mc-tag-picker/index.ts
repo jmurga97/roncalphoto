@@ -1,12 +1,10 @@
-import { LitElement, type PropertyValues, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import componentStylesText from "./styles.css?inline";
-
 import { ifDefined } from "lit/directives/if-defined.js";
 import { repeat } from "lit/directives/repeat.js";
-import { createComponentStyles } from "../../internal/component-styles";
 
-import type { McOption } from "../../internal/contracts";
+import componentStylesText from "./styles.css?inline";
+import { createComponentStyles } from "../../internal/component-styles";
 import { dispatchMcEvent } from "../../internal/events";
 import { normalizeSelectedIds, toggleSelectedId } from "../../internal/selection";
 import {
@@ -15,6 +13,9 @@ import {
   murgaPanelStyles,
   murgaThemeStyles,
 } from "../../internal/styles";
+
+import type { McOption } from "../../internal/contracts";
+import type { PropertyValues } from "lit";
 
 export const MC_TAG_PICKER_TAG_NAME = "mc-tag-picker";
 export const TAG_NAME = MC_TAG_PICKER_TAG_NAME;
@@ -61,9 +62,9 @@ export class McTagPicker extends LitElement {
     }
   }
 
-  #handleTriggerClick() {
+  #handleTriggerClick = () => {
     dispatchMcEvent(this, "mc-open-change", { open: !this.open });
-  }
+  };
 
   #handleOptionToggle(optionId: string) {
     const nextSelectedIds = toggleSelectedId(this.normalizedSelectedIds, optionId);
@@ -73,7 +74,11 @@ export class McTagPicker extends LitElement {
   render() {
     return html`
       <div part="field">
-        <input id=${ifDefined(this.inputId)} type="hidden" value=${this.normalizedSelectedIds.join(",")} />
+        <input
+          id=${ifDefined(this.inputId)}
+          type="hidden"
+          value=${this.normalizedSelectedIds.join(",")}
+        />
         <button
           class="trigger"
           part="trigger"
@@ -84,12 +89,13 @@ export class McTagPicker extends LitElement {
           aria-haspopup="listbox"
           @click=${this.#handleTriggerClick}
         >
-          <span>${this.selectedCount > 0 ? `[${this.selectedCount} SELECTED]` : "[SELECT TAGS]"}</span>
+          <span
+            >${this.selectedCount > 0 ? `[${this.selectedCount} SELECTED]` : "[SELECT TAGS]"}</span
+          >
           <span>${this.open ? "[OPEN]" : "[CLOSED]"}</span>
         </button>
-        ${
-          this.open
-            ? html`
+        ${this.open
+          ? html`
               <div
                 id=${this.#listboxId}
                 class="panel"
@@ -105,7 +111,9 @@ export class McTagPicker extends LitElement {
                       class="option"
                       part="option"
                       role="option"
-                      aria-selected=${this.normalizedSelectedIds.includes(option.id) ? "true" : "false"}
+                      aria-selected=${this.normalizedSelectedIds.includes(option.id)
+                        ? "true"
+                        : "false"}
                     >
                       <input
                         type="checkbox"
@@ -121,8 +129,7 @@ export class McTagPicker extends LitElement {
                 )}
               </div>
             `
-            : nothing
-        }
+          : nothing}
       </div>
     `;
   }

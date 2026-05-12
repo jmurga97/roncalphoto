@@ -1,16 +1,15 @@
-import type { AppDb } from "@/db";
+import { normalizePhotoMetadata } from "@roncal/shared";
+import { asc, eq, sql } from "drizzle-orm";
+
 import { getDb, photos } from "@/db";
 import { HttpError } from "@/shared/errors";
-import {
-  type PhotoRecord,
-  toApiPhoto,
-  toPhotoRecord,
-  toPhotoUpdateRecord,
-} from "@/shared/lib/api-mappers";
+import { toApiPhoto, toPhotoRecord, toPhotoUpdateRecord } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
 import { generateId } from "@/shared/utils/id";
-import { type ApiPhoto, type PhotoMetadata, normalizePhotoMetadata } from "@roncal/shared";
-import { asc, eq, sql } from "drizzle-orm";
+
+import type { AppDb } from "@/db";
+import type { PhotoRecord } from "@/shared/lib/api-mappers";
+import type { ApiPhoto, PhotoMetadata } from "@roncal/shared";
 
 interface ListPhotosOptions {
   page: number;
@@ -75,7 +74,10 @@ export class PhotosService {
   async listPhotos({ page, pageSize }: ListPhotosOptions) {
     const offset = (page - 1) * pageSize;
     const [countRow, rows] = await Promise.all([
-      this.db.select({ count: sql<number>`count(*)` }).from(photos).get(),
+      this.db
+        .select({ count: sql<number>`count(*)` })
+        .from(photos)
+        .get(),
       this.db
         .select()
         .from(photos)

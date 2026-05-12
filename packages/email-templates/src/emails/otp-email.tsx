@@ -10,6 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 import { render } from "@react-email/render";
+
 import type { CSSProperties } from "react";
 
 export type OtpEmailData = {
