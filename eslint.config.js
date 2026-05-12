@@ -63,6 +63,7 @@ const importSettings = {
   "import/resolver": {
     typescript: {
       alwaysTryTypes: true,
+      caseSensitive: false,
       noWarnOnMultipleProjects: true,
       project: tsconfigPaths,
     },
@@ -135,6 +136,7 @@ const sharedTypeScriptRules = {
   "import/no-unresolved": [
     "error",
     {
+      caseSensitive: false,
       ignore: ["\\.css$", "\\.svg$", "\\.png$", "\\.jpg$", "\\.webp$", "\\?.*$"],
     },
   ],
