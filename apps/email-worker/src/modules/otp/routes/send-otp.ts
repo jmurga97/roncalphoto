@@ -1,12 +1,8 @@
 import { createRouter } from "@/app/create-app";
-import { BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/config/status-codes";
+import { BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/shared/config/status-codes";
 import { toEmailServiceError } from "@/shared/errors/email-service-error";
 import { errorResponse } from "@/shared/http/responses";
-import {
-  createErrorResponse,
-  internalServerErrorResponse,
-  jsonSuccess,
-} from "@/shared/lib/http";
+import { createErrorResponse, internalServerErrorResponse, jsonSuccess } from "@/shared/lib/http";
 import { createApiRoute } from "@/shared/lib/openapi";
 
 import { otpRequestBodySchema, otpSendResponseSchema } from "../schemas/otp.schema";

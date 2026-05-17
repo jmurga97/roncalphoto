@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi";
 
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/config/status-codes";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/shared/config/status-codes";
 
-import type { AppBindings } from "@/config/types";
+import type { AppBindings } from "@/shared/config/types";
 import type { Context } from "hono";
 import type { ZodTypeAny } from "zod";
 

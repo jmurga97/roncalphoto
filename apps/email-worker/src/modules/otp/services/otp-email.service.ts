@@ -1,8 +1,8 @@
 import { renderOtpEmail } from "@roncal/email-templates";
 
-import { OTP_EMAIL_SUBJECT } from "@/config/constants";
+import { OTP_EMAIL_SUBJECT } from "@/shared/config/constants";
 
-import type { Bindings, EmailSendResult } from "@/config/types";
+import type { Bindings, EmailSendResult } from "@/shared/config/types";
 
 interface OtpEmailPayload {
   expiresIn: string;

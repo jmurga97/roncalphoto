@@ -1,6 +1,6 @@
 import { createApp } from "@/app/create-app";
 
-import type { AppBindings } from "@/config/types";
+import type { AppBindings } from "@/shared/config/types";
 
 const app = createApp();
 
