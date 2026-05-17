@@ -1,16 +1,11 @@
 import { z } from "@hono/zod-openapi";
 
-import {
-  BAD_REQUEST,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  UNAUTHORIZED,
-} from "@/config/status-codes";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUTHORIZED } from "@/config/status-codes";
 
 import type { CREATED, OK } from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
 import type { Context } from "hono";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 
 export const errorResponseSchema = z
   .object({
@@ -20,7 +15,7 @@ export const errorResponseSchema = z
   })
   .openapi("ErrorResponse");
 
-export function createSuccessResponseSchema<DataSchema extends ZodTypeAny>(dataSchema: DataSchema) {
+export function createSuccessResponseSchema<DataSchema extends ZodType>(dataSchema: DataSchema) {
   return z.object({
     success: z.literal(true),
     data: dataSchema,

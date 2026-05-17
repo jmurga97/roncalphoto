@@ -4,7 +4,7 @@ import { createSuccessResponseSchema } from "@/shared/lib/http";
 
 export const otpRequestBodySchema = z
   .object({
-    to: z.string().trim().email(),
+    to: z.email().trim(),
     otp: z.string().trim().min(1),
     expiresIn: z.string().trim().min(1),
   })
@@ -14,6 +14,5 @@ export const otpSendResponseDataSchema = z.object({
   messageId: z.string().min(1),
 });
 
-export const otpSendResponseSchema = createSuccessResponseSchema(
-  otpSendResponseDataSchema,
-).openapi("SendOtpResponse");
+export const otpSendResponseSchema =
+  createSuccessResponseSchema(otpSendResponseDataSchema).openapi("SendOtpResponse");

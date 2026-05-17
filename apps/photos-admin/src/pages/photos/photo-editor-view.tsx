@@ -25,23 +25,24 @@ import type { PhotoMutationInput } from "@lib/api/photos/photos";
 import type { ApiPhoto, ApiSession } from "@roncal/shared";
 
 const photoSchema = z.object({
-  sessionId: z.string().trim().min(1, "Selecciona una sesión."),
-  url: z.string().trim().min(1, "La URL principal es obligatoria."),
-  miniature: z.string().trim().min(1, "La miniatura es obligatoria."),
-  alt: z.string().trim().min(1, "El alt es obligatorio."),
-  about: z.string().trim().min(1, "El texto about es obligatorio."),
+  sessionId: z.string().trim().min(1, { error: "Selecciona una sesión." }),
+  url: z.string().trim().min(1, { error: "La URL principal es obligatoria." }),
+  miniature: z.string().trim().min(1, { error: "La miniatura es obligatoria." }),
+  alt: z.string().trim().min(1, { error: "El alt es obligatorio." }),
+  about: z.string().trim().min(1, { error: "El texto about es obligatorio." }),
   sortOrder: z
     .string()
     .trim()
-    .refine((value) => /^-?\d+$/.test(value), "El orden debe ser un número entero."),
+    .refine((value) => /^-?\d+$/.test(value), {
+      error: "El orden debe ser un número entero.",
+    }),
   metadata: z.object({
     iso: z
       .string()
       .trim()
-      .refine(
-        (value) => value === "" || /^-?\d+$/.test(value),
-        "El ISO debe ser un número entero.",
-      ),
+      .refine((value) => value === "" || /^-?\d+$/.test(value), {
+        error: "El ISO debe ser un número entero.",
+      }),
     aperture: z.string().trim(),
     shutterSpeed: z.string().trim(),
     lens: z.string().trim(),

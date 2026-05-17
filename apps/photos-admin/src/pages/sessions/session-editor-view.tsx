@@ -26,10 +26,10 @@ import type { SessionMutationInput } from "@lib/api/sessions/sessions";
 import type { ApiSession, Tag } from "@roncal/shared";
 
 const sessionSchema = z.object({
-  title: z.string().trim().min(1, "El título es obligatorio."),
+  title: z.string().trim().min(1, { error: "El título es obligatorio." }),
   slug: z.string().trim(),
-  description: z.string().trim().min(1, "La descripción es obligatoria."),
-  tagIds: z.array(z.string()).min(1, "Selecciona al menos un tag."),
+  description: z.string().trim().min(1, { error: "La descripción es obligatoria." }),
+  tagIds: z.array(z.string()).min(1, { error: "Selecciona al menos un tag." }),
 });
 
 type SessionFormValues = z.infer<typeof sessionSchema>;

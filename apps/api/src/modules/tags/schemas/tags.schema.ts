@@ -3,21 +3,19 @@ import { z } from "@hono/zod-openapi";
 import { apiTagWithSessionsSchema, tagSchema } from "@/shared/lib/contracts";
 import { createSuccessResponseSchema } from "@/shared/lib/http";
 
-export const tagSlugParamsSchema = z
-  .object({
-    slug: z
-      .string()
-      .trim()
-      .min(1, "slug is required")
-      .openapi({
-        param: {
-          name: "slug",
-          in: "path",
-        },
-        example: "urbano",
-      }),
-  })
-  .strip();
+export const tagSlugParamsSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .min(1, { error: "slug is required" })
+    .openapi({
+      param: {
+        name: "slug",
+        in: "path",
+      },
+      example: "urbano",
+    }),
+});
 
 export const tagsResponseSchema = createSuccessResponseSchema(z.array(tagSchema)).openapi(
   "TagsResponse",

@@ -8,10 +8,9 @@ export const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error",
 export const nodeEnvSchema = z.enum(["development", "test", "production"]);
 
 export const publicEnvSchema = z.object({
-  DB_RONCALPHOTO: z.custom<D1Database>(
-    (value) => typeof value === "object" && value !== null,
-    "DB_RONCALPHOTO binding is required",
-  ),
+  DB_RONCALPHOTO: z.custom<D1Database>((value) => typeof value === "object" && value !== null, {
+    error: "DB_RONCALPHOTO binding is required",
+  }),
   ALLOWED_ORIGINS: z.string().trim().optional(),
   LOG_LEVEL: logLevelSchema.default("info"),
   NODE_ENV: nodeEnvSchema.default("development"),
@@ -38,7 +37,7 @@ export const authEnvSchema = z
     }
 
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: "Auth requires the EMAIL_WORKER service binding.",
       path: ["EMAIL_WORKER"],
     });

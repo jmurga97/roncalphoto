@@ -1,10 +1,11 @@
 import { z } from "@hono/zod-openapi";
 
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/shared/config/status-codes";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "@/shared/config/status-codes";
 
+import type { OK } from "@/shared/config/status-codes";
 import type { AppBindings } from "@/shared/config/types";
 import type { Context } from "hono";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 
 export const errorDetailsSchema = z.object({
   code: z.string(),
@@ -18,7 +19,7 @@ export const errorResponseSchema = z
   })
   .openapi("EmailWorkerErrorResponse");
 
-export function createSuccessResponseSchema<DataSchema extends ZodTypeAny>(dataSchema: DataSchema) {
+export function createSuccessResponseSchema<DataSchema extends ZodType>(dataSchema: DataSchema) {
   return z.object({
     success: z.literal(true),
     data: dataSchema,

@@ -23,28 +23,26 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const nodeEnvSchema = z.enum(["development", "test", "production"]);
 
 const envSchema = z.object({
-  IMAGES: z.custom<ImagesBinding>(
-    (value) => typeof value === "object" && value !== null,
-    "IMAGES binding is required",
-  ),
+  IMAGES: z.custom<ImagesBinding>((value) => typeof value === "object" && value !== null, {
+    error: "IMAGES binding is required",
+  }),
   DB_RONCALPHOTO: z.custom<D1DatabaseBinding>(
     (value) => typeof value === "object" && value !== null,
-    "DB_RONCALPHOTO binding is required",
+    { error: "DB_RONCALPHOTO binding is required" },
   ),
   ORIGINALS_BUCKET: z.custom<R2BucketBinding>(
     (value) => typeof value === "object" && value !== null,
-    "ORIGINALS_BUCKET binding is required",
+    { error: "ORIGINALS_BUCKET binding is required" },
   ),
-  MEDIA_BUCKET: z.custom<R2BucketBinding>(
-    (value) => typeof value === "object" && value !== null,
-    "MEDIA_BUCKET binding is required",
-  ),
+  MEDIA_BUCKET: z.custom<R2BucketBinding>((value) => typeof value === "object" && value !== null, {
+    error: "MEDIA_BUCKET binding is required",
+  }),
   IMAGE_PROCESSING_QUEUE: z.custom<QueueBinding>(
     (value) => typeof value === "object" && value !== null,
-    "IMAGE_PROCESSING_QUEUE binding is required",
+    { error: "IMAGE_PROCESSING_QUEUE binding is required" },
   ),
   ADMIN_UPLOAD_TOKEN: z.string().trim().min(1),
-  PUBLIC_MEDIA_BASE_URL: z.string().trim().url(),
+  PUBLIC_MEDIA_BASE_URL: z.string().trim().pipe(z.url()),
   R2_ACCESS_KEY_ID: z.string().trim().min(1),
   R2_SECRET_ACCESS_KEY: z.string().trim().min(1),
   R2_ACCOUNT_ID: z.string().trim().min(1),
