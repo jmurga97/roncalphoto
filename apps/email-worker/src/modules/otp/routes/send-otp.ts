@@ -1,45 +1,64 @@
 import { createRouter } from "@/app/create-app";
-import { toEmailServiceError } from "@/shared/errors";
-import { errorResponse, successResponse } from "@/shared/http/responses";
+import { BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/config/status-codes";
+import { toEmailServiceError } from "@/shared/errors/email-service-error";
+import { errorResponse } from "@/shared/http/responses";
+import {
+  createErrorResponse,
+  internalServerErrorResponse,
+  jsonSuccess,
+} from "@/shared/lib/http";
+import { createApiRoute } from "@/shared/lib/openapi";
 
-import { parseOtpRequestBody } from "../schemas/otp.schema";
+import { otpRequestBodySchema, otpSendResponseSchema } from "../schemas/otp.schema";
 import { sendOtpEmail } from "../services/otp-email.service";
 
-const router = createRouter();
+const route = createApiRoute({
+  method: "post",
+  path: "/otp",
+  tags: ["OTP"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: otpRequestBodySchema,
+        },
+      },
+    },
+  },
+  errorResponses: {
+    [BAD_REQUEST]: createErrorResponse("Invalid OTP payload"),
+    [INTERNAL_SERVER_ERROR]: internalServerErrorResponse,
+    [BAD_GATEWAY]: createErrorResponse("Failed to send OTP email"),
+  },
+  responses: {
+    [OK]: {
+      description: "Send OTP email",
+      content: {
+        "application/json": {
+          schema: otpSendResponseSchema,
+        },
+      },
+    },
+  },
+});
 
-router.post("/otp", async (c) => {
-  let body: unknown;
-
-  try {
-    body = await c.req.json();
-  } catch {
-    return errorResponse("INVALID_JSON", "Request body must be valid JSON", 400);
-  }
-
-  const payload = parseOtpRequestBody(body);
-
-  if (!payload) {
-    return errorResponse(
-      "INVALID_BODY",
-      "Expected { to, otp, expiresIn } with non-empty string values",
-      400,
-    );
-  }
+export default createRouter().openapi(route, async (c) => {
+  const payload = c.req.valid("json");
 
   try {
     const result = await sendOtpEmail(c.env, payload);
 
-    return successResponse(
+    return jsonSuccess(
+      c,
       {
         messageId: result.messageId,
       },
-      200,
+      OK,
     );
   } catch (error) {
     const emailError = toEmailServiceError(error);
 
-    return errorResponse("EMAIL_SEND_FAILED", emailError.message, 502);
+    return errorResponse("EMAIL_SEND_FAILED", emailError.message, BAD_GATEWAY);
   }
 });
-
-export default router;

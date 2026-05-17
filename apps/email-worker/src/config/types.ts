@@ -1,4 +1,4 @@
-import type { Hono } from "hono";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 
 export interface EmailAddress {
   email: string;
@@ -31,4 +31,4 @@ export type AppBindings = {
   Bindings: Bindings;
 };
 
-export type App = Hono<AppBindings>;
+export type App = OpenAPIHono<AppBindings>;

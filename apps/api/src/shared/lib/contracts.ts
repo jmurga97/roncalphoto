@@ -55,12 +55,3 @@ export const deleteResultSchema = z
     deleted: z.literal(true),
   })
   .openapi("DeleteResult");
-
-export const paginationSchema = z
-  .object({
-    total: z.number().int().nonnegative().openapi({ example: 100 }),
-    page: z.number().int().positive().openapi({ example: 1 }),
-    pageSize: z.number().int().positive().openapi({ example: 20 }),
-    hasMore: z.boolean().openapi({ example: true }),
-  })
-  .openapi("Pagination");

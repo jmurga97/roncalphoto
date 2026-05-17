@@ -6,8 +6,7 @@ export const adminQueryKeys = {
   },
   photos: {
     all: ["admin", "photos"] as const,
-    list: (page: number, pageSize: number) =>
-      [...adminQueryKeys.photos.all, "list", page, pageSize] as const,
+    list: () => [...adminQueryKeys.photos.all, "list"] as const,
     detail: (id: string) => [...adminQueryKeys.photos.all, "detail", id] as const,
   },
   tags: {

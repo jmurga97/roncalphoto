@@ -1,9 +1,9 @@
 import { createRouter } from "@/app/create-app";
 import { OK } from "@/config/status-codes";
-import { jsonPaginated } from "@/shared/lib/http";
+import { jsonSuccess } from "@/shared/lib/http";
 import { createApiRoute } from "@/shared/lib/openapi";
 
-import { listPhotosQuerySchema, photosPaginatedResponseSchema } from "../schemas/photos.schema";
+import { listPhotosQuerySchema, photosResponseSchema } from "../schemas/photos.schema";
 import { getPhotosService } from "../services/photos.service";
 
 const route = createApiRoute({
@@ -18,7 +18,7 @@ const route = createApiRoute({
       description: "List photos",
       content: {
         "application/json": {
-          schema: photosPaginatedResponseSchema,
+          schema: photosResponseSchema,
         },
       },
     },
@@ -26,9 +26,9 @@ const route = createApiRoute({
 });
 
 export default createRouter().openapi(route, async (c) => {
-  const query = c.req.valid("query");
+  c.req.valid("query");
   const service = getPhotosService(c.env.DB_RONCALPHOTO);
-  const result = await service.listPhotos(query);
+  const photos = await service.listPhotos();
 
-  return jsonPaginated(c, result.data, result.pagination);
+  return jsonSuccess(c, photos, OK);
 });

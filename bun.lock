@@ -48,8 +48,10 @@
       "name": "@roncal/email-worker",
       "version": "0.0.1",
       "dependencies": {
+        "@hono/zod-openapi": "^1.3.0",
         "@roncal/email-templates": "workspace:*",
         "hono": "^4.11.5",
+        "zod": "^4.3.6",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^4.20260502.0",

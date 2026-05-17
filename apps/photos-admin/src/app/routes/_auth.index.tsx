@@ -11,5 +11,9 @@ export const Route = createFileRoute("/_auth/")({
 function OverviewRoute() {
   const { session } = AuthRoute.useRouteContext();
 
+  if (!session) {
+    return null;
+  }
+
   return <OverviewView userEmail={session.user.email} />;
 }

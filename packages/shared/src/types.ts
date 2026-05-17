@@ -91,17 +91,3 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
-
-/**
- * Paginated API response
- */
-export interface PaginatedResponse<T> {
-  success: boolean;
-  data: T[];
-  pagination: {
-    total: number;
-    page: number;
-    pageSize: number;
-    hasMore: boolean;
-  };
-}

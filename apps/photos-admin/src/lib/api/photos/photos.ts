@@ -1,11 +1,6 @@
 import { apiClient } from "@lib/api/client";
 
-import type { ApiPhoto, PaginatedResponse, PhotoMetadata } from "@roncal/shared";
-
-export interface PhotosListParams {
-  page: number;
-  pageSize: number;
-}
+import type { ApiPhoto, PhotoMetadata } from "@roncal/shared";
 
 export interface PhotoMutationInput {
   about: string;
@@ -27,8 +22,8 @@ export const photosService = {
   async getPhotoById(id: string): Promise<ApiPhoto> {
     return apiClient.get<ApiPhoto>(`/api/photos/${encodeURIComponent(id)}`);
   },
-  async listPhotos({ page, pageSize }: PhotosListParams): Promise<PaginatedResponse<ApiPhoto>> {
-    return apiClient.getPaginated<ApiPhoto>(`/api/photos?page=${page}&pageSize=${pageSize}`);
+  async listPhotos(): Promise<ApiPhoto[]> {
+    return apiClient.get<ApiPhoto[]>("/api/photos");
   },
   async updatePhoto(id: string, input: PhotoMutationInput): Promise<ApiPhoto> {
     return apiClient.put<ApiPhoto>(`/api/photos/${encodeURIComponent(id)}`, input);

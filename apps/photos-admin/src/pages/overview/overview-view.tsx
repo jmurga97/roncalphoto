@@ -94,7 +94,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
             <McButton
               className="admin-inline-button"
               onClick={() => {
-                void navigate({ to: "/photos/new", search: { page: 1 } });
+                void navigate({ to: "/photos/new" });
               }}
               variant="secondary"
             >

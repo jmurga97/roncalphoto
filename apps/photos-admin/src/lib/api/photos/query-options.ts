@@ -3,10 +3,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { adminQueryKeys } from "../query-keys";
 import { photosService } from "./photos";
 
-export function photosListQueryOptions(page: number, pageSize: number) {
+export function photosListQueryOptions() {
   return queryOptions({
-    queryKey: adminQueryKeys.photos.list(page, pageSize),
-    queryFn: () => photosService.listPhotos({ page, pageSize }),
+    queryKey: adminQueryKeys.photos.list(),
+    queryFn: () => photosService.listPhotos(),
     staleTime: 60 * 1000,
   });
 }

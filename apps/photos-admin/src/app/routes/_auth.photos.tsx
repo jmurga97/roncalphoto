@@ -3,25 +3,9 @@ import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { photosListQueryOptions } from "@lib/api/photos/query-options";
 import { PhotosListView } from "@pages/photos/photos-list-view";
 
-function validatePhotosSearch(search: Record<string, unknown>) {
-  const page =
-    typeof search.page === "number"
-      ? search.page
-      : typeof search.page === "string"
-        ? Number.parseInt(search.page, 10)
-        : 1;
-
-  return {
-    page: Number.isFinite(page) && page > 0 ? page : 1,
-  };
-}
-
 export const Route = createFileRoute("/_auth/photos")({
   component: PhotosRoute,
-  validateSearch: validatePhotosSearch,
-  loaderDeps: ({ search }) => ({ page: search.page }),
-  loader: ({ context, deps }) =>
-    context.queryClient.ensureQueryData(photosListQueryOptions(deps.page, 24)),
+  loader: ({ context }) => context.queryClient.ensureQueryData(photosListQueryOptions()),
 });
 
 function PhotosRoute() {

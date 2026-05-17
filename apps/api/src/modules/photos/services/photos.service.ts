@@ -1,103 +1,27 @@
-import { normalizePhotoMetadata } from "@roncal/shared";
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 import { getDb, photos } from "@/db";
+import { createPhotoEntity } from "@/modules/photos/utils/create-photo-entity";
+import { mergePhotoEntity } from "@/modules/photos/utils/merge-photo-entity";
 import { HttpError } from "@/shared/errors";
 import { toApiPhoto, toPhotoRecord, toPhotoUpdateRecord } from "@/shared/lib/api-mappers";
 import { getOrCreateInstance } from "@/shared/lib/instance-cache";
-import { generateId } from "@/shared/utils/id";
 
 import type { AppDb } from "@/db";
-import type { PhotoRecord } from "@/shared/lib/api-mappers";
-import type { ApiPhoto, PhotoMetadata } from "@roncal/shared";
-
-interface ListPhotosOptions {
-  page: number;
-  pageSize: number;
-}
-
-interface CreatePhotoInput {
-  id?: string;
-  sessionId: string;
-  url: string;
-  miniature: string;
-  alt: string;
-  about: string;
-  sortOrder?: number;
-  metadata?: Partial<PhotoMetadata>;
-}
-
-interface UpdatePhotoInput {
-  sessionId?: string;
-  url?: string;
-  miniature?: string;
-  alt?: string;
-  about?: string;
-  sortOrder?: number;
-  metadata?: Partial<PhotoMetadata>;
-}
-
-function createPhotoEntity(input: CreatePhotoInput): ApiPhoto {
-  return {
-    id: input.id ?? generateId(),
-    sessionId: input.sessionId,
-    url: input.url,
-    miniature: input.miniature,
-    alt: input.alt,
-    about: input.about,
-    sortOrder: input.sortOrder ?? 0,
-    metadata: normalizePhotoMetadata(input.metadata),
-  };
-}
-
-function mergePhotoEntity(existing: PhotoRecord, input: UpdatePhotoInput): ApiPhoto {
-  const currentPhoto = toApiPhoto(existing);
-
-  return {
-    ...currentPhoto,
-    sessionId: input.sessionId ?? currentPhoto.sessionId,
-    url: input.url ?? currentPhoto.url,
-    miniature: input.miniature ?? currentPhoto.miniature,
-    alt: input.alt ?? currentPhoto.alt,
-    about: input.about ?? currentPhoto.about,
-    sortOrder: input.sortOrder ?? currentPhoto.sortOrder,
-    metadata: normalizePhotoMetadata({
-      ...currentPhoto.metadata,
-      ...input.metadata,
-    }),
-  };
-}
+import type { CreatePhotoInput, UpdatePhotoInput } from "@/modules/photos/types";
+import type { ApiPhoto } from "@roncal/shared";
 
 export class PhotosService {
   constructor(private readonly db: AppDb) {}
 
-  async listPhotos({ page, pageSize }: ListPhotosOptions) {
-    const offset = (page - 1) * pageSize;
-    const [countRow, rows] = await Promise.all([
-      this.db
-        .select({ count: sql<number>`count(*)` })
-        .from(photos)
-        .get(),
-      this.db
-        .select()
-        .from(photos)
-        .orderBy(asc(photos.session_id), asc(photos.sort_order), asc(photos.id))
-        .limit(pageSize)
-        .offset(offset)
-        .all(),
-    ]);
+  async listPhotos(): Promise<ApiPhoto[]> {
+    const rows = await this.db
+      .select()
+      .from(photos)
+      .orderBy(asc(photos.session_id), asc(photos.sort_order), asc(photos.id))
+      .all();
 
-    const total = Number(countRow?.count ?? 0);
-
-    return {
-      data: rows.map(toApiPhoto),
-      pagination: {
-        total,
-        page,
-        pageSize,
-        hasMore: page * pageSize < total,
-      },
-    };
+    return rows.map(toApiPhoto);
   }
 
   async getPhotoById(id: string): Promise<ApiPhoto> {

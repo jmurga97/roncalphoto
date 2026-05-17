@@ -1,29 +1,20 @@
-import {
-  McButton,
-  McPagination,
-  McResourceTable,
-  McSearchField,
-  McStatusText,
-} from "@murga/components/react";
+import { McButton, McResourceTable, McSearchField, McStatusText } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
 import { EmptyState } from "@components/empty-state";
 import { photosListQueryOptions } from "@lib/api/photos/query-options";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 
-const photosRouteApi = getRouteApi("/_auth/photos");
-
 export function PhotosListView() {
   const navigate = useNavigate();
-  const search = photosRouteApi.useSearch();
-  const { data: photosPage } = useSuspenseQuery(photosListQueryOptions(search.page, 24));
+  const { data: photos } = useSuspenseQuery(photosListQueryOptions());
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const [searchValue, setSearchValue] = useState("");
   const deferredSearch = useDeferredValue(searchValue);
   const sessionTitleById = new Map(sessions.map((session) => [session.id, session.title]));
-  const filteredPhotos = photosPage.data.filter((photo) => {
+  const filteredPhotos = photos.filter((photo) => {
     const haystack = [
       photo.alt,
       photo.about,
@@ -40,10 +31,10 @@ export function PhotosListView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Photos</div>
-        <h2>Listado paginado y navegación rápida a edición.</h2>
+        <h2>Listado completo y navegación rápida a edición.</h2>
         <p>
-          Busca dentro de la página activa, revisa relación con la sesión y navega al editor de
-          URLs, copy y metadata técnica.
+          Busca entre todas las fotos, revisa su relación con la sesión y navega al editor de URLs,
+          copy y metadata técnica.
         </p>
       </header>
 
@@ -61,7 +52,7 @@ export function PhotosListView() {
               value={searchValue}
             />
             <McStatusText
-              label={`${filteredPhotos.length} resultados visibles / ${photosPage.pagination.total} totales`}
+              label={`${filteredPhotos.length} resultados visibles / ${photos.length} totales`}
               polite
               tone="idle"
             />
@@ -69,7 +60,7 @@ export function PhotosListView() {
           <McButton
             className="admin-inline-button"
             onClick={() => {
-              void navigate({ to: "/photos/new", search: { page: search.page } });
+              void navigate({ to: "/photos/new" });
             }}
             variant="primary"
           >
@@ -89,7 +80,6 @@ export function PhotosListView() {
               void navigate({
                 to: "/photos/$id",
                 params: { id: event.detail.selectedId },
-                search: { page: search.page },
               });
             }}
             rows={filteredPhotos.map((photo) => ({
@@ -108,7 +98,7 @@ export function PhotosListView() {
               <McButton
                 className="admin-inline-button"
                 onClick={() => {
-                  void navigate({ to: "/photos/new", search: { page: search.page } });
+                  void navigate({ to: "/photos/new" });
                 }}
                 variant="primary"
               >
@@ -116,25 +106,9 @@ export function PhotosListView() {
               </McButton>
             }
             description="Prueba con otra búsqueda o crea una nueva foto manualmente por URLs."
-            title="No hay fotos visibles en esta página"
+            title="No hay fotos visibles"
           />
         )}
-
-        <McPagination
-          disabled={photosPage.pagination.total === 0}
-          hasMore={photosPage.pagination.hasMore}
-          onMcPageChange={(event) => {
-            void navigate({
-              to: "/photos",
-              search: {
-                page: event.detail.page,
-              },
-            });
-          }}
-          page={photosPage.pagination.page}
-          pageSize={photosPage.pagination.pageSize}
-          total={photosPage.pagination.total}
-        />
       </section>
     </div>
   );

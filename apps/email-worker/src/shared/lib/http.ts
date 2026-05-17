@@ -1,24 +1,22 @@
 import { z } from "@hono/zod-openapi";
 
-import {
-  BAD_REQUEST,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  UNAUTHORIZED,
-} from "@/config/status-codes";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from "@/config/status-codes";
 
-import type { CREATED, OK } from "@/config/status-codes";
 import type { AppBindings } from "@/config/types";
 import type { Context } from "hono";
 import type { ZodTypeAny } from "zod";
 
+export const errorDetailsSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+});
+
 export const errorResponseSchema = z
   .object({
     success: z.literal(false),
-    error: z.string(),
-    stack: z.string().optional(),
+    error: errorDetailsSchema,
   })
-  .openapi("ErrorResponse");
+  .openapi("EmailWorkerErrorResponse");
 
 export function createSuccessResponseSchema<DataSchema extends ZodTypeAny>(dataSchema: DataSchema) {
   return z.object({
@@ -39,35 +37,14 @@ export function createErrorResponse(description: string) {
 }
 
 export const badRequestResponse = createErrorResponse("Invalid request");
-export const unauthorizedResponse = createErrorResponse("Unauthorized");
-export const notFoundResponse = createErrorResponse("Resource not found");
 export const internalServerErrorResponse = createErrorResponse("Internal server error");
-
-export const defaultErrorResponses = {
-  [INTERNAL_SERVER_ERROR]: internalServerErrorResponse,
-} as const;
 
 export const validationErrorResponses = {
   [BAD_REQUEST]: badRequestResponse,
-  ...defaultErrorResponses,
+  [INTERNAL_SERVER_ERROR]: internalServerErrorResponse,
 } as const;
 
-export const validationNotFoundErrorResponses = {
-  ...validationErrorResponses,
-  [NOT_FOUND]: notFoundResponse,
-} as const;
-
-export const protectedValidationErrorResponses = {
-  ...validationErrorResponses,
-  [UNAUTHORIZED]: unauthorizedResponse,
-} as const;
-
-export const protectedValidationNotFoundErrorResponses = {
-  ...validationNotFoundErrorResponses,
-  [UNAUTHORIZED]: unauthorizedResponse,
-} as const;
-
-export function jsonSuccess<Data, Status extends typeof OK | typeof CREATED>(
+export function jsonSuccess<Data, Status extends typeof OK>(
   c: Context<AppBindings>,
   data: Data,
   status: Status,

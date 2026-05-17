@@ -1,4 +1,4 @@
-import type { ApiResponse, PaginatedResponse } from "./types";
+import type { ApiResponse } from "./types";
 
 export class ApiRequestError extends Error {
   readonly status: number;
@@ -94,22 +94,6 @@ export class HttpClient {
 
   async delete<T>(input: string): Promise<T> {
     return this.parse<T>(await this.fetch(input, { method: "DELETE" }));
-  }
-
-  async getPaginated<T>(input: string): Promise<PaginatedResponse<T>> {
-    const response = await this.fetch(input, { method: "GET" });
-    if (!response.ok) {
-      const suffix = await resolveApiErrorMessage(response);
-      throw new ApiRequestError(
-        `API error: ${response.status} ${response.statusText}${suffix}`,
-        response.status,
-      );
-    }
-    const json = (await response.json()) as PaginatedResponse<T> & { error?: string };
-    if (!json.success || !Array.isArray(json.data) || !json.pagination) {
-      throw new ApiRequestError(json.error || "Unknown paginated API error", response.status);
-    }
-    return json;
   }
 }
 

@@ -8,7 +8,6 @@ export type {
   ApiResponse,
   ApiSession,
   ApiTagWithSessions,
-  PaginatedResponse,
   Photo,
   PhotoMetadata,
   PhotoSummary,

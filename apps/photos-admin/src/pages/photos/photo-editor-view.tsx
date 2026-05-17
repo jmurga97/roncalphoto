@@ -110,7 +110,7 @@ function CreatePhotoEditor() {
     <PhotoEditorForm
       mode="create"
       onDeleteAction={() => {
-        void navigate({ to: "/photos", search: { page: 1 } });
+        void navigate({ to: "/photos" });
         return Promise.resolve();
       }}
       onSaveAction={async (input) => {
@@ -120,7 +120,6 @@ function CreatePhotoEditor() {
         await navigate({
           to: "/photos/$id",
           params: { id: photo.id },
-          search: { page: 1 },
         });
         return photo;
       }}
@@ -150,7 +149,7 @@ function EditPhotoEditor() {
       onDeleteAction={async () => {
         await deleteMutation.mutateAsync();
         await invalidatePhotoData(queryClient);
-        await navigate({ to: "/photos", search: { page: 1 } });
+        await navigate({ to: "/photos" });
       }}
       onSaveAction={async (input) => {
         const nextPhoto = await saveMutation.mutateAsync(input);

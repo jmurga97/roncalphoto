@@ -1,11 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
 import { apiPhotoSchema, deleteResultSchema } from "@/shared/lib/contracts";
-import { createPaginatedResponseSchema, createSuccessResponseSchema } from "@/shared/lib/http";
-
-const defaultPage = 1;
-const defaultPageSize = 20;
-const maxPageSize = 100;
+import { createSuccessResponseSchema } from "@/shared/lib/http";
 
 export const photoIdParamsSchema = z
   .object({
@@ -23,18 +19,7 @@ export const photoIdParamsSchema = z
   })
   .strip();
 
-export const listPhotosQuerySchema = z
-  .object({
-    page: z.coerce.number().int().positive().default(defaultPage).openapi({ example: 1 }),
-    pageSize: z.coerce
-      .number()
-      .int()
-      .positive()
-      .default(defaultPageSize)
-      .transform((value) => Math.min(value, maxPageSize))
-      .openapi({ example: 20 }),
-  })
-  .strip();
+export const listPhotosQuerySchema = z.object({}).strip();
 
 export const photoMetadataInputSchema = z
   .object({
@@ -74,8 +59,9 @@ export const updatePhotoBodySchema = z
 export const photoResponseSchema =
   createSuccessResponseSchema(apiPhotoSchema).openapi("PhotoResponse");
 
-export const photosPaginatedResponseSchema =
-  createPaginatedResponseSchema(apiPhotoSchema).openapi("PhotosPaginatedResponse");
+export const photosResponseSchema = createSuccessResponseSchema(z.array(apiPhotoSchema)).openapi(
+  "PhotosResponse",
+);
 
 export const deletePhotoResponseSchema =
   createSuccessResponseSchema(deleteResultSchema).openapi("DeletePhotoResponse");
