@@ -12,7 +12,7 @@ import {
 
 export * from "./store";
 
-const EMAIL_WORKER_OTP_PATH = "https://email-worker.internal/send/otp";
+const EMAIL_WORKER_SEND_PATH = "https://email-worker.internal/send?productId=roncalphoto";
 
 type DrizzleAdapterDatabase = Parameters<typeof drizzleAdapter>[0];
 
@@ -59,9 +59,16 @@ export interface Auth {
 export type Session = Auth["$Infer"]["Session"];
 
 interface SendOtpPayload {
+  template: "otp";
+  fromProfile: "roncalphoto-default";
   to: string;
-  otp: string;
-  expiresIn: string;
+  data: {
+    otp: string;
+    expiresIn: string;
+  };
+  metadata: {
+    source: "auth";
+  };
 }
 
 interface EmailWorkerErrorBody {
@@ -111,7 +118,7 @@ async function sendOtpToEmailWorker(
   options: CreateEmailWorkerOtpSenderOptions,
   payload: SendOtpPayload,
 ): Promise<void> {
-  const response = await options.worker.fetch(EMAIL_WORKER_OTP_PATH, {
+  const response = await options.worker.fetch(EMAIL_WORKER_SEND_PATH, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -130,9 +137,16 @@ export function createEmailWorkerOtpSender(
 ): EmailOtpSender {
   return async ({ email, otp }) => {
     await sendOtpToEmailWorker(options, {
+      template: "otp",
+      fromProfile: "roncalphoto-default",
       to: email,
-      otp,
-      expiresIn: options.expiresInLabel ?? OTP_EXPIRES_IN_LABEL,
+      data: {
+        otp,
+        expiresIn: options.expiresInLabel ?? OTP_EXPIRES_IN_LABEL,
+      },
+      metadata: {
+        source: "auth",
+      },
     });
   };
 }

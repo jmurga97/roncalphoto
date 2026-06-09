@@ -12,8 +12,10 @@ environments.
 | `apps/photos`          | `roncalphoto-photos`          | Worker (static assets SPA) | `apps/photos`          |
 | `apps/photos-admin`    | `roncalphoto-admin`           | Worker (static assets SPA) | `apps/photos-admin`    |
 | `apps/api`             | `roncalphoto-api`             | Worker                     | `apps/api`             |
-| `apps/email-worker`    | `roncalphoto-email-worker`    | Worker                     | `apps/email-worker`    |
 | `apps/image-optimizer` | `roncalphoto-image-optimizer` | Worker                     | `apps/image-optimizer` |
+
+Transactional email is deployed separately from the `ming-email-worker` repository. RoncalPhoto
+depends on that Worker through the `EMAIL_WORKER` service binding.
 
 ## Wrangler build/deploy credentials
 
@@ -83,21 +85,39 @@ apps/photos
 
 ### Worker projects
 
-For `roncalphoto-api`, `roncalphoto-email-worker`, and
-`roncalphoto-image-optimizer`:
+For `roncalphoto-api` and `roncalphoto-image-optimizer`:
 
 1. Open **Workers & Pages** and select the Worker.
-2. If Cloudflare Workers Builds deploy the Worker, prefer the project's Build
+2. Their committed `wrangler.toml` files pin the non-secret Cloudflare account
+   ID so local remote bindings do not depend on membership discovery.
+3. If Cloudflare Workers Builds deploy the Worker, prefer the project's Build
    API token. Only add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` when
    an external CI system is running Wrangler directly.
-3. Keep runtime variables and runtime secrets in **Settings > Variables and Secrets**.
-4. Keep deploy credentials out of runtime settings.
+4. Keep runtime variables and runtime secrets in **Settings > Variables and Secrets**.
+5. Keep deploy credentials out of runtime settings.
 
 Recommended production deploy command:
 
 ```bash
 bun run deploy
 ```
+
+For `roncalphoto-api`, this command first runs
+`wrangler d1 migrations apply DB_RONCALPHOTO --remote` and only deploys the
+Worker if all committed migrations succeed. It never runs Drizzle generation.
+Schema migrations must be generated and reviewed during development:
+
+```bash
+cd apps/api
+bun run db:generate
+bun run db:migrations:list
+bun run db:migrate
+```
+
+Commit the generated SQL and metadata before deploying. For destructive changes
+use an expand/contract rollout: deploy a backward-compatible schema first,
+deploy code that can use both shapes, and remove the old schema in a later
+migration.
 
 Recommended non-production Worker upload command:
 
@@ -124,13 +144,31 @@ credentials.
 | `PHOTOS_ADMIN_URL`   | `wrangler.toml [vars]`          | Canonical admin origin.                 |
 | `BETTER_AUTH_SECRET` | Runtime secret                  | Required for Better Auth.               |
 
-### `roncalphoto-email-worker`
+### `ming-email-worker`
 
-| Name         | Source                             | Notes                    |
-| ------------ | ---------------------------------- | ------------------------ |
-| `SEND_EMAIL` | `wrangler.toml` send_email binding | Sends OTP emails.        |
-| `FROM_EMAIL` | `wrangler.toml [vars]`             | Verified sender address. |
-| `FROM_NAME`  | `wrangler.toml [vars]`             | Sender display name.     |
+The standalone worker owns React Email templates, sender profiles, subjects, and product policy.
+Its RoncalPhoto configuration must allow product `roncalphoto`, template `otp`, and sender profile
+`roncalphoto-default`. The `SEND_EMAIL` binding must allow the verified sender
+`noreply@mail.murga.ing`; no browser route, CORS configuration, or browser authentication is
+required.
+
+RoncalPhoto calls the worker through `EMAIL_WORKER` using
+`POST https://email-worker.internal/send?productId=roncalphoto` with this contract:
+
+```json
+{
+  "template": "otp",
+  "fromProfile": "roncalphoto-default",
+  "to": "<recipient>",
+  "data": {
+    "otp": "<otp>",
+    "expiresIn": "<expiration>"
+  },
+  "metadata": {
+    "source": "auth"
+  }
+}
+```
 
 ### `roncalphoto-image-optimizer`
 
@@ -161,7 +199,7 @@ development.
 
 ## Deploy order
 
-1. `roncalphoto-email-worker`
+1. `ming-email-worker` (standalone repository)
 2. `roncalphoto-api`
 3. `roncalphoto-image-optimizer`
 4. `roncalphoto-photos`
@@ -179,11 +217,17 @@ bun run check
 bun run build
 ```
 
+Inspect pending production migrations without applying them:
+
+```bash
+cd apps/api
+bun run db:migrations:list
+```
+
 Targeted app checks:
 
 ```bash
 cd apps/api && bun run build
-cd apps/email-worker && bun run build
 cd apps/image-optimizer && bun run build
 cd apps/photos-admin && bun run build
 cd apps/photos && bun run build

@@ -8,7 +8,7 @@ This package exposes the public REST API consumed by:
 
 - `@roncal/photos-app` (public portfolio frontend)
 - `@roncal/photos-admin` (protected admin dashboard)
-- `@roncal/email-worker` (OTP delivery for admin auth)
+- `ming-email-worker` through a private service binding (OTP delivery for admin auth)
 
 It handles CRUD for sessions, photos, and tags, plus Better Auth Email OTP authentication for the admin panel.
 
@@ -132,24 +132,49 @@ for D1 migrations and `bun run deploy`; they must not be added to
 
 ```bash
 # Development
-bun run dev                 # Apply local D1 migrations and start Wrangler dev server on :8787
+bun run dev                 # Start local code on :8787 with remote Cloudflare bindings
 
 # Building / Deploying
-bun run build               # Dry-run Wrangler deploy to ./dist
+bun run build               # Generate Wrangler types and type-check
 bun run deploy              # Deploy to Cloudflare (applies remote migrations first)
 
 # Database
-bun run db:migrate:local    # Apply D1 migrations locally
-bun run db:migrate:remote   # Apply D1 migrations remotely
-bun run db:generate         # Generate Drizzle migrations
-bun run db:studio           # Open Drizzle Studio
+bun run db:generate          # Generate a new Drizzle migration
+bun run db:migrations:list   # List pending production migrations
+bun run db:migrate           # Apply committed migrations to production D1
+bun run db:pull              # Pull the remote D1 schema
+bun run db:studio            # Open Drizzle Studio against remote D1
 
 # Types / Checks
 bun run cf-typegen          # Regenerate Wrangler worker types
 bun run check               # Run TypeScript type check
 ```
 
-For local OTP login tests, run `@roncal/email-worker` in parallel so Wrangler can connect the `EMAIL_WORKER` service binding during `wrangler dev`.
+`wrangler dev` runs the API code locally, while `DB_RONCALPHOTO` and
+`EMAIL_WORKER` connect to their production resources. Local CRUD and OTP tests
+therefore read and write production data. No local D1, copied users, or seed
+workflow exists.
+
+## D1 migration workflow
+
+D1 schema changes are versioned in `src/db/migrations`. Generation and
+application are intentionally separate:
+
+1. Change the Drizzle schemas in `src/db/schema`.
+2. Run `bun run db:generate` once.
+3. Review and commit the generated SQL and Drizzle metadata.
+4. Inspect production with `bun run db:migrations:list`.
+5. Run `bun run db:migrate`, or deploy with `bun run deploy`, which applies committed migrations
+   before uploading the Worker.
+
+`dev`, `db:migrate`, and `deploy` never generate migrations. A migration must
+be reviewed and committed before it reaches production. The initial `0000`
+migration is an idempotent baseline so existing production tables can be
+registered without being recreated.
+
+For destructive production schema changes, use expand/contract: first add
+backward-compatible schema, then deploy code that supports it, and only remove
+old columns or tables in a later migration after old code is no longer running.
 
 ## Relevant technical decisions
 

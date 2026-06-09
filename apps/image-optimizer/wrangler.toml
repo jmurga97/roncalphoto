@@ -1,28 +1,34 @@
 name = "roncalphoto-image-optimizer"
 main = "src/index.ts"
+account_id = "fee0d037c4a95bd94c997ee2a8b520be"
 compatibility_date = "2026-05-03"
 upload_source_maps = true
 
 [images]
 binding = "IMAGES"
+remote = true
 
 [[d1_databases]]
 binding = "DB_RONCALPHOTO"
 database_id = "da274846-1de9-4c1a-92fd-0e56c5f0f7b5"
 database_name = "roncalphoto"
 migrations_dir = "../api/src/db/migrations"
+remote = true
 
 [[r2_buckets]]
 binding = "ORIGINALS_BUCKET"
 bucket_name = "roncalphoto-originals"
+remote = true
 
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
 bucket_name = "roncalphoto-media"
+remote = true
 
 [[queues.producers]]
 binding = "IMAGE_PROCESSING_QUEUE"
 queue = "roncalphoto-image-processing"
+remote = true
 
 [[queues.consumers]]
 queue = "roncalphoto-image-processing"

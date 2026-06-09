@@ -2,7 +2,7 @@
 
 > Fuente canonica: este documento describe el auth admin OTP actual. Referencias cruzadas:
 > [`README.md`](../README.md), [`apps/api/README.md`](../apps/api/README.md),
-> [`apps/email-worker/README.md`](../apps/email-worker/README.md), [`packages/README.md`](../packages/README.md).
+> [`packages/README.md`](../packages/README.md) y el repositorio standalone `ming-email-worker`.
 
 ## 1. Resumen
 
@@ -10,7 +10,7 @@ El dashboard admin (`apps/photos-admin`) usa Better Auth con Email OTP. No hay s
 
 La API (`apps/api`) monta Better Auth en `/api/auth/*` con `auth.handler(c.req.raw)`. Las rutas protegidas de dominio usan `auth.api.getSession({ headers })` desde `requireSession`.
 
-D1 es la fuente de verdad para las tablas `user`, `session`, `verification` y `account`. El email-worker se mantiene como transporte de entrega del OTP (`POST /send/otp`), no guarda ni valida codigos. El KV de auth antiguo, la cookie custom anterior y las sesiones manuales antiguas ya no se usan.
+D1 es la fuente de verdad para las tablas `user`, `session`, `verification` y `account`. `ming-email-worker` se mantiene como transporte de entrega del OTP (`POST /send?productId=roncalphoto` con `template: "otp"`), no guarda ni valida codigos. El KV de auth antiguo, la cookie custom anterior y las sesiones manuales antiguas ya no se usan.
 
 Tras desplegar este cambio, las sesiones antiguas no migran: los admins deben iniciar sesion de nuevo.
 
@@ -23,7 +23,7 @@ sequenceDiagram
     participant API as roncalphoto-api
     participant BA as Better Auth
     participant D1 as DB_RONCALPHOTO
-    participant EmailW as email-worker
+    participant EmailW as ming-email-worker
     participant SendEmail as Cloudflare SEND_EMAIL
 
     Admin->>AdminUI: Introduce email
@@ -35,7 +35,7 @@ sequenceDiagram
         API-->>AdminUI: Respuesta Better Auth success
     else Usuario existe
         BA->>D1: Crea verification con OTP hasheado y TTL 300s
-        BA->>EmailW: POST /send/otp
+        BA->>EmailW: POST /send?productId=roncalphoto {template: "otp"}
         EmailW->>SendEmail: SEND_EMAIL.send(...)
         API-->>AdminUI: Respuesta Better Auth success
     end
@@ -153,14 +153,14 @@ Ve a **Workers & Pages > roncalphoto-api > Settings > Variables and Secrets** y 
 ### 6.4 Configurar el service binding `EMAIL_WORKER`
 
 1. En el mismo worker `roncalphoto-api`, ve a **Settings > Triggers > Service bindings**.
-2. Anade un binding llamado `EMAIL_WORKER` que apunte al worker `roncalphoto-email-worker`.
+2. Anade un binding llamado `EMAIL_WORKER` que apunte al worker `ming-email-worker`.
 3. Guarda y redeploya.
 
 ### 6.5 Verificar el dominio de email
 
-Confirma que el worker `roncalphoto-email-worker` esta configurado para enviar desde `mail.murga.ing`:
+Confirma que el worker `ming-email-worker` esta configurado para enviar desde `mail.murga.ing`:
 
-- Ve a **Workers & Pages > roncalphoto-email-worker > Settings**.
+- Ve a **Workers & Pages > ming-email-worker > Settings**.
 - Verifica que la API de `SEND_EMAIL` del dominio `mail.murga.ing` esta habilitada en **Email > Email Routing > Send Email**.
 - Si usas un DNS custom, asegurate de que el registro SPF/DKIM de `mail.murga.ing` este activo.
 
@@ -190,7 +190,7 @@ bun run build
 
 Smoke test local con `wrangler dev`:
 
-- Levanta `apps/email-worker` junto a `apps/api` para que el service binding `EMAIL_WORKER` aparezca conectado durante el desarrollo local.
+- `apps/api` ejecuta codigo local, pero `DB_RONCALPHOTO` y `EMAIL_WORKER` apuntan a los recursos remotos de produccion.
 - Usuario existente en D1 recibe OTP.
 - Usuario inexistente obtiene respuesta exitosa, no recibe email y no crea usuario.
 - OTP valido crea fila en `session`, usa `verification` y permite CRUD protegido.

@@ -8,9 +8,6 @@
 .env.*
 !.env.example
 
-# D1 local
-.wrangler/
-
 # build output
 dist/
 

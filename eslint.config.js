@@ -26,18 +26,10 @@ const packageFiles = ["packages/*/src/**/*.{ts,tsx}", "packages/*/tests/**/*.{ts
 const typeScriptFiles = [...appFiles, ...packageFiles];
 
 const reactAppFiles = ["apps/photos/src/**/*.{ts,tsx}", "apps/photos-admin/src/**/*.{ts,tsx}"];
-const reactPackageFiles = [
-  "packages/email-templates/src/**/*.{ts,tsx}",
-  "packages/ui/src/**/*.{ts,tsx}",
-  "packages/ui/tests/**/*.{ts,tsx}",
-];
+const reactPackageFiles = ["packages/ui/src/**/*.{ts,tsx}", "packages/ui/tests/**/*.{ts,tsx}"];
 const reactFiles = [...reactAppFiles, ...reactPackageFiles];
 
-const workerFiles = [
-  "apps/api/src/**/*.ts",
-  "apps/email-worker/src/**/*.ts",
-  "apps/image-optimizer/src/**/*.ts",
-];
+const workerFiles = ["apps/api/src/**/*.ts", "apps/image-optimizer/src/**/*.ts"];
 const litFiles = ["packages/murga-components/src/**/*.{ts,tsx}"];
 
 const workerEntrypointRestrictedImportPattern = {
@@ -49,10 +41,8 @@ const tsconfigPaths = [
   "apps/photos/tsconfig.json",
   "apps/photos-admin/tsconfig.json",
   "apps/api/tsconfig.json",
-  "apps/email-worker/tsconfig.json",
   "apps/image-optimizer/tsconfig.json",
   "packages/auth/tsconfig.json",
-  "packages/email-templates/tsconfig.json",
   "packages/murga-components/tsconfig.json",
   "packages/shared/tsconfig.json",
   "packages/ui/tsconfig.json",
@@ -348,11 +338,7 @@ export default defineConfig(
     },
   },
   {
-    files: [
-      "apps/api/src/app/**/*.ts",
-      "apps/email-worker/src/app/**/*.ts",
-      "apps/image-optimizer/src/app/**/*.ts",
-    ],
+    files: ["apps/api/src/app/**/*.ts", "apps/image-optimizer/src/app/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -369,11 +355,7 @@ export default defineConfig(
     },
   },
   {
-    files: [
-      "apps/api/src/config/**/*.ts",
-      "apps/email-worker/src/config/**/*.ts",
-      "apps/image-optimizer/src/config/**/*.ts",
-    ],
+    files: ["apps/api/src/config/**/*.ts", "apps/image-optimizer/src/config/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -394,11 +376,7 @@ export default defineConfig(
     },
   },
   {
-    files: [
-      "apps/api/src/shared/**/*.ts",
-      "apps/email-worker/src/shared/**/*.ts",
-      "apps/image-optimizer/src/shared/**/*.ts",
-    ],
+    files: ["apps/api/src/shared/**/*.ts", "apps/image-optimizer/src/shared/**/*.ts"],
     rules: {
       "import/no-restricted-paths": [
         "error",
@@ -411,15 +389,6 @@ export default defineConfig(
                 "./apps/api/src/app/**/*",
                 "./apps/api/src/modules/*/routes.ts",
                 "./apps/api/src/modules/*/routes/**/*",
-              ],
-              message: "Shared no debe depender de app ni de rutas HTTP.",
-            },
-            {
-              target: "./apps/email-worker/src/shared",
-              from: [
-                "./apps/email-worker/src/app/**/*",
-                "./apps/email-worker/src/modules/*/routes.ts",
-                "./apps/email-worker/src/modules/*/routes/**/*",
               ],
               message: "Shared no debe depender de app ni de rutas HTTP.",
             },
@@ -563,69 +532,12 @@ export default defineConfig(
     },
   },
   {
-    files: ["apps/email-worker/src/modules/*/routes.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            workerEntrypointRestrictedImportPattern,
-            {
-              regex: "^@/config(?:/.*)?$",
-              message: "Las rutas del worker no deben depender directamente de config.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ["apps/email-worker/src/modules/*/routes/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              regex: "^@/config(?:/.*)?$",
-              message: "Las rutas del worker no deben depender directamente de config.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
     files: ["apps/image-optimizer/src/modules/*/routes.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           patterns: [workerEntrypointRestrictedImportPattern],
-        },
-      ],
-    },
-  },
-  {
-    files: ["apps/email-worker/src/modules/*/services/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              regex: "^@/app(?:/.*)?$",
-              message: "Services del worker no deben depender de app.",
-            },
-            {
-              regex: "^@/modules/[^/]+/routes(?:$|/.*)",
-              message: "Services del worker no deben depender de rutas.",
-            },
-            {
-              regex: "^@/modules/[^/]+/schemas(?:$|/.*)",
-              message: "Services del worker no deben depender de schemas HTTP.",
-            },
-          ],
         },
       ],
     },

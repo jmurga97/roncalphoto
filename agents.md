@@ -7,7 +7,7 @@ Monorepo para portfolio de fotografia profesional.
 - `apps/photos`: frontend publico con Vite + React, desplegado en Cloudflare
 - `apps/photos-admin`: dashboard protegido por auth
 - `apps/api`: backend con Hono sobre Cloudflare Workers + D1
-- `apps/email-worker`: worker para enviar OTPs de inicio de sesion por email
+- `ming-email-worker`: servicio standalone consumido por service binding para emails transaccionales
 - `apps/image-optimizer`: imagenes subidas a R2 y persistir sus datos en base de datos
 - `packages/auth`: configuracion de Better Auth para autenticacion por OTP via email
 - `packages/murga-components`: libreria de componentes Lit para el dashboard admin
@@ -56,13 +56,11 @@ La ruta principal es `/session/:slug`.
 roncalphoto/
 ├── apps/
 │   ├── api/
-│   ├── email-worker/
 │   ├── image-optimizer/
 │   ├── photos/
 │   └── photos-admin/
 ├── packages/
 │   ├── auth/
-│   ├── email-templates/
 │   ├── murga-components/
 │   ├── shared/
 │   │   └── src/

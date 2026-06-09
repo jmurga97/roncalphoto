@@ -161,6 +161,12 @@ Environment variables / secrets:
 
 Local secrets live in `.dev.vars` (see `.dev.vars.example`).
 
+During `bun run dev`, the Worker code runs locally but its D1, R2, Images, and
+Queue producer bindings connect to the production Cloudflare resources. Upload
+tests therefore create real jobs and objects. Messages sent to the remote Queue
+are consumed by the deployed Worker, so consumer code changes must be deployed
+before they can process those messages.
+
 ### Cloudflare deploy credentials
 
 `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` must be configured as

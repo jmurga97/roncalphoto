@@ -14,7 +14,7 @@
       "cache": false
     },
     "lint": {},
-    "db:migrate:local": {
+    "db:migrate": {
       "cache": false
     }
   }
