@@ -10,7 +10,7 @@ Monorepo para portfolio de fotografia profesional.
 - `ming-email-worker`: servicio standalone consumido por service binding para emails transaccionales
 - `apps/image-optimizer`: imagenes subidas a R2 y persistir sus datos en base de datos
 - `packages/auth`: configuracion de Better Auth para autenticacion por OTP via email
-- `packages/murga-components`: libreria de componentes Lit para el dashboard admin
+- `@murga.ing/components`: libreria Lit externa consumida por el dashboard admin
 - `packages/shared`: tipos compartidos del dominio
 - Runtime y package manager: Bun
 
@@ -61,7 +61,6 @@ roncalphoto/
 │   └── photos-admin/
 ├── packages/
 │   ├── auth/
-│   ├── murga-components/
 │   ├── shared/
 │   │   └── src/
 │   │       ├── types.ts

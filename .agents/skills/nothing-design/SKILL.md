@@ -1,15 +1,15 @@
 ---
 name: nothing-design
-description: This skill should be used when the user explicitly says "Nothing style", "Nothing design", "/nothing-design", or directly asks to use/apply the Nothing design system. NEVER trigger automatically for generic UI or design tasks.
-version: 3.0.0
-allowed-tools: [Read, Write, Edit, Glob, Grep]
+description: Apply the Nothing-inspired design system with monochrome palettes, industrial composition, Geist Pixel Line display typography, dense information hierarchy, and first-class dark and light modes. Use only when the user explicitly says "Nothing style", "Nothing design", "/nothing-design", or directly asks to use or apply the Nothing design system; never trigger automatically for generic UI or design tasks.
 ---
 
 # Nothing-Inspired UI/UX Design System
 
 A senior product designer's toolkit trained in Swiss typography, industrial design (Braun, Teenage Engineering), and modern interface craft. Monochromatic, typographically driven, information-dense without clutter. Dark and light mode with equal rigor.
 
-**Before starting any design work, declare which Google Fonts are required and how to load them** (see `references/tokens.md` Section 1). Never assume fonts are already available.
+**Before starting any design work, declare and install the required fonts** (see
+`references/tokens.md` Section 1). Use the self-hosted Geist Pixel Line variant for matrix display
+typography, plus Space Grotesk and Space Mono. Never assume fonts are already available.
 
 ---
 
@@ -32,7 +32,7 @@ Every screen has exactly **three layers of importance.** Not two, not five. Thre
 
 | Layer | What | How |
 |-------|------|-----|
-| **Primary** | The ONE thing the user sees first. A number, a headline, a state. | Doto or Space Grotesk at display size. `--text-display`. 48–96px breathing room. |
+| **Primary** | The ONE thing the user sees first. A number, a headline, a state. | Geist Pixel Line or Space Grotesk at display size. `--text-display`. 48–96px breathing room. |
 | **Secondary** | Supporting context. Labels, descriptions, related data. | Space Grotesk at body/subheading. `--text-primary`. Grouped tight (8–16px) to the primary. |
 | **Tertiary** | Metadata, navigation, system info. Visible but never competing. | Space Mono at caption/label. `--text-secondary` or `--text-disabled`. ALL CAPS. Pushed to edges or bottom. |
 
@@ -43,7 +43,7 @@ Every screen has exactly **three layers of importance.** Not two, not five. Thre
 ### 2.2 Font Discipline
 
 Per screen, use maximum:
-- **2 font families** (Space Grotesk + Space Mono. Doto only for hero moments.)
+- **2 font families** (Space Grotesk + Space Mono. Geist Pixel Line only for hero moments.)
 - **3 font sizes** (one large, one medium, one small)
 - **2 font weights** (Regular + one other — usually Light or Medium, rarely Bold)
 
@@ -100,7 +100,7 @@ In a monochrome system, the gray scale IS the hierarchy. Max 4 levels per screen
 
 **Be consistent in:** Font families, label treatment (always Space Mono ALL CAPS), spacing rhythm, color roles, component shapes, alignment.
 
-**Break the pattern in exactly ONE place per screen:** An oversized number, a circular widget among rectangles, a red accent among grays, a Doto headline, a vast gap where everything else is tight.
+**Break the pattern in exactly ONE place per screen:** An oversized number, a circular widget among rectangles, a red accent among grays, a Geist Pixel Line headline, a vast gap where everything else is tight.
 
 This single break IS the design. Without it: sterile grid. With more than one: visual chaos.
 
@@ -128,7 +128,7 @@ When 3+ data sections appear on one screen, vary the visual form:
 
 | Form | Best for | Weight |
 |------|----------|--------|
-| Hero number (large Doto/Space Mono) | Single key metric | Heavy — use once |
+| Hero number (large Geist Pixel Line/Space Mono) | Single key metric | Heavy — use once |
 | Segmented progress bar | Progress toward goal | Medium |
 | Concentric rings / arcs | Multiple related percentages | Medium |
 | Inline compact bar | Secondary metrics in rows | Light |
@@ -158,7 +158,7 @@ Lead section → heaviest treatment. Secondary → different form. Tertiary → 
 
 ## 4. WORKFLOW
 
-1. **Declare fonts** — tell the user which Google Fonts to load (see `references/tokens.md`)
+1. **Install and declare fonts** — self-host Geist Pixel Line and load Space Grotesk plus Space Mono (see `references/tokens.md`)
 2. **Ask mode** — dark or light? Neither is default.
 3. **Sketch hierarchy** — identify the 3 layers before writing any code
 4. **Compose** — apply craft rules (Sections 2.1–2.9)

@@ -1,4 +1,4 @@
-import { McButton, McResourceTable, McSearchField, McStatusText } from "@murga/components/react";
+import { McResourceTable, McSearchField } from "@murga.ing/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
@@ -51,13 +51,13 @@ export function PhotosListView() {
               placeholder="Buscar por alt, sesión o URL"
               value={searchValue}
             />
-            <McStatusText
+            <mc-status-text
               label={`${filteredPhotos.length} resultados visibles / ${photos.length} totales`}
               polite
               tone="idle"
             />
           </div>
-          <McButton
+          <mc-button
             className="admin-inline-button"
             onClick={() => {
               void navigate({ to: "/photos/new" });
@@ -65,7 +65,7 @@ export function PhotosListView() {
             variant="primary"
           >
             Nueva foto
-          </McButton>
+          </mc-button>
         </div>
 
         {filteredPhotos.length > 0 ? (
@@ -95,7 +95,7 @@ export function PhotosListView() {
         ) : (
           <EmptyState
             action={
-              <McButton
+              <mc-button
                 className="admin-inline-button"
                 onClick={() => {
                   void navigate({ to: "/photos/new" });
@@ -103,7 +103,7 @@ export function PhotosListView() {
                 variant="primary"
               >
                 Crear foto
-              </McButton>
+              </mc-button>
             }
             description="Prueba con otra búsqueda o crea una nueva foto manualmente por URLs."
             title="No hay fotos visibles"

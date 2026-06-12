@@ -2,7 +2,9 @@
 
 ## 1. HTML / CSS / WEB
 
-Load fonts via Google Fonts `<link>` or `@import`. Use CSS custom properties, `rem` for type, `px` for spacing/borders. Dark/light via `prefers-color-scheme` or class toggle.
+Self-host the Geist Pixel Line webfont with `@font-face`; load Space Grotesk and Space Mono through
+Google Fonts or self-hosted files. Use CSS custom properties, `rem` for type, and `px` for
+spacing/borders. Implement dark/light mode with `prefers-color-scheme` or a class/data attribute.
 
 ```css
 :root {
@@ -55,7 +57,9 @@ extension Color {
 }
 ```
 
-Light mode values in tokens.md Dark/Light table. Derive Font extension from font stack table (trivial: `.custom("Doto"/"SpaceGrotesk-Regular"/"SpaceMono-Regular", size:)`).
+Light mode values are in the tokens.md Dark/Light table. Bundle the Geist Pixel Line `.ttf` and
+derive the font extension from the font stack table, for example
+`.custom("GeistPixel-Line"/"SpaceGrotesk-Regular"/"SpaceMono-Regular", size:)`.
 
 ---
 

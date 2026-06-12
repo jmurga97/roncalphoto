@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Murga Components"
+  short_description: "Integrate Murga components into React apps"
+  default_prompt: "Use $use-murga-components to integrate accessible Murga components into this React project."

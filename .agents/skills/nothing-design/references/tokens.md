@@ -6,11 +6,30 @@
 
 | Role | Font | Fallback | Weight |
 |------|------|----------|--------|
-| **Display** | `"Doto"` | `"Space Mono", monospace` | 400–700, variable dot-size |
+| **Display** | `"Geist Pixel Line"` | `"Space Mono", monospace` | Regular 400 |
 | **Body / UI** | `"Space Grotesk"` | `"DM Sans", system-ui, sans-serif` | Light 300, Regular 400, Medium 500, Bold 700 |
 | **Data / Labels** | `"Space Mono"` | `"JetBrains Mono", "SF Mono", monospace` | Regular 400, Bold 700 |
 
-**Why these fonts:** Doto = variable dot-matrix (closest to NDot 57). Space Grotesk + Space Mono by Colophon Foundry — same foundry as Nothing's actual typefaces. Shared design DNA.
+**Why these fonts:** Geist Pixel Line supplies the linear pixel-display character for expressive
+matrix moments. Space Grotesk and Space Mono provide the restrained UI and technical-data voice.
+
+### Installation
+
+Install the Geist Pixel family in the project and use the `Line` webfont variant for display text.
+Self-host `GeistPixel-Line.woff2`; do not substitute another Geist Pixel shape.
+
+```css
+@font-face {
+  font-family: "Geist Pixel Line";
+  src: url("/fonts/GeistPixel-Line.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+```
+
+Load Space Grotesk and Space Mono from Google Fonts or self-hosted equivalents. Keep the font asset
+path appropriate to the target project's public or bundled asset conventions.
 
 ### Type Scale
 
@@ -28,10 +47,10 @@
 
 ### Typographic Rules
 
-- **Doto:** 36px+ only, tight tracking, never for body text
+- **Geist Pixel Line:** 36px+ only, regular weight, tight tracking, never for body text
 - **Labels:** Always Space Mono, ALL CAPS, 0.06–0.1em spacing, 11–12px ("instrument panel" labels)
 - **Data/Numbers:** Always Space Mono. Units as `--label` size, slightly raised, adjacent
-- **Hierarchy:** display (Doto) > heading (Space Grotesk) > label (Space Mono caps) > body (Space Grotesk). Four levels max.
+- **Hierarchy:** display (Geist Pixel Line) > heading (Space Grotesk) > label (Space Mono caps) > body (Space Grotesk). Four levels max.
 
 ---
 
@@ -125,7 +144,7 @@
 
 ## 6. DOT-MATRIX MOTIF
 
-**When to use:** Hero typography (Doto), decorative grid backgrounds, dot-grid data viz, loading indicators, empty state illustrations.
+**When to use:** Hero typography (Geist Pixel Line), decorative grid backgrounds, dot-grid data viz, loading indicators, empty state illustrations.
 
 ### CSS Implementation
 ```css

@@ -8,12 +8,11 @@ Packages are consumed as TypeScript source (no dedicated build step) unless they
 
 ## Package Index
 
-| Package             | Purpose                                                                                                                                         | Consumed by                                    |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `@roncal/auth`      | Reusable Better Auth server factory, Email OTP configuration, and the internal `ming-email-worker` sender helper.                               | `apps/api`, `apps/photos-admin`                |
-| `@murga/components` | Lit-based custom elements library with React wrappers for the admin dashboard.                                                                  | `apps/photos-admin`                            |
-| `@roncal/shared`    | Canonical domain types (`Photo`, `Session`, `Tag`, …), API mappers (`apiPhotoToPhoto`), normalizers, and runtime helpers (`resolveApiBaseUrl`). | `apps/api`, `apps/photos`, `apps/photos-admin` |
-| `@roncal/ui`        | Shared React primitives. Currently exports `SuspenseWrapper` (error-boundary + suspense).                                                       | `apps/photos`                                  |
+| Package          | Purpose                                                                                                                                         | Consumed by                                    |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `@roncal/auth`   | Reusable Better Auth server factory, Email OTP configuration, and the internal `ming-email-worker` sender helper.                               | `apps/api`, `apps/photos-admin`                |
+| `@roncal/shared` | Canonical domain types (`Photo`, `Session`, `Tag`, …), API mappers (`apiPhotoToPhoto`), normalizers, and runtime helpers (`resolveApiBaseUrl`). | `apps/api`, `apps/photos`, `apps/photos-admin` |
+| `@roncal/ui`     | Shared React primitives. Currently exports `SuspenseWrapper` (error-boundary + suspense).                                                       | `apps/photos`                                  |
 
 ---
 
@@ -25,7 +24,6 @@ graph TD
   apps/api --> @roncal/shared
   apps/photos --> @roncal/shared
   apps/photos --> @roncal/ui
-  apps/photos-admin --> @murga/components
   apps/photos-admin --> @roncal/auth
   apps/photos-admin --> @roncal/shared
   apps/photos-admin --> @roncal/ui
@@ -36,5 +34,5 @@ graph TD
 - `@roncal/shared` is the single source of truth for the domain model. The API transforms D1 rows into these types, and the frontends consume them directly.
 - `@roncal/auth` is intentionally domain-agnostic: callers pass `baseURL`, Drizzle schema, trusted origins, and OTP delivery. It does not depend on `@roncal/shared`.
 - Transactional templates belong to the standalone `ming-email-worker`; this monorepo consumes only its closed `POST /send` contract.
-- `@murga/components` is the only package with a `sideEffects: true` flag (required for custom-element registration).
+- `apps/photos-admin` consumes the published `@murga.ing/components` package directly; it is not maintained as a workspace package.
 - No circular dependencies exist between packages.

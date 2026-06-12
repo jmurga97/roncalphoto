@@ -1,7 +1,10 @@
 # @roncal/photos-admin
 
 Protected admin dashboard for RoncalPhoto. Built with Vite, React 19, TanStack
-Router, Tailwind CSS 4 and `@murga/components`.
+Router, Tailwind CSS 4 and `@murga.ing/components`.
+
+The dashboard uses Murga Components 1.x, self-hosts Geist Pixel Line for display
+typography, and persists a controlled dark/light theme selected from the sidebar.
 
 ## Package purpose
 

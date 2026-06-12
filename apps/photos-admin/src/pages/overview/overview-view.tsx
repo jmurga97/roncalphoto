@@ -1,4 +1,3 @@
-import { McButton, McOverviewPanel } from "@murga/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -36,7 +35,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
           </p>
         </div>
         <div className="admin-surface">
-          <McOverviewPanel
+          <mc-overview-panel
             description="Datos vivos del backend: sesiones con fotos, tags y relación general del portfolio."
             stats={[
               {
@@ -82,7 +81,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
           <div className="admin-kicker">Accesos rápidos</div>
           <h3>Flujos más usados en v1</h3>
           <div className="admin-toolbar-controls">
-            <McButton
+            <mc-button
               className="admin-inline-button"
               onClick={() => {
                 void navigate({ to: "/sessions/new" });
@@ -90,8 +89,8 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
               variant="primary"
             >
               Nueva sesión
-            </McButton>
-            <McButton
+            </mc-button>
+            <mc-button
               className="admin-inline-button"
               onClick={() => {
                 void navigate({ to: "/photos/new" });
@@ -99,7 +98,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
               variant="secondary"
             >
               Nueva foto
-            </McButton>
+            </mc-button>
           </div>
         </section>
       </aside>

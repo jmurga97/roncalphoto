@@ -1,4 +1,4 @@
-import { McField, McTagPicker } from "@murga/components/react";
+import { McTagPicker } from "@murga.ing/components/react";
 import { useId, useState } from "react";
 import { useController, useFormContext } from "react-hook-form";
 
@@ -37,7 +37,7 @@ export function FormTagPicker<TValues extends FieldValues>({
   });
 
   return (
-    <McField
+    <mc-field
       error={fieldState.error?.message}
       hint={hint}
       inputId={inputId}
@@ -59,6 +59,6 @@ export function FormTagPicker<TValues extends FieldValues>({
         ref={field.ref}
         selectedIds={Array.isArray(field.value) ? field.value : []}
       />
-    </McField>
+    </mc-field>
   );
 }

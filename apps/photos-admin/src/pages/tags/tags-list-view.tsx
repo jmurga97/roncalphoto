@@ -1,4 +1,4 @@
-import { McInlineMessage, McResourceTable, McSearchField } from "@murga/components/react";
+import { McResourceTable, McSearchField } from "@murga.ing/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
@@ -27,7 +27,7 @@ export function TagsListView() {
         </p>
       </header>
 
-      <McInlineMessage
+      <mc-inline-message
         message="La v1 mantiene tags en modo lectura porque la API pública todavía no expone mutaciones."
         title="Tags read-only"
         tone="loading"

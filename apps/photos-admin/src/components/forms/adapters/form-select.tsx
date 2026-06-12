@@ -1,4 +1,4 @@
-import { McField, McSelect } from "@murga/components/react";
+import { McSelect } from "@murga.ing/components/react";
 import { useId, useState } from "react";
 import { useController, useFormContext } from "react-hook-form";
 
@@ -39,7 +39,7 @@ export function FormSelect<TValues extends FieldValues>({
   });
 
   return (
-    <McField
+    <mc-field
       error={fieldState.error?.message}
       hint={hint}
       inputId={inputId}
@@ -63,6 +63,6 @@ export function FormSelect<TValues extends FieldValues>({
         ref={field.ref}
         selectedId={typeof field.value === "string" && field.value.length > 0 ? field.value : null}
       />
-    </McField>
+    </mc-field>
   );
 }

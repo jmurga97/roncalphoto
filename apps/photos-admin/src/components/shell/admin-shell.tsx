@@ -1,4 +1,4 @@
-import { McAppShell, McButton, McSidebarNav, McStatusText } from "@murga/components/react";
+import { McAppShell, McSidebarNav } from "@murga.ing/components/react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 
@@ -6,6 +6,7 @@ import { useShellActions, useShellMobile, useSidebarOpen } from "@app/store/shel
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { signOut } from "@lib/auth-client";
+import { useThemeStore } from "@lib/theme";
 
 function getCurrentSectionLabel(pathname: string) {
   if (pathname.startsWith("/components")) {
@@ -89,6 +90,8 @@ export function AdminShell() {
   const isMobile = useShellMobile();
   const isSidebarOpen = useSidebarOpen();
   const { closeSidebar, setSidebarOpen, toggleSidebar } = useShellActions();
+  const theme = useThemeStore((state) => state.theme);
+  const setTheme = useThemeStore((state) => state.setTheme);
   const totalPhotos = sessions.reduce((sum, session) => sum + (session.photos?.length ?? 0), 0);
   const sectionLabel = getCurrentSectionLabel(location.pathname);
 
@@ -148,7 +151,16 @@ export function AdminShell() {
             </p>
           </div>
           <div slot="footer" className="admin-sidebar-footer">
-            <McStatusText label={`${totalPhotos} fotos activas en D1`} polite tone="success" />
+            <mc-status-text label={`${totalPhotos} fotos activas en D1`} polite tone="success" />
+            <mc-theme-switcher
+              aria-label="Tema de color"
+              dark-label="Oscuro"
+              light-label="Claro"
+              onmc-theme-change={(event) => {
+                setTheme(event.detail.theme);
+              }}
+              theme={theme}
+            />
           </div>
         </McSidebarNav>
       </div>
@@ -159,10 +171,10 @@ export function AdminShell() {
           <h1>{sectionLabel}</h1>
         </div>
         <div className="admin-topbar-actions">
-          <McButton className="admin-inline-button" onClick={toggleSidebar} variant="secondary">
+          <mc-button className="admin-inline-button" onClick={toggleSidebar} variant="secondary">
             {isSidebarOpen ? "Ocultar navegación" : "Abrir navegación"}
-          </McButton>
-          <McButton
+          </mc-button>
+          <mc-button
             className="admin-inline-button"
             onClick={() => {
               void navigate({ to: "/photos/new", search: { page: 1 } });
@@ -170,7 +182,7 @@ export function AdminShell() {
             variant="primary"
           >
             Nueva foto
-          </McButton>
+          </mc-button>
         </div>
       </header>
 

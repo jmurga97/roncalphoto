@@ -1,4 +1,4 @@
-import { McButton, McResourceTable, McSearchField } from "@murga/components/react";
+import { McResourceTable, McSearchField } from "@murga.ing/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
@@ -55,7 +55,7 @@ export function SessionsListView() {
               value={searchValue}
             />
           </div>
-          <McButton
+          <mc-button
             className="admin-inline-button"
             onClick={() => {
               void navigate({ to: "/sessions/new" });
@@ -63,7 +63,7 @@ export function SessionsListView() {
             variant="primary"
           >
             Nueva sesión
-          </McButton>
+          </mc-button>
         </div>
 
         {filteredSessions.length > 0 ? (
@@ -95,7 +95,7 @@ export function SessionsListView() {
         ) : (
           <EmptyState
             action={
-              <McButton
+              <mc-button
                 className="admin-inline-button"
                 onClick={() => {
                   void navigate({ to: "/sessions/new" });
@@ -103,7 +103,7 @@ export function SessionsListView() {
                 variant="primary"
               >
                 Crear sesión
-              </McButton>
+              </mc-button>
             }
             description="Ajusta la búsqueda o abre una sesión nueva para empezar a poblar el portfolio."
             title="No hay sesiones que coincidan"

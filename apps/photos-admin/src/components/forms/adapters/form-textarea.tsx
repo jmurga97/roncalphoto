@@ -1,4 +1,4 @@
-import { McField, McTextarea } from "@murga/components/react";
+import { McTextarea } from "@murga.ing/components/react";
 import { useId } from "react";
 import { useController, useFormContext } from "react-hook-form";
 
@@ -31,7 +31,7 @@ export function FormTextarea<TValues extends FieldValues>({
   });
 
   return (
-    <McField
+    <mc-field
       error={fieldState.error?.message}
       hint={hint}
       inputId={inputId}
@@ -51,6 +51,6 @@ export function FormTextarea<TValues extends FieldValues>({
         rows={rows}
         value={String(field.value ?? "")}
       />
-    </McField>
+    </mc-field>
   );
 }

@@ -1,12 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   McConfirmAction,
-  McInlineMessage,
   McRelationshipPanel,
   McResourceEditor,
-  McStatusText,
   McTagList,
-} from "@murga/components/react";
+} from "@murga.ing/components/react";
 import { getErrorMessage } from "@roncal/shared";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
@@ -228,7 +226,7 @@ function SessionEditorForm({
         >
           <div slot="fields" className="admin-editor-layout">
             {serverError ? (
-              <McInlineMessage
+              <mc-inline-message
                 message={serverError}
                 title="No se pudo completar la operación"
                 tone="error"
@@ -284,7 +282,7 @@ function SessionEditorForm({
           <div slot="aside" className="admin-aside-stack">
             <section className="admin-editor-section">
               <div className="admin-kicker">Panel lateral</div>
-              <McStatusText
+              <mc-status-text
                 label={
                   mode === "create"
                     ? "La sesión se publicará con su slug final al primer guardado."
@@ -353,7 +351,7 @@ function SessionEditorForm({
           </div>
 
           <div slot="actions">
-            <McStatusText
+            <mc-status-text
               label={
                 serverError ??
                 (formState.isDirty ? "Hay cambios pendientes" : "Todo sincronizado con la sesión")

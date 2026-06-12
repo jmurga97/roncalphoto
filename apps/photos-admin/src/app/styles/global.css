@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Geist Pixel Line";
+  src: url("/fonts/GeistPixel-Line.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --admin-black: #000000;
@@ -15,6 +23,19 @@
   --admin-success: #4a9e5c;
   --admin-warning: #d4a843;
   --admin-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+:root[data-mc-theme="light"] {
+  color-scheme: light;
+  --admin-black: #f5f5f5;
+  --admin-surface: #ffffff;
+  --admin-surface-raised: #f0f0f0;
+  --admin-border: #e8e8e8;
+  --admin-border-visible: #cccccc;
+  --admin-text-disabled: #999999;
+  --admin-text-secondary: #666666;
+  --admin-text-primary: #1a1a1a;
+  --admin-text-display: #000000;
 }
 
 * {
@@ -79,8 +100,7 @@ select {
 .admin-empty-state h3,
 .admin-topbar h1 {
   margin: 0;
-  font-family: "Doto", "Space Grotesk", sans-serif;
-  font-variation-settings: "ROND" 100;
+  font-family: "Geist Pixel Line", "Space Mono", monospace;
   color: var(--admin-text-display);
   letter-spacing: -0.02em;
   line-height: 1.05;
@@ -90,7 +110,7 @@ select {
 .admin-page-header h3 {
   max-inline-size: 18ch;
   font-size: clamp(2.25rem, 7vw, 4.5rem);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .admin-page-header p,
@@ -324,10 +344,9 @@ select {
 .admin-sidebar-title {
   margin: 0;
   color: var(--admin-text-display);
-  font-family: "Doto", "Space Grotesk", sans-serif;
+  font-family: "Geist Pixel Line", "Space Mono", monospace;
   font-size: 2rem;
-  font-variation-settings: "ROND" 100;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -348,7 +367,7 @@ select {
 
 .admin-topbar h1 {
   font-size: clamp(1.5rem, 3vw, 2.25rem);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .admin-topbar-actions {
@@ -394,6 +413,27 @@ select {
 .admin-showcase-two-column {
   display: grid;
   gap: 1rem;
+}
+
+.admin-theme-preview {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #333333;
+  border-radius: 1rem;
+  background: #000000;
+  color: #e8e8e8;
+}
+
+.admin-theme-preview[data-mc-theme="light"] {
+  border-color: #cccccc;
+  background: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.admin-theme-preview[data-mc-theme="light"] .admin-kicker {
+  color: #666666;
 }
 
 .admin-showcase-floating-control {

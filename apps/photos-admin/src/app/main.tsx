@@ -1,4 +1,5 @@
-import { registerMurgaComponents } from "@murga/components/react";
+import { registerMurgaComponents } from "@murga.ing/components/register";
+import "@murga.ing/components/react";
 import { createBrowserHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -8,9 +9,11 @@ import { routeTree } from "@app/route-tree.gen";
 import { RouteErrorState } from "@components/error/error-state";
 import { LoadingState } from "@components/loading/loading-state";
 import { queryClient } from "@lib/query-client";
+import { initializeTheme } from "@lib/theme";
 import "./styles/global.css";
 
 registerMurgaComponents();
+initializeTheme();
 
 const router = createRouter({
   routeTree,

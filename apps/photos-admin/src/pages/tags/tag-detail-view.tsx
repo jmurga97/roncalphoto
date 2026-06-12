@@ -1,4 +1,4 @@
-import { McInlineMessage, McRelationshipPanel } from "@murga/components/react";
+import { McRelationshipPanel } from "@murga.ing/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
@@ -20,7 +20,7 @@ export function TagDetailView() {
         </p>
       </header>
 
-      <McInlineMessage
+      <mc-inline-message
         message="Puedes navegar a las sesiones relacionadas para editar copy, slug, tags o fotos asociadas."
         title="Solo lectura"
         tone="idle"
