@@ -284,13 +284,13 @@ function PhotoEditorForm({
                 <FormTextInput<PhotoFormValues>
                   label="URL principal"
                   name="url"
-                  placeholder="https://cdn.example.com/photo.jpg"
+                  placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover.jpg"
                   required
                 />
                 <FormTextInput<PhotoFormValues>
                   label="Miniatura"
                   name="miniature"
-                  placeholder="https://cdn.example.com/photo-thumb.jpg"
+                  placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover-thumb.jpg"
                   required
                 />
               </div>

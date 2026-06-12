@@ -381,112 +381,6 @@ select {
   gap: 1rem;
 }
 
-.admin-components-page {
-  align-content: start;
-}
-
-.admin-components-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.admin-showcase-card {
-  align-content: start;
-}
-
-.admin-showcase-stack {
-  display: grid;
-  gap: 1rem;
-}
-
-.admin-showcase-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: start;
-}
-
-.admin-showcase-inline--spread {
-  justify-content: space-between;
-}
-
-.admin-showcase-two-column {
-  display: grid;
-  gap: 1rem;
-}
-
-.admin-theme-preview {
-  display: grid;
-  align-content: start;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #333333;
-  border-radius: 1rem;
-  background: #000000;
-  color: #e8e8e8;
-}
-
-.admin-theme-preview[data-mc-theme="light"] {
-  border-color: #cccccc;
-  background: #f5f5f5;
-  color: #1a1a1a;
-}
-
-.admin-theme-preview[data-mc-theme="light"] .admin-kicker {
-  color: #666666;
-}
-
-.admin-showcase-floating-control {
-  padding-block-end: 10rem;
-}
-
-.admin-components-grid mc-button,
-.admin-components-grid mc-badge,
-.admin-components-grid mc-status-text,
-.admin-components-grid mc-checkbox {
-  inline-size: fit-content;
-}
-
-.admin-components-grid mc-thumbnail {
-  inline-size: min(180px, 100%);
-}
-
-.admin-components-grid mc-sidebar-nav,
-.admin-components-grid mc-relationship-panel,
-.admin-components-grid mc-overview-panel,
-.admin-components-grid mc-resource-editor,
-.admin-components-grid mc-media-browser {
-  inline-size: 100%;
-}
-
-.admin-shell-preview {
-  min-block-size: 24rem;
-  overflow: hidden;
-  border: 1px solid var(--admin-border-visible);
-  border-radius: 1rem;
-}
-
-.admin-shell-preview mc-app-shell {
-  block-size: 100%;
-}
-
-.admin-showcase-shell-slot,
-.admin-showcase-shell-header,
-.admin-showcase-shell-main,
-.admin-showcase-shell-footer {
-  padding: 1rem;
-}
-
-.admin-showcase-shell-header,
-.admin-showcase-shell-footer {
-  border-bottom: 1px solid var(--admin-border);
-}
-
-.admin-showcase-shell-footer {
-  border-top: 1px solid var(--admin-border);
-  border-bottom: 0;
-}
-
 .admin-list {
   display: grid;
   gap: 0.625rem;
@@ -534,13 +428,5 @@ select {
 
   .admin-overview-secondary {
     align-content: start;
-  }
-
-  .admin-components-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .admin-showcase-two-column {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

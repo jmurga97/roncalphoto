@@ -15,7 +15,6 @@ import { Route as AuthIndexRouteImport } from './routes/_auth.index'
 import { Route as AuthTagsRouteImport } from './routes/_auth.tags'
 import { Route as AuthSessionsRouteImport } from './routes/_auth.sessions'
 import { Route as AuthPhotosRouteImport } from './routes/_auth.photos'
-import { Route as AuthComponentsRouteImport } from './routes/_auth.components'
 import { Route as AuthTagsSlugRouteImport } from './routes/_auth.tags.$slug'
 import { Route as AuthSessionsNewRouteImport } from './routes/_auth.sessions.new'
 import { Route as AuthSessionsSlugRouteImport } from './routes/_auth.sessions.$slug'
@@ -51,11 +50,6 @@ const AuthPhotosRoute = AuthPhotosRouteImport.update({
   path: '/photos',
   getParentRoute: () => AuthRoute,
 } as any)
-const AuthComponentsRoute = AuthComponentsRouteImport.update({
-  id: '/components',
-  path: '/components',
-  getParentRoute: () => AuthRoute,
-} as any)
 const AuthTagsSlugRoute = AuthTagsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -85,7 +79,6 @@ const AuthPhotosIdRoute = AuthPhotosIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
   '/login': typeof LoginRoute
-  '/components': typeof AuthComponentsRoute
   '/photos': typeof AuthPhotosRouteWithChildren
   '/sessions': typeof AuthSessionsRouteWithChildren
   '/tags': typeof AuthTagsRouteWithChildren
@@ -97,7 +90,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/components': typeof AuthComponentsRoute
   '/photos': typeof AuthPhotosRouteWithChildren
   '/sessions': typeof AuthSessionsRouteWithChildren
   '/tags': typeof AuthTagsRouteWithChildren
@@ -112,7 +104,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/login': typeof LoginRoute
-  '/_auth/components': typeof AuthComponentsRoute
   '/_auth/photos': typeof AuthPhotosRouteWithChildren
   '/_auth/sessions': typeof AuthSessionsRouteWithChildren
   '/_auth/tags': typeof AuthTagsRouteWithChildren
@@ -128,7 +119,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
-    | '/components'
     | '/photos'
     | '/sessions'
     | '/tags'
@@ -140,7 +130,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/components'
     | '/photos'
     | '/sessions'
     | '/tags'
@@ -154,7 +143,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_auth'
     | '/login'
-    | '/_auth/components'
     | '/_auth/photos'
     | '/_auth/sessions'
     | '/_auth/tags'
@@ -213,13 +201,6 @@ declare module '@tanstack/react-router' {
       path: '/photos'
       fullPath: '/photos'
       preLoaderRoute: typeof AuthPhotosRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/components': {
-      id: '/_auth/components'
-      path: '/components'
-      fullPath: '/components'
-      preLoaderRoute: typeof AuthComponentsRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_auth/tags/$slug': {
@@ -301,7 +282,6 @@ const AuthTagsRouteWithChildren = AuthTagsRoute._addFileChildren(
 )
 
 interface AuthRouteChildren {
-  AuthComponentsRoute: typeof AuthComponentsRoute
   AuthPhotosRoute: typeof AuthPhotosRouteWithChildren
   AuthSessionsRoute: typeof AuthSessionsRouteWithChildren
   AuthTagsRoute: typeof AuthTagsRouteWithChildren
@@ -309,7 +289,6 @@ interface AuthRouteChildren {
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
-  AuthComponentsRoute: AuthComponentsRoute,
   AuthPhotosRoute: AuthPhotosRouteWithChildren,
   AuthSessionsRoute: AuthSessionsRouteWithChildren,
   AuthTagsRoute: AuthTagsRouteWithChildren,

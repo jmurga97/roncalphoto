@@ -9,10 +9,6 @@ import { signOut } from "@lib/auth-client";
 import { useThemeStore } from "@lib/theme";
 
 function getCurrentSectionLabel(pathname: string) {
-  if (pathname.startsWith("/components")) {
-    return "Components";
-  }
-
   if (pathname.startsWith("/sessions")) {
     return "Sessions";
   }
@@ -39,11 +35,6 @@ function getNavigationItems(
       id: "overview",
       label: "Overview",
       current: pathname === "/",
-    },
-    {
-      id: "components",
-      label: "Components",
-      current: pathname.startsWith("/components"),
     },
     {
       id: "sessions",
@@ -118,9 +109,6 @@ export function AdminShell() {
                   await signOut();
                   queryClient.clear();
                   await navigate({ to: "/login" });
-                  break;
-                case "components":
-                  await navigate({ to: "/components" });
                   break;
                 case "sessions":
                   await navigate({ to: "/sessions" });
