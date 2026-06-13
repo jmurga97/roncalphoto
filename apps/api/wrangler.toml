@@ -17,6 +17,11 @@ binding = "EMAIL_WORKER"
 service = "ming-email-worker"
 remote = true
 
+[[services]]
+binding = "IMAGE_WORKER"
+service = "ming-image-worker"
+remote = true
+
 [observability]
 enabled = true
 

@@ -323,6 +323,27 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.admin-upload-field {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--admin-border);
+}
+
+.admin-upload-field > span {
+  color: var(--admin-text-display);
+  font-weight: 600;
+}
+
+.admin-upload-field > small {
+  color: var(--admin-text-secondary);
+}
+
+.admin-upload-field input[type="file"] {
+  inline-size: 100%;
+  color: var(--admin-text-primary);
+}
+
 .admin-toolbar-controls mc-search-field {
   min-inline-size: min(100%, 20rem);
 }

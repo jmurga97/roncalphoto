@@ -9,8 +9,10 @@ This package exposes the public REST API consumed by:
 - `@roncal/photos-app` (public portfolio frontend)
 - `@roncal/photos-admin` (protected admin dashboard)
 - `ming-email-worker` through a private service binding (OTP delivery for admin auth)
+- `ming-image-worker` through a private service binding (image upload and optimization)
 
-It handles CRUD for sessions, photos, and tags, plus Better Auth Email OTP authentication for the admin panel.
+It handles CRUD for sessions, photos, and tags, Better Auth Email OTP authentication, and the
+RoncalPhoto-owned facade for asynchronous image uploads.
 
 ## Internal dependencies
 
@@ -44,6 +46,7 @@ src/
 │       └── auth.ts          # Better Auth tables: user, session, account, verification
 ├── modules/
 │   ├── sessions/            # Routes, schemas, service, repository
+│   ├── photo-uploads/       # Private image-worker client, pending associations, finalization
 │   ├── photos/              # Routes, schemas, service (direct DB access)
 │   └── tags/                # Routes, schemas, service (direct DB access)
 └── shared/
@@ -98,6 +101,8 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
    - The service may call a **Repository** or Drizzle directly.
    - The service returns domain types (`ApiSession`, `ApiPhoto`, etc.).
    - The route handler wraps the result in `jsonSuccess(...)` and returns it.
+   - `/api/photo-uploads` reserves RoncalPhoto metadata, calls `ming-image-worker`, and
+     transactionally creates `photos` after the worker manifest succeeds.
 5. **Errors** bubble to `onErrorHandler`:
    - `HttpError` → returns the mapped status and message.
    - `ZodError` → converted to `400`.
@@ -117,8 +122,11 @@ The API uses **Hono** with **`@hono/zod-openapi`** for request validation and au
 | `BETTER_AUTH_URL`    | string             | Canonical API origin used by Better Auth. Production uses `https://api.murga.ing`.                    |
 | `PHOTOS_ADMIN_URL`   | string             | Canonical admin frontend origin (used for auth CORS).                                                 |
 | `EMAIL_WORKER`       | Service binding    | Direct binding to the email worker for OTP delivery.                                                  |
+| `IMAGE_WORKER`       | Service binding    | Private binding to `ming-image-worker` for signed uploads, polling, and retries.                      |
 
 > **Auth requirement**: the `EMAIL_WORKER` service binding must be available whenever `/api/auth/*` is used.
+
+> **Upload requirement**: `IMAGE_WORKER` must be deployed before using `/api/photo-uploads`.
 
 ### Cloudflare deploy credentials
 
@@ -151,9 +159,9 @@ bun run check               # Run TypeScript type check
 ```
 
 `wrangler dev` runs the API code locally, while `DB_RONCALPHOTO` and
-`EMAIL_WORKER` connect to their production resources. Local CRUD and OTP tests
-therefore read and write production data. No local D1, copied users, or seed
-workflow exists.
+`EMAIL_WORKER` and `IMAGE_WORKER` connect to their remote resources. Local CRUD,
+OTP, and upload tests therefore read and write remote D1/R2 data. No local D1,
+copied users, or seed workflow exists.
 
 ## D1 migration workflow
 
@@ -192,3 +200,9 @@ old columns or tables in a later migration after old code is no longer running.
 
 5. **OpenAPI route helpers preserve request inference**  
    The shared `createApiRoute` helper keeps each route's exact `request` and `responses` types intact so `c.req.valid("json")`, `c.req.valid("param")`, and `c.req.valid("query")` stay strongly typed inside handlers.
+
+6. **Image processing state is not product state**
+   `ming-image-worker` owns processing jobs and output manifests. RoncalPhoto owns
+   `pending_photo_uploads`, which reserves `photoId`, session, copy, ordering, and photographic
+   metadata before calling the worker. Polling finalizes the `photos` row exactly once. The legacy
+   `photo_upload_jobs` table remains only until old optimizer jobs have drained.

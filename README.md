@@ -1,6 +1,9 @@
 # RoncalPhoto
 
-Portfolio web para fotografo profesional. Monorepo con Bun workspaces, frontend publico en `apps/photos`, dashboard en `apps/photos-admin`, API en `apps/api` y tipos compartidos en `packages/shared`.
+Portfolio web para fotografo profesional. Monorepo con Bun workspaces, frontend publico en
+`apps/photos`, dashboard en `apps/photos-admin`, API en `apps/api` y tipos compartidos en
+`packages/shared`. Email e imagenes se procesan mediante los servicios standalone
+`ming-email-worker` y `ming-image-worker`.
 
 ## Stack tecnico
 
@@ -95,7 +98,19 @@ bun run --filter=@roncal/api db:migrate
    API `8787`, image optimizer `8789`, admin `5173`, photos `5174`
 5. Para Workers usar `wrangler.toml` como contrato de produccion y `*.dev.vars` para overrides locales. El auth admin necesita `apps/api/.dev.vars` con `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` y `PHOTOS_ADMIN_URL`; las rutas publicas (`/api/sessions`, `/api/photos`, `/api/tags`) no dependen de esas variables
 6. La matriz operativa completa de Cloudflare, credentials de deploy, secrets, bindings y orden de despliegue vive en [docs/cloudflare-production.md](/Users/murgapja/dev/roncalphoto/docs/cloudflare-production.md). `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID` son variables de build/deploy para Wrangler; no deben vivir en `wrangler.toml [vars]` ni en runtime.
-7. `apps/api` y `apps/image-optimizer` ejecutan el codigo local con bindings remotos. D1, R2, Images, Queue y el worker de email usan recursos reales de Cloudflare durante `dev`.
+7. `apps/api` y `apps/image-optimizer` ejecutan el codigo local con bindings remotos. D1, R2,
+   Images, Queue y los workers standalone usan recursos reales de Cloudflare durante `dev`.
+
+## Upload de imagenes
+
+- El dashboard envia metadata a la fachada autenticada `POST /api/photo-uploads`.
+- `apps/api` reserva el futuro `photoId` y llama a `ming-image-worker` mediante `IMAGE_WORKER`.
+- El navegador usa exclusivamente la URL PUT firmada para subir el original directamente a R2.
+- R2 publica `object-create` en Queue; el worker genera `main` y `thumbnail`.
+- El dashboard consulta `GET /api/photo-uploads/:uploadId`; al completarse, la API crea `photos`
+  con el manifiesto y conserva en RoncalPhoto el copy, orden y metadata fotografica.
+- `apps/image-optimizer` queda como pipeline legacy mientras se drenan jobs antiguos. No recibe
+  uploads nuevos y se retirara junto con `photo_upload_jobs` en una migracion posterior.
 
 ## Auth admin
 

@@ -80,9 +80,17 @@ export class HttpClient {
     return this.parse<T>(await this.fetch(input, { method: "GET" }));
   }
 
-  async post<T>(input: string, body?: unknown): Promise<T> {
+  async post<T>(
+    input: string,
+    body?: unknown,
+    init?: Omit<RequestInit, "body" | "method">,
+  ): Promise<T> {
     return this.parse<T>(
-      await this.fetch(input, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
+      await this.fetch(input, {
+        ...init,
+        method: "POST",
+        body: body ? JSON.stringify(body) : undefined,
+      }),
     );
   }
 

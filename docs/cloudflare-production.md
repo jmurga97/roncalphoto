@@ -17,6 +17,10 @@ environments.
 Transactional email is deployed separately from the `ming-email-worker` repository. RoncalPhoto
 depends on that Worker through the `EMAIL_WORKER` service binding.
 
+Image upload and optimization is deployed separately from the `ming-image-worker` repository.
+RoncalPhoto depends on it through `IMAGE_WORKER`. `apps/image-optimizer` remains a legacy drain-only
+deployment until its existing jobs and `photo_upload_jobs` table can be removed.
+
 ## Wrangler build/deploy credentials
 
 Configure these as Cloudflare build/deploy environment variables for every
@@ -133,16 +137,17 @@ credentials.
 
 ### `roncalphoto-api`
 
-| Name                 | Source                          | Notes                                   |
-| -------------------- | ------------------------------- | --------------------------------------- |
-| `DB_RONCALPHOTO`     | `wrangler.toml` D1 binding      | Portfolio database.                     |
-| `EMAIL_WORKER`       | `wrangler.toml` service binding | Preferred production OTP delivery path. |
-| `ALLOWED_ORIGINS`    | `wrangler.toml [vars]`          | Additional CORS origins.                |
-| `LOG_LEVEL`          | `wrangler.toml [vars]`          | Production log level.                   |
-| `NODE_ENV`           | `wrangler.toml [vars]`          | `production` in Cloudflare.             |
-| `BETTER_AUTH_URL`    | `wrangler.toml [vars]`          | Canonical API origin.                   |
-| `PHOTOS_ADMIN_URL`   | `wrangler.toml [vars]`          | Canonical admin origin.                 |
-| `BETTER_AUTH_SECRET` | Runtime secret                  | Required for Better Auth.               |
+| Name                 | Source                          | Notes                                     |
+| -------------------- | ------------------------------- | ----------------------------------------- |
+| `DB_RONCALPHOTO`     | `wrangler.toml` D1 binding      | Portfolio database.                       |
+| `EMAIL_WORKER`       | `wrangler.toml` service binding | Preferred production OTP delivery path.   |
+| `IMAGE_WORKER`       | `wrangler.toml` service binding | Private image upload and processing path. |
+| `ALLOWED_ORIGINS`    | `wrangler.toml [vars]`          | Additional CORS origins.                  |
+| `LOG_LEVEL`          | `wrangler.toml [vars]`          | Production log level.                     |
+| `NODE_ENV`           | `wrangler.toml [vars]`          | `production` in Cloudflare.               |
+| `BETTER_AUTH_URL`    | `wrangler.toml [vars]`          | Canonical API origin.                     |
+| `PHOTOS_ADMIN_URL`   | `wrangler.toml [vars]`          | Canonical admin origin.                   |
+| `BETTER_AUTH_SECRET` | Runtime secret                  | Required for Better Auth.                 |
 
 ### `ming-email-worker`
 
@@ -170,7 +175,27 @@ RoncalPhoto calls the worker through `EMAIL_WORKER` using
 }
 ```
 
-### `roncalphoto-image-optimizer`
+### `ming-image-worker`
+
+The standalone worker owns its own D1 upload state, Cloudflare Images transforms, Queue/DLQ, and
+the configured RoncalPhoto R2 bindings. It must be deployed with product `roncalphoto`, preset
+`roncalphoto-portfolio`, and storage profile `roncalphoto`.
+
+Provision and verify:
+
+- dedicated staging and production D1 databases;
+- processing Queue plus dead-letter Queue;
+- originals and media R2 bindings;
+- `object-create` notification from the originals bucket to the processing Queue;
+- bucket-scoped `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` secrets;
+- R2 CORS allowing PUT from the admin origin;
+- `workers_dev = false` and no public Worker route.
+
+RoncalPhoto calls only `/v1/uploads`, `/v1/uploads/:uploadId`, and
+`/v1/uploads/:uploadId/retry` through the service binding. The browser receives only the signed R2
+PUT URL.
+
+### Legacy `roncalphoto-image-optimizer`
 
 | Name                       | Source                         | Notes                                 |
 | -------------------------- | ------------------------------ | ------------------------------------- |
@@ -188,6 +213,10 @@ RoncalPhoto calls the worker through `EMAIL_WORKER` using
 | `R2_ACCESS_KEY_ID`         | Runtime secret                 | R2 S3-compatible signing key.         |
 | `R2_SECRET_ACCESS_KEY`     | Runtime secret                 | R2 S3-compatible signing secret.      |
 
+Do not send new dashboard uploads to this Worker. Keep it deployed only until existing jobs have
+finished, then remove the Worker bindings and the legacy `photo_upload_jobs` table in a later
+expand/contract migration.
+
 ### Frontend Workers
 
 | Name           | Source                   | Notes                                            |
@@ -200,13 +229,14 @@ development.
 ## Deploy order
 
 1. `ming-email-worker` (standalone repository)
-2. `roncalphoto-api`
-3. `roncalphoto-image-optimizer`
-4. `roncalphoto-photos`
-5. `roncalphoto-admin`
+2. `ming-image-worker` (standalone repository, including D1 migrations and Queue notifications)
+3. `roncalphoto-api` (including migration `pending_photo_uploads`)
+4. `roncalphoto-image-optimizer` only while legacy jobs remain
+5. `roncalphoto-photos`
+6. `roncalphoto-admin`
 
-Deploy the email worker before the API so the `EMAIL_WORKER` service binding can
-resolve. Deploy frontends last so they point at the latest backend behavior.
+Deploy both standalone workers before the API so `EMAIL_WORKER` and `IMAGE_WORKER` resolve. Deploy
+frontends last so the admin starts using uploads only after the API facade and D1 migration exist.
 
 ## Verification
 

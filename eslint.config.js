@@ -19,7 +19,7 @@ const sharedParserOptions = {
   tsconfigRootDir: rootDir,
 };
 
-const appFiles = ["apps/*/src/**/*.{ts,tsx}"];
+const appFiles = ["apps/*/src/**/*.{ts,tsx}", "apps/*/tests/**/*.{ts,tsx}"];
 const packageFiles = ["packages/*/src/**/*.{ts,tsx}", "packages/*/tests/**/*.{ts,tsx}"];
 const typeScriptFiles = [...appFiles, ...packageFiles];
 
@@ -123,7 +123,7 @@ const sharedTypeScriptRules = {
     "error",
     {
       caseSensitive: false,
-      ignore: ["\\.css$", "\\.svg$", "\\.png$", "\\.jpg$", "\\.webp$", "\\?.*$"],
+      ignore: ["^bun:test$", "\\.css$", "\\.svg$", "\\.png$", "\\.jpg$", "\\.webp$", "\\?.*$"],
     },
   ],
 };
@@ -506,6 +506,13 @@ export default defineConfig(
           ],
         },
       ],
+    },
+  },
+  {
+    files: ["apps/*/tests/**/*.{ts,tsx}", "packages/*/tests/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/await-thenable": "off",
+      "@typescript-eslint/require-await": "off",
     },
   },
   {

@@ -22,7 +22,7 @@ export const corsMiddleware: MiddlewareHandler<AppBindings> = async (c, next) =>
       });
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type"],
+    allowHeaders: ["Content-Type", "Idempotency-Key"],
     exposeHeaders: ["Content-Length"],
     maxAge: 86400,
     credentials: true,

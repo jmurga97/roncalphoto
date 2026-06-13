@@ -4,6 +4,10 @@ export interface EmailWorkerServiceBinding {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
 
+export interface ImageWorkerServiceBinding {
+  fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+}
+
 export const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal"]);
 export const nodeEnvSchema = z.enum(["development", "test", "production"]);
 
@@ -11,6 +15,13 @@ export const publicEnvSchema = z.object({
   DB_RONCALPHOTO: z.custom<D1Database>((value) => typeof value === "object" && value !== null, {
     error: "DB_RONCALPHOTO binding is required",
   }),
+  IMAGE_WORKER: z.custom<ImageWorkerServiceBinding>(
+    (value) =>
+      typeof value === "object" &&
+      value !== null &&
+      typeof (value as { fetch?: unknown }).fetch === "function",
+    "IMAGE_WORKER service binding must implement fetch",
+  ),
   ALLOWED_ORIGINS: z.string().trim().optional(),
   LOG_LEVEL: logLevelSchema.default("info"),
   NODE_ENV: nodeEnvSchema.default("development"),

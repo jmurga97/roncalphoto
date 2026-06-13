@@ -3,7 +3,7 @@ import { McConfirmAction, McMediaBrowser, McResourceEditor } from "@murga.ing/co
 import { getErrorMessage } from "@roncal/shared";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -11,17 +11,20 @@ import { FormSelect } from "@components/forms/adapters/form-select";
 import { FormTextInput } from "@components/forms/adapters/form-text-input";
 import { FormTextarea } from "@components/forms/adapters/form-textarea";
 import { invalidatePhotoData } from "@lib/api/invalidation";
+import { photoUploadsService } from "@lib/api/photo-uploads/photo-uploads";
+import { resolvePhotoUploadAttempt } from "@lib/api/photo-uploads/upload-attempt";
 import { photosService } from "@lib/api/photos/photos";
 import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 
+import type { PhotoUploadAttempt } from "@lib/api/photo-uploads/upload-attempt";
 import type { PhotoMutationInput } from "@lib/api/photos/photos";
 import type { ApiPhoto, ApiSession } from "@roncal/shared";
 
 const photoSchema = z.object({
   sessionId: z.string().trim().min(1, { error: "Selecciona una sesión." }),
-  url: z.string().trim().min(1, { error: "La URL principal es obligatoria." }),
-  miniature: z.string().trim().min(1, { error: "La miniatura es obligatoria." }),
+  url: z.string().trim(),
+  miniature: z.string().trim(),
   alt: z.string().trim().min(1, { error: "El alt es obligatorio." }),
   about: z.string().trim().min(1, { error: "El texto about es obligatorio." }),
   sortOrder: z
@@ -96,9 +99,18 @@ function toPhotoMutationInput(values: PhotoFormValues): PhotoMutationInput {
 function CreatePhotoEditor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const uploadAttempt = useRef<PhotoUploadAttempt | null>(null);
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const saveMutation = useMutation({
-    mutationFn: (input: PhotoMutationInput) => photosService.createPhoto(input),
+    mutationFn: ({ file, input }: { file?: File; input: PhotoMutationInput }) => {
+      if (!file) {
+        return photosService.createPhoto(input);
+      }
+
+      const attempt = resolvePhotoUploadAttempt(uploadAttempt.current, file, input);
+      uploadAttempt.current = attempt;
+      return photoUploadsService.uploadPhoto(file, input, attempt.idempotencyKey);
+    },
   });
 
   return (
@@ -108,8 +120,9 @@ function CreatePhotoEditor() {
         void navigate({ to: "/photos" });
         return Promise.resolve();
       }}
-      onSaveAction={async (input) => {
-        const photo = await saveMutation.mutateAsync(input);
+      onSaveAction={async (input, file) => {
+        const photo = await saveMutation.mutateAsync({ input, file });
+        uploadAttempt.current = null;
         await invalidatePhotoData(queryClient);
         queryClient.setQueryData(photoDetailQueryOptions(photo.id).queryKey, photo);
         await navigate({
@@ -117,6 +130,9 @@ function CreatePhotoEditor() {
           params: { id: photo.id },
         });
         return photo;
+      }}
+      onUploadCancel={() => {
+        uploadAttempt.current = null;
       }}
       savePending={saveMutation.isPending}
       sessions={sessions}
@@ -159,12 +175,74 @@ function EditPhotoEditor() {
   );
 }
 
+function PhotoAssetFields({
+  mode,
+  onUploadFileChange,
+  sessionOptions,
+  uploadFile,
+}: {
+  mode: "create" | "edit";
+  onUploadFileChange: (file?: File) => void;
+  sessionOptions: Array<{ id: string; label: string; description: string }>;
+  uploadFile?: File;
+}) {
+  return (
+    <section className="admin-editor-section">
+      <div className="admin-kicker">Asset</div>
+      {mode === "create" ? (
+        <label className="admin-upload-field">
+          <span>Archivo de imagen</span>
+          <input
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(event) => {
+              onUploadFileChange(event.currentTarget.files?.[0]);
+            }}
+            type="file"
+          />
+          <small>JPEG, PNG o WebP. Máximo 25 MiB. El archivo se sube directamente a R2.</small>
+        </label>
+      ) : null}
+      <div className="admin-form-grid admin-form-grid--two">
+        <FormSelect<PhotoFormValues>
+          label="Sesión"
+          name="sessionId"
+          options={sessionOptions}
+          placeholder="[SELECT SESSION]"
+          required
+        />
+        <FormTextInput<PhotoFormValues>
+          label="Orden"
+          name="sortOrder"
+          placeholder="0"
+          required
+          type="number"
+        />
+      </div>
+      <div className="admin-form-grid">
+        <FormTextInput<PhotoFormValues>
+          label="URL principal"
+          name="url"
+          placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover.jpg"
+          required={mode === "edit" || !uploadFile}
+        />
+        <FormTextInput<PhotoFormValues>
+          label="Miniatura"
+          name="miniature"
+          placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover-thumb.jpg"
+          required={mode === "edit" || !uploadFile}
+        />
+      </div>
+    </section>
+  );
+}
+
 function PhotoEditorForm({
   deletePending = false,
   initialPhoto,
   mode,
   onDeleteAction,
   onSaveAction,
+  onUploadCancel,
   savePending,
   sessions,
 }: {
@@ -172,11 +250,13 @@ function PhotoEditorForm({
   initialPhoto?: PhotoRecord;
   mode: "create" | "edit";
   onDeleteAction: () => Promise<void>;
-  onSaveAction: (input: PhotoMutationInput) => Promise<PhotoRecord>;
+  onSaveAction: (input: PhotoMutationInput, file?: File) => Promise<PhotoRecord>;
+  onUploadCancel?: () => void;
   savePending: boolean;
   sessions: ApiSession[];
 }) {
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File>();
   const form = useForm<PhotoFormValues>({
     resolver: zodResolver(photoSchema),
     defaultValues: toPhotoFormValues(initialPhoto),
@@ -213,8 +293,9 @@ function PhotoEditorForm({
           <div className="admin-kicker">Photos</div>
           <h2>{mode === "create" ? "Nueva foto" : (initialPhoto?.alt ?? "Editar foto")}</h2>
           <p>
-            Edita URL principal, miniatura, relación con la sesión, copy y metadata técnica sin
-            necesidad de upload en esta primera versión.
+            {mode === "create"
+              ? "Sube una imagen para generar automáticamente la versión principal y la miniatura, o introduce URLs existentes."
+              : "Edita URL principal, miniatura, relación con la sesión, copy y metadata técnica."}
           </p>
         </header>
 
@@ -225,7 +306,9 @@ function PhotoEditorForm({
             clearErrors("root");
 
             if (mode === "create") {
+              onUploadCancel?.();
               reset(toPhotoFormValues());
+              setUploadFile(undefined);
               return;
             }
 
@@ -237,9 +320,27 @@ function PhotoEditorForm({
           onMcSave={() => {
             void handleSubmit(async (values) => {
               clearErrors("root");
+              const input = toPhotoMutationInput(values);
+
+              if (!uploadFile && input.url.length === 0) {
+                setError("url", {
+                  type: "required",
+                  message: "Añade un archivo o una URL principal.",
+                });
+                return;
+              }
+
+              if (!uploadFile && input.miniature.length === 0) {
+                setError("miniature", {
+                  type: "required",
+                  message: "Añade un archivo o una miniatura.",
+                });
+                return;
+              }
 
               try {
-                const nextPhoto = await onSaveAction(toPhotoMutationInput(values));
+                const nextPhoto = await onSaveAction(input, uploadFile);
+                setUploadFile(undefined);
                 reset(toPhotoFormValues(nextPhoto));
               } catch (error) {
                 setError("root.server", {
@@ -262,39 +363,12 @@ function PhotoEditorForm({
               />
             ) : null}
 
-            <section className="admin-editor-section">
-              <div className="admin-kicker">Asset</div>
-              <div className="admin-form-grid admin-form-grid--two">
-                <FormSelect<PhotoFormValues>
-                  label="Sesión"
-                  name="sessionId"
-                  options={sessionOptions}
-                  placeholder="[SELECT SESSION]"
-                  required
-                />
-                <FormTextInput<PhotoFormValues>
-                  label="Orden"
-                  name="sortOrder"
-                  placeholder="0"
-                  required
-                  type="number"
-                />
-              </div>
-              <div className="admin-form-grid">
-                <FormTextInput<PhotoFormValues>
-                  label="URL principal"
-                  name="url"
-                  placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover.jpg"
-                  required
-                />
-                <FormTextInput<PhotoFormValues>
-                  label="Miniatura"
-                  name="miniature"
-                  placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover-thumb.jpg"
-                  required
-                />
-              </div>
-            </section>
+            <PhotoAssetFields
+              mode={mode}
+              onUploadFileChange={setUploadFile}
+              sessionOptions={sessionOptions}
+              uploadFile={uploadFile}
+            />
 
             <section className="admin-editor-section">
               <div className="admin-kicker">Copy</div>
