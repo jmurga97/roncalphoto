@@ -97,7 +97,7 @@ export function OverviewView({ userEmail }: OverviewViewProps) {
               }}
               variant="secondary"
             >
-              Nueva foto
+              Subir fotos
             </mc-button>
           </div>
         </section>

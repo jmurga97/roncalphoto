@@ -169,7 +169,7 @@ export function AdminShell() {
             }}
             variant="primary"
           >
-            Nueva foto
+            Subir fotos
           </mc-button>
         </div>
       </header>

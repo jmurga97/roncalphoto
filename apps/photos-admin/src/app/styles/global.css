@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+@theme {
+  --color-mc-background: #000000;
+  --color-mc-background-translucent: color-mix(
+    in srgb,
+    var(--color-mc-background) 92%,
+    transparent
+  );
+  --color-mc-surface: #111111;
+  --color-mc-surface-raised: #1a1a1a;
+  --color-mc-border: #222222;
+  --color-mc-border-visible: #333333;
+  --color-mc-text-disabled: #666666;
+  --color-mc-text-secondary: #999999;
+  --color-mc-text-primary: #e8e8e8;
+  --color-mc-text-display: #ffffff;
+  --color-mc-accent: #d71921;
+  --color-mc-success: #4a9e5c;
+  --color-mc-warning: #d4a843;
+  --ease-mc-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
 @font-face {
   font-family: "Geist Pixel Line";
   src: url("/fonts/GeistPixel-Line.woff2") format("woff2");
@@ -10,32 +31,19 @@
 
 :root {
   color-scheme: dark;
-  --admin-black: #000000;
-  --admin-surface: #111111;
-  --admin-surface-raised: #1a1a1a;
-  --admin-border: #222222;
-  --admin-border-visible: #333333;
-  --admin-text-disabled: #666666;
-  --admin-text-secondary: #999999;
-  --admin-text-primary: #e8e8e8;
-  --admin-text-display: #ffffff;
-  --admin-accent: #d71921;
-  --admin-success: #4a9e5c;
-  --admin-warning: #d4a843;
-  --admin-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 :root[data-mc-theme="light"] {
   color-scheme: light;
-  --admin-black: #f5f5f5;
-  --admin-surface: #ffffff;
-  --admin-surface-raised: #f0f0f0;
-  --admin-border: #e8e8e8;
-  --admin-border-visible: #cccccc;
-  --admin-text-disabled: #999999;
-  --admin-text-secondary: #666666;
-  --admin-text-primary: #1a1a1a;
-  --admin-text-display: #000000;
+  --color-mc-background: #f5f5f5;
+  --color-mc-surface: #ffffff;
+  --color-mc-surface-raised: #f0f0f0;
+  --color-mc-border: #e8e8e8;
+  --color-mc-border-visible: #cccccc;
+  --color-mc-text-disabled: #999999;
+  --color-mc-text-secondary: #666666;
+  --color-mc-text-primary: #1a1a1a;
+  --color-mc-text-display: #000000;
 }
 
 * {
@@ -51,8 +59,8 @@ body,
 
 body {
   overflow: hidden;
-  background: var(--admin-black);
-  color: var(--admin-text-primary);
+  background: var(--color-mc-background);
+  color: var(--color-mc-text-primary);
   font-family: "Space Grotesk", system-ui, sans-serif;
   text-rendering: geometricPrecision;
 }
@@ -88,7 +96,7 @@ select {
   gap: 1rem;
   max-inline-size: 64rem;
   padding-block-end: 2rem;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--color-mc-border);
   border-inline: 0;
   border-block-start: 0;
   background: transparent;
@@ -101,7 +109,7 @@ select {
 .admin-topbar h1 {
   margin: 0;
   font-family: "Geist Pixel Line", "Space Mono", monospace;
-  color: var(--admin-text-display);
+  color: var(--color-mc-text-display);
   letter-spacing: -0.02em;
   line-height: 1.05;
 }
@@ -120,7 +128,7 @@ select {
 .admin-sidebar-copy {
   margin: 0;
   max-inline-size: 62ch;
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -128,7 +136,7 @@ select {
 .admin-kicker,
 .admin-state-eyebrow,
 .admin-sidebar-kicker {
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
   font-family: "Space Mono", monospace;
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
@@ -149,13 +157,13 @@ select {
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--color-mc-border);
   border-radius: 1rem;
-  background: var(--admin-surface);
+  background: var(--color-mc-surface);
 }
 
 .admin-state-error {
-  border-color: var(--admin-accent);
+  border-color: var(--color-mc-accent);
 }
 
 .admin-state-shell {
@@ -168,7 +176,7 @@ select {
   display: grid;
   min-height: 100dvh;
   padding: 1.25rem;
-  background: var(--admin-black);
+  background: var(--color-mc-background);
   place-items: center;
 }
 
@@ -190,7 +198,7 @@ select {
 }
 
 .admin-login-field span {
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
   font-family: "Space Mono", monospace;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -200,29 +208,29 @@ select {
 .admin-login-field input {
   width: 100%;
   min-height: 3rem;
-  border: 1px solid var(--admin-border-visible);
+  border: 1px solid var(--color-mc-border-visible);
   border-radius: 0.5rem;
-  background: var(--admin-surface);
-  color: var(--admin-text-display);
+  background: var(--color-mc-surface);
+  color: var(--color-mc-text-display);
   padding: 0.75rem 0.875rem;
   outline: none;
   transition:
-    border-color 180ms var(--admin-ease),
-    background 180ms var(--admin-ease);
+    border-color 180ms var(--ease-mc-default),
+    background 180ms var(--ease-mc-default);
 }
 
 .admin-login-field input:focus {
-  border-color: var(--admin-accent);
-  background: var(--admin-surface-raised);
+  border-color: var(--color-mc-accent);
+  background: var(--color-mc-surface-raised);
 }
 
 .admin-login-field input::placeholder {
-  color: var(--admin-text-disabled);
+  color: var(--color-mc-text-disabled);
 }
 
 .admin-login-error {
   margin: 0;
-  color: var(--admin-accent);
+  color: var(--color-mc-accent);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -230,20 +238,20 @@ select {
 .admin-login-button,
 .admin-login-secondary {
   min-height: 3rem;
-  border: 1px solid var(--admin-border-visible);
+  border: 1px solid var(--color-mc-border-visible);
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
-  color: var(--admin-text-display);
+  color: var(--color-mc-text-display);
   cursor: pointer;
   transition:
-    opacity 180ms var(--admin-ease),
-    border-color 180ms var(--admin-ease),
-    background 180ms var(--admin-ease);
+    opacity 180ms var(--ease-mc-default),
+    border-color 180ms var(--ease-mc-default),
+    background 180ms var(--ease-mc-default);
 }
 
 .admin-login-button {
-  background: var(--admin-accent);
-  border-color: var(--admin-accent);
+  background: var(--color-mc-accent);
+  border-color: var(--color-mc-accent);
 }
 
 .admin-login-secondary {
@@ -258,17 +266,17 @@ select {
 
 .admin-login-secondary:hover:not(:disabled),
 .admin-login-button:hover:not(:disabled) {
-  border-color: var(--admin-text-display);
+  border-color: var(--color-mc-text-display);
 }
 
 .admin-link {
-  color: var(--admin-text-display);
+  color: var(--color-mc-text-display);
   text-decoration: none;
-  transition: color 180ms var(--admin-ease);
+  transition: color 180ms var(--ease-mc-default);
 }
 
 .admin-link:hover {
-  color: var(--admin-accent);
+  color: var(--color-mc-accent);
 }
 
 .admin-toolbar {
@@ -311,7 +319,7 @@ select {
 .admin-editor-section {
   gap: 1rem;
   padding-block: 1.5rem;
-  border-block-start: 1px solid var(--admin-border);
+  border-block-start: 1px solid var(--color-mc-border);
 }
 
 .admin-editor-section:first-child {
@@ -327,21 +335,21 @@ select {
   display: grid;
   gap: 0.5rem;
   padding: 1rem;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--color-mc-border);
 }
 
 .admin-upload-field > span {
-  color: var(--admin-text-display);
+  color: var(--color-mc-text-display);
   font-weight: 600;
 }
 
 .admin-upload-field > small {
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
 }
 
 .admin-upload-field input[type="file"] {
   inline-size: 100%;
-  color: var(--admin-text-primary);
+  color: var(--color-mc-text-primary);
 }
 
 .admin-toolbar-controls mc-search-field {
@@ -364,7 +372,7 @@ select {
 
 .admin-sidebar-title {
   margin: 0;
-  color: var(--admin-text-display);
+  color: var(--color-mc-text-display);
   font-family: "Geist Pixel Line", "Space Mono", monospace;
   font-size: 2rem;
   font-weight: 400;
@@ -372,7 +380,7 @@ select {
 }
 
 .admin-sidebar-copy {
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
   font-size: 0.875rem;
 }
 
@@ -383,7 +391,7 @@ select {
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.25rem 0;
-  background: var(--admin-black);
+  background: var(--color-mc-background);
 }
 
 .admin-topbar h1 {
@@ -416,7 +424,7 @@ select {
   align-items: baseline;
   justify-content: space-between;
   padding-bottom: 0.625rem;
-  border-bottom: 1px solid var(--admin-border);
+  border-bottom: 1px solid var(--color-mc-border);
 }
 
 .admin-list-item:last-child {
@@ -425,17 +433,17 @@ select {
 }
 
 .admin-list-label {
-  color: var(--admin-text-primary);
+  color: var(--color-mc-text-primary);
 }
 
 .admin-list-meta {
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
   font-family: "Space Mono", monospace;
   font-size: 0.82rem;
 }
 
 .admin-readonly-note {
-  color: var(--admin-text-secondary);
+  color: var(--color-mc-text-secondary);
 }
 
 @media (min-width: 960px) {

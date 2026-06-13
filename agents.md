@@ -101,6 +101,7 @@ Convencion: los tipos compartidos son non-nullable; la API normaliza valores nul
 - Vistas del frontend organizadas en `src/pages/*`; `src/components/*` contiene piezas reutilizables
 - Navegacion por teclado con flechas y `Esc`
 - Transiciones suaves y animaciones CSS
+- Ten preferencia por tailwind antes de crear archivos CSS
 
 ## Calidad
 

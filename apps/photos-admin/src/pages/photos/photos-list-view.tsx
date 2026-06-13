@@ -1,20 +1,27 @@
-import { McResourceTable, McSearchField } from "@murga.ing/components/react";
+import { McSearchField } from "@murga.ing/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
 import { EmptyState } from "@components/empty-state";
+import { PhotoPreviewDialog } from "@components/photos/photo-preview-dialog";
+import { PhotosResourceList } from "@components/photos/photos-resource-list";
 import { photosListQueryOptions } from "@lib/api/photos/query-options";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+
+import type { PhotoWithQueueStatus } from "@components/photos/photos-resource-list";
+import type { ApiPhoto } from "@roncal/shared";
 
 export function PhotosListView() {
   const navigate = useNavigate();
   const { data: photos } = useSuspenseQuery(photosListQueryOptions());
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const [searchValue, setSearchValue] = useState("");
+  const [previewPhoto, setPreviewPhoto] = useState<ApiPhoto | null>(null);
   const deferredSearch = useDeferredValue(searchValue);
   const sessionTitleById = new Map(sessions.map((session) => [session.id, session.title]));
-  const filteredPhotos = photos.filter((photo) => {
+  const photosWithStatus: PhotoWithQueueStatus[] = photos;
+  const filteredPhotos = photosWithStatus.filter((photo) => {
     const haystack = [
       photo.alt,
       photo.about,
@@ -31,10 +38,10 @@ export function PhotosListView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Photos</div>
-        <h2>Listado completo y navegación rápida a edición.</h2>
+        <h2>Estado y revisión de todas tus fotos.</h2>
         <p>
-          Busca entre todas las fotos, revisa su relación con la sesión y navega al editor de URLs,
-          copy y metadata técnica.
+          Revisa previews, estado de procesamiento y sesión. Abre cada título para completar su
+          edición.
         </p>
       </header>
 
@@ -64,33 +71,21 @@ export function PhotosListView() {
             }}
             variant="primary"
           >
-            Nueva foto
+            Subir fotos
           </mc-button>
         </div>
 
         {filteredPhotos.length > 0 ? (
-          <McResourceTable
-            columns={[
-              { id: "alt", label: "Alt" },
-              { id: "session", label: "Sesión" },
-              { id: "sortOrder", label: "Orden", align: "end", width: "88px" },
-              { id: "iso", label: "ISO", align: "end", width: "88px" },
-            ]}
-            onMcRowSelect={(event) => {
+          <PhotosResourceList
+            onEdit={(id) => {
               void navigate({
                 to: "/photos/$id",
-                params: { id: event.detail.selectedId },
+                params: { id },
               });
             }}
-            rows={filteredPhotos.map((photo) => ({
-              id: photo.id,
-              cells: {
-                alt: photo.alt,
-                session: sessionTitleById.get(photo.sessionId) ?? photo.sessionId,
-                sortOrder: photo.sortOrder,
-                iso: photo.metadata.iso,
-              },
-            }))}
+            onPreview={setPreviewPhoto}
+            photos={filteredPhotos}
+            sessionTitleById={sessionTitleById}
           />
         ) : (
           <EmptyState
@@ -102,14 +97,21 @@ export function PhotosListView() {
                 }}
                 variant="primary"
               >
-                Crear foto
+                Subir fotos
               </mc-button>
             }
-            description="Prueba con otra búsqueda o crea una nueva foto manualmente por URLs."
+            description="Prueba con otra búsqueda o prepara un nuevo lote de imágenes."
             title="No hay fotos visibles"
           />
         )}
       </section>
+
+      <PhotoPreviewDialog
+        onClose={() => {
+          setPreviewPhoto(null);
+        }}
+        photo={previewPhoto}
+      />
     </div>
   );
 }
