@@ -42,20 +42,6 @@
         "wrangler": "^4.60.0",
       },
     },
-    "apps/image-optimizer": {
-      "name": "@roncal/image-optimizer",
-      "version": "0.0.1",
-      "dependencies": {
-        "aws4fetch": "^1.0.20",
-        "hono": "^4.11.5",
-        "zod": "^4.3.6",
-      },
-      "devDependencies": {
-        "@types/bun": "^1.3.6",
-        "typescript": "^5.9.3",
-        "wrangler": "^4.60.0",
-      },
-    },
     "apps/photos": {
       "name": "@roncal/photos-web",
       "version": "0.0.1",
@@ -495,8 +481,6 @@
 
     "@roncal/auth": ["@roncal/auth@workspace:packages/auth"],
 
-    "@roncal/image-optimizer": ["@roncal/image-optimizer@workspace:apps/image-optimizer"],
-
     "@roncal/photos-admin": ["@roncal/photos-admin@workspace:apps/photos-admin"],
 
     "@roncal/photos-web": ["@roncal/photos-web@workspace:apps/photos"],
@@ -732,8 +716,6 @@
     "atomic-sleep": ["atomic-sleep@1.0.0", "", {}, "sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ=="],
 
     "available-typed-arrays": ["available-typed-arrays@1.0.7", "", { "dependencies": { "possible-typed-array-names": "^1.0.0" } }, "sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ=="],
-
-    "aws4fetch": ["aws4fetch@1.0.20", "", {}, "sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g=="],
 
     "axe-core": ["axe-core@4.11.4", "", {}, "sha512-KunSNx+TVpkAw/6ULfhnx+HWRecjqZGTOyquAoWHYLRSdK1tB5Ihce1ZW+UY3fj33bYAFWPu7W/GRSmmrCGuxA=="],
 
