@@ -1,13 +1,15 @@
 import { normalizePhotoMetadata } from "@roncal/shared";
 
-import type { photos, sessions } from "@/db";
-import type { ApiPhoto, ApiSession, Tag } from "@roncal/shared";
+import type { clientDeliveries, deliveryPhotos, photos, sessions } from "@/db";
+import type { ApiDelivery, ApiDeliveryPhoto, ApiPhoto, ApiSession, Tag } from "@roncal/shared";
 
 export type SessionRecord = Pick<
   typeof sessions.$inferSelect,
   "id" | "slug" | "title" | "description" | "created_at"
 >;
 export type PhotoRecord = typeof photos.$inferSelect;
+export type DeliveryRecord = typeof clientDeliveries.$inferSelect;
+export type DeliveryPhotoRecord = typeof deliveryPhotos.$inferSelect;
 type TagRecord = Pick<Tag, "id" | "name" | "slug">;
 
 export function toTag(row: TagRecord): Tag {
@@ -81,4 +83,27 @@ export function toApiSession(row: SessionRecord, tags: Tag[], photos?: ApiPhoto[
   }
 
   return session;
+}
+
+export function toApiDeliveryPhoto(row: DeliveryPhotoRecord): ApiDeliveryPhoto {
+  return {
+    id: row.id,
+    url: row.url,
+    title: row.title,
+    takenAt: row.taken_at ?? "",
+    sizeBytes: row.size_bytes,
+    sortOrder: row.sort_order,
+  };
+}
+
+export function toApiDelivery(row: DeliveryRecord, photos: DeliveryPhotoRecord[]): ApiDelivery {
+  const photosAvailable = row.photos_deleted_at === null;
+
+  return {
+    id: row.id,
+    token: row.token,
+    title: row.title,
+    photosAvailable,
+    photos: photosAvailable ? photos.map(toApiDeliveryPhoto) : [],
+  };
 }

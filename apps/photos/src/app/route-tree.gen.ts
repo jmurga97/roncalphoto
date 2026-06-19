@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as DeliveryTokenRouteImport } from './routes/delivery.$token'
 import { Route as AppSessionSlugRouteImport } from './routes/_app.session.$slug'
 
 const AppRoute = AppRouteImport.update({
@@ -22,6 +23,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const DeliveryTokenRoute = DeliveryTokenRouteImport.update({
+  id: '/delivery/$token',
+  path: '/delivery/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppSessionSlugRoute = AppSessionSlugRouteImport.update({
   id: '/session/$slug',
   path: '/session/$slug',
@@ -30,28 +36,37 @@ const AppSessionSlugRoute = AppSessionSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/delivery/$token': typeof DeliveryTokenRoute
   '/session/$slug': typeof AppSessionSlugRoute
 }
 export interface FileRoutesByTo {
+  '/delivery/$token': typeof DeliveryTokenRoute
   '/': typeof AppIndexRoute
   '/session/$slug': typeof AppSessionSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/delivery/$token': typeof DeliveryTokenRoute
   '/_app/': typeof AppIndexRoute
   '/_app/session/$slug': typeof AppSessionSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/session/$slug'
+  fullPaths: '/' | '/delivery/$token' | '/session/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/session/$slug'
-  id: '__root__' | '/_app' | '/_app/' | '/_app/session/$slug'
+  to: '/delivery/$token' | '/' | '/session/$slug'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/delivery/$token'
+    | '/_app/'
+    | '/_app/session/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  DeliveryTokenRoute: typeof DeliveryTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -69,6 +84,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/delivery/$token': {
+      id: '/delivery/$token'
+      path: '/delivery/$token'
+      fullPath: '/delivery/$token'
+      preLoaderRoute: typeof DeliveryTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/session/$slug': {
       id: '/_app/session/$slug'
@@ -94,6 +116,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  DeliveryTokenRoute: DeliveryTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

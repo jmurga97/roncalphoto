@@ -5,13 +5,17 @@ import { prefersReducedMotion } from "@utils/prefers-reduced-motion";
 import { GalleryEmptyState } from "./components/gallery-empty-state";
 import { GalleryGrid } from "./components/gallery-grid";
 import { useGalleryKeyboardNav } from "./hooks/use-gallery-keyboard-nav";
-import { useGalleryViewModel } from "./hooks/use-gallery-view-model";
 import { useScreenMode } from "./hooks/use-screen-mode";
 import { useVisibleSlideObserver } from "./hooks/use-visible-slide-observer";
 import { scrollPhotoIntoView } from "./utils/scroll-photo-into-view";
 
-export function GalleryView() {
-  const galleryData = useGalleryViewModel();
+import type { GalleryData } from "./types";
+
+interface GalleryViewProps {
+  galleryData: GalleryData;
+}
+
+export function GalleryView({ galleryData }: GalleryViewProps) {
   const screenMode = useScreenMode();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasInitialScrollAlignedRef = useRef(false);

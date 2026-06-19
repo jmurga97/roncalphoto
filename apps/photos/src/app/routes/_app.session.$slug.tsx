@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { GalleryView } from "@/pages/gallery";
+import { SessionGalleryView } from "@/pages/gallery";
 import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
 import { validatePhotoSearch } from "@utils/validate-photo-search";
 
 export const Route = createFileRoute("/_app/session/$slug")({
-  component: GalleryView,
+  component: SessionGalleryView,
   validateSearch: validatePhotoSearch,
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(sessionDetailQueryOptions(params.slug)),

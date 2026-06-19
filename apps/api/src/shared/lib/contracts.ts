@@ -55,3 +55,24 @@ export const deleteResultSchema = z
     deleted: z.literal(true),
   })
   .openapi("DeleteResult");
+
+export const apiDeliveryPhotoSchema = z
+  .object({
+    id: z.string().openapi({ example: "dphoto_01" }),
+    url: z.string().openapi({ example: "https://cdn.example.com/delivery/photo.jpg" }),
+    title: z.string().openapi({ example: "DSC_0421.jpg" }),
+    takenAt: z.string().openapi({ example: "2026-05-12" }),
+    sizeBytes: z.number().openapi({ example: 8421003 }),
+    sortOrder: z.number().openapi({ example: 0 }),
+  })
+  .openapi("ApiDeliveryPhoto");
+
+export const apiDeliverySchema = z
+  .object({
+    id: z.string().openapi({ example: "delivery_01" }),
+    token: z.string().openapi({ example: "k7Qm2v9bXp4r" }),
+    title: z.string().openapi({ example: "Boda Ana & Luis" }),
+    photosAvailable: z.boolean().openapi({ example: true }),
+    photos: z.array(apiDeliveryPhotoSchema),
+  })
+  .openapi("ApiDelivery");

@@ -161,6 +161,42 @@ export const pendingPhotoUploads = sqliteTable(
   ],
 );
 
+export const clientDeliveries = sqliteTable(
+  "client_deliveries",
+  {
+    id: text("id").primaryKey(),
+    token: text("token").notNull(),
+    title: text("title").notNull(),
+    client_email: text("client_email").notNull(),
+    created_at: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    expires_at: text("expires_at").notNull(),
+    photos_deleted_at: text("photos_deleted_at"),
+  },
+  (table) => [
+    uniqueIndex("client_deliveries_token_unique").on(table.token),
+    index("idx_client_deliveries_expires_at").on(table.expires_at),
+  ],
+);
+
+export const deliveryPhotos = sqliteTable(
+  "delivery_photos",
+  {
+    id: text("id").primaryKey(),
+    delivery_id: text("delivery_id")
+      .notNull()
+      .references(() => clientDeliveries.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    r2_key: text("r2_key").notNull(),
+    title: text("title").notNull(),
+    taken_at: text("taken_at"),
+    size_bytes: integer("size_bytes").notNull(),
+    sort_order: integer("sort_order").notNull().default(0),
+  },
+  (table) => [index("idx_delivery_photos_delivery").on(table.delivery_id)],
+);
+
 export const tagsRelations = relations(tags, ({ many }) => ({
   session_tags: many(sessionTags),
 }));
@@ -203,5 +239,16 @@ export const pendingPhotoUploadsRelations = relations(pendingPhotoUploads, ({ on
   photo: one(photos, {
     fields: [pendingPhotoUploads.photo_id],
     references: [photos.id],
+  }),
+}));
+
+export const clientDeliveriesRelations = relations(clientDeliveries, ({ many }) => ({
+  photos: many(deliveryPhotos),
+}));
+
+export const deliveryPhotosRelations = relations(deliveryPhotos, ({ one }) => ({
+  delivery: one(clientDeliveries, {
+    fields: [deliveryPhotos.delivery_id],
+    references: [clientDeliveries.id],
   }),
 }));
