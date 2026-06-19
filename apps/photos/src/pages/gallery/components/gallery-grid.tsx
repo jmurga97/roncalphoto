@@ -9,6 +9,7 @@ import type { RefObject } from "react";
 interface GalleryGridProps {
   containerRef: RefObject<HTMLDivElement | null>;
   currentIndex: number;
+  galleryKey: string;
   onSelectPhoto: (photoId: string) => void;
   photos: GalleryPhotoViewModel[];
   sessionTitle: string;
@@ -18,6 +19,7 @@ interface GalleryGridProps {
 export function GalleryGrid({
   containerRef,
   currentIndex,
+  galleryKey,
   onSelectPhoto,
   photos,
   sessionTitle,
@@ -46,7 +48,7 @@ export function GalleryGrid({
         {!showThumbnails ? (
           <GalleryNextPhotoPeek currentPosition={currentIndex + 1} totalPhotos={photos.length} />
         ) : null}
-        <GalleryScrollHint photoCount={photos.length} />
+        <GalleryScrollHint galleryKey={galleryKey} photoCount={photos.length} />
       </div>
 
       {showThumbnails ? (

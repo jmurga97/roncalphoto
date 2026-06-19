@@ -1,11 +1,12 @@
 import { useGalleryScrollHint } from "../hooks/use-gallery-scroll-hint";
 
 interface GalleryScrollHintProps {
+  galleryKey: string;
   photoCount: number;
 }
 
-export function GalleryScrollHint({ photoCount }: GalleryScrollHintProps) {
-  const { shouldShowScrollHint } = useGalleryScrollHint({ photoCount });
+export function GalleryScrollHint({ galleryKey, photoCount }: GalleryScrollHintProps) {
+  const { shouldShowScrollHint } = useGalleryScrollHint({ galleryKey, photoCount });
 
   if (!shouldShowScrollHint) {
     return null;

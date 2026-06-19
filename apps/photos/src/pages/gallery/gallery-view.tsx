@@ -13,9 +13,10 @@ import type { GalleryData } from "./types";
 
 interface GalleryViewProps {
   galleryData: GalleryData;
+  showThumbnails?: boolean;
 }
 
-export function GalleryView({ galleryData }: GalleryViewProps) {
+export function GalleryView({ galleryData, showThumbnails }: GalleryViewProps) {
   const screenMode = useScreenMode();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasInitialScrollAlignedRef = useRef(false);
@@ -87,9 +88,10 @@ export function GalleryView({ galleryData }: GalleryViewProps) {
       containerRef={containerRef}
       currentIndex={galleryData.selection.currentIndex}
       onSelectPhoto={(photoId) => selectPhoto(photoId, { scroll: true })}
+      galleryKey={galleryData.sessionSlug}
       photos={galleryData.photos}
       sessionTitle={galleryData.sessionTitle}
-      showThumbnails={screenMode === "desktop"}
+      showThumbnails={showThumbnails ?? screenMode === "desktop"}
     />
   );
 }

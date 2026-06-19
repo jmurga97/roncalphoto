@@ -1,8 +1,6 @@
-import { getRouteApi } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 const GALLERY_SCROLL_HINT_STORAGE_KEY = "roncal-gallery-scroll-hint-seen";
-const sessionRouteApi = getRouteApi("/_app/session/$slug");
 
 let hasShownGalleryScrollHintInMemory = false;
 
@@ -33,12 +31,12 @@ function markGalleryScrollHintAsSeen() {
 }
 
 interface UseGalleryScrollHintOptions {
+  galleryKey: string;
   photoCount: number;
 }
 
-export function useGalleryScrollHint({ photoCount }: UseGalleryScrollHintOptions) {
-  const { slug: sessionSlug } = sessionRouteApi.useParams();
-  const [shownForSessionSlug, setShownForSessionSlug] = useState<string | undefined>(undefined);
+export function useGalleryScrollHint({ galleryKey, photoCount }: UseGalleryScrollHintOptions) {
+  const [shownForGalleryKey, setShownForGalleryKey] = useState<string | undefined>(undefined);
   const [shouldShowScrollHint, setShouldShowScrollHint] = useState(false);
 
   useEffect(() => {
@@ -53,11 +51,11 @@ export function useGalleryScrollHint({ photoCount }: UseGalleryScrollHintOptions
     }
 
     markGalleryScrollHintAsSeen();
-    setShownForSessionSlug(sessionSlug);
+    setShownForGalleryKey(galleryKey);
     setShouldShowScrollHint(true);
-  }, [photoCount, sessionSlug]);
+  }, [photoCount, galleryKey]);
 
   return {
-    shouldShowScrollHint: shouldShowScrollHint && shownForSessionSlug === sessionSlug,
+    shouldShowScrollHint: shouldShowScrollHint && shownForGalleryKey === galleryKey,
   };
 }
