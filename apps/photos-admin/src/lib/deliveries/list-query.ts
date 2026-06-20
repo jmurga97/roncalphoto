@@ -1,19 +1,11 @@
-import { create } from "zustand";
-import { useShallow } from "zustand/react/shallow";
+import { queryOptions } from "@tanstack/react-query";
 
 import type { DeliverySummary } from "@lib/deliveries/types";
 
-interface DeliveriesStoreState {
-  deliveries: DeliverySummary[];
-}
-
-interface DeliveriesStoreActions {
-  addDelivery: (delivery: DeliverySummary) => void;
-}
-
-type DeliveriesStore = DeliveriesStoreState & DeliveriesStoreActions;
-
-const SEED_DELIVERIES: DeliverySummary[] = [
+// MOCK: datos de ejemplo en memoria mientras no existe el endpoint de deliveries.
+// Eliminar este array cuando se implemente la llamada real al backend
+// (GET /api/deliveries).
+const MOCK_DELIVERIES: DeliverySummary[] = [
   {
     id: "delivery-boda-laura-mario",
     title: "Boda Laura & Mario",
@@ -48,21 +40,15 @@ const SEED_DELIVERIES: DeliverySummary[] = [
   },
 ];
 
-const useDeliveriesStore = create<DeliveriesStore>()((set) => ({
-  deliveries: SEED_DELIVERIES,
-  addDelivery: (delivery) => {
-    set((state) => ({ deliveries: [delivery, ...state.deliveries] }));
-  },
-}));
-
-export function useDeliveries() {
-  return useDeliveriesStore((state) => state.deliveries);
+// MOCK: simula la respuesta del backend. Reemplazar el cuerpo por la llamada real
+// (fetch al endpoint de deliveries) y eliminar los datos mock de arriba.
+function fetchDeliveries(): Promise<DeliverySummary[]> {
+  return Promise.resolve(MOCK_DELIVERIES);
 }
 
-export function useDeliveriesActions() {
-  return useDeliveriesStore(
-    useShallow((state) => ({
-      addDelivery: state.addDelivery,
-    })),
-  );
+export function deliveriesListQueryOptions() {
+  return queryOptions({
+    queryKey: ["deliveries", "list"] as const,
+    queryFn: fetchDeliveries,
+  });
 }

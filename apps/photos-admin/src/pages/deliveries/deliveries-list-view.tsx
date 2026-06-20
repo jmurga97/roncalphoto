@@ -1,14 +1,15 @@
 import { McSearchField } from "@murga.ing/components/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
-import { useDeliveries } from "@app/store/deliveries-store";
 import { DeliveriesResourceList } from "@components/deliveries/deliveries-resource-list";
 import { EmptyState } from "@components/empty-state";
+import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
 
 export function DeliveriesListView() {
   const navigate = useNavigate();
-  const deliveries = useDeliveries();
+  const { data: deliveries } = useSuspenseQuery(deliveriesListQueryOptions());
   const [searchValue, setSearchValue] = useState("");
   const deferredSearch = useDeferredValue(searchValue);
   const filteredDeliveries = deliveries.filter((delivery) => {

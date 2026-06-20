@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-export const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-export const MAX_FILE_SIZE = 25 * 1024 * 1024;
-
 const deliveryPhotoSchema = z.object({
   id: z.string(),
   previewUrl: z.string(),

@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { useDeliveriesActions } from "@app/store/deliveries-store";
 import { DeliveryPhotosSection } from "@components/deliveries/delivery-photos-section";
 import { FormTextInput } from "@components/forms/adapters/form-text-input";
+import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
 import { createDeliveryFormValues, deliveryUploadSchema } from "@lib/deliveries/upload-form";
 
 import type { DeliverySummary } from "@lib/deliveries/types";
@@ -34,7 +35,7 @@ function getUploadStatus(form: ReturnType<typeof useForm<DeliveryFormValues>>) {
 
 export function DeliveryUploadView() {
   const navigate = useNavigate();
-  const { addDelivery } = useDeliveriesActions();
+  const queryClient = useQueryClient();
   const form = useForm<DeliveryFormValues>({
     resolver: zodResolver(deliveryUploadSchema),
     defaultValues: createDeliveryFormValues(),
@@ -53,7 +54,12 @@ export function DeliveryUploadView() {
       photoCount: values.photos.length,
     };
 
-    addDelivery(delivery);
+    // MOCK: inserta la entrega en la caché de la lista para reflejarla sin backend.
+    // Eliminar cuando exista el POST real al endpoint de deliveries.
+    queryClient.setQueryData(
+      deliveriesListQueryOptions().queryKey,
+      (current: DeliverySummary[] | undefined) => [delivery, ...(current ?? [])],
+    );
     void navigate({ to: "/deliveries" });
   };
 

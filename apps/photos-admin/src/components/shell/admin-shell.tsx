@@ -2,11 +2,11 @@ import { McAppShell, McSidebarNav } from "@murga.ing/components/react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 
-import { useDeliveries } from "@app/store/deliveries-store";
 import { useShellActions, useShellMobile, useSidebarOpen } from "@app/store/shell-store";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { signOut } from "@lib/auth-client";
+import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
 import { useThemeStore } from "@lib/theme";
 
 function getCurrentSectionLabel(pathname: string) {
@@ -95,7 +95,7 @@ export function AdminShell() {
   const location = useLocation();
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
-  const deliveries = useDeliveries();
+  const { data: deliveries } = useSuspenseQuery(deliveriesListQueryOptions());
   const isMobile = useShellMobile();
   const isSidebarOpen = useSidebarOpen();
   const { closeSidebar, setSidebarOpen, toggleSidebar } = useShellActions();

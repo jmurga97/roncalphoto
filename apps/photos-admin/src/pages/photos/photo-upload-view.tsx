@@ -1,28 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
+import { BatchImagePicker } from "@components/photos/batch-image-picker";
 import { BatchPhotoPreviewGrid } from "@components/photos/batch-photo-preview-grid";
+import { createBatchImagePreview, revokeBatchImagePreview } from "@lib/photos/batch-images";
 
-import type { BatchPhotoPreview } from "@components/photos/batch-photo-preview-grid";
-
-const MAX_FILE_SIZE = 25 * 1024 * 1024;
-const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-
-function getTitleFromFilename(filename: string) {
-  return filename.replace(/\.[^/.]+$/, "");
-}
-
-function toPreview(file: File): BatchPhotoPreview {
-  return {
-    id: crypto.randomUUID(),
-    file,
-    previewUrl: URL.createObjectURL(file),
-    title: getTitleFromFilename(file.name),
-  };
-}
+import type { BatchImageFile } from "@lib/photos/batch-images";
 
 export function PhotoUploadView() {
-  const [items, setItems] = useState<BatchPhotoPreview[]>([]);
-  const [rejectedFiles, setRejectedFiles] = useState<string[]>([]);
+  const [items, setItems] = useState<BatchImageFile[]>([]);
+  const [pickerResetKey, setPickerResetKey] = useState(0);
   const [showIntegrationNotice, setShowIntegrationNotice] = useState(false);
   const itemsRef = useRef(items);
   itemsRef.current = items;
@@ -30,18 +16,23 @@ export function PhotoUploadView() {
   useEffect(
     () => () => {
       itemsRef.current.forEach((item) => {
-        URL.revokeObjectURL(item.previewUrl);
+        revokeBatchImagePreview(item);
       });
     },
     [],
   );
+
+  const addFiles = (files: File[]) => {
+    setItems((currentItems) => [...currentItems, ...files.map(createBatchImagePreview)]);
+    setShowIntegrationNotice(false);
+  };
 
   const removeItem = (id: string) => {
     setItems((currentItems) => {
       const removedItem = currentItems.find((item) => item.id === id);
 
       if (removedItem) {
-        URL.revokeObjectURL(removedItem.previewUrl);
+        revokeBatchImagePreview(removedItem);
       }
 
       return currentItems.filter((item) => item.id !== id);
@@ -51,10 +42,10 @@ export function PhotoUploadView() {
 
   const clearItems = () => {
     items.forEach((item) => {
-      URL.revokeObjectURL(item.previewUrl);
+      revokeBatchImagePreview(item);
     });
     setItems([]);
-    setRejectedFiles([]);
+    setPickerResetKey((currentKey) => currentKey + 1);
     setShowIntegrationNotice(false);
   };
 
@@ -70,48 +61,13 @@ export function PhotoUploadView() {
       </header>
 
       <section className="grid gap-6" aria-labelledby="photo-upload-title">
-        <div className="border-mc-border-visible bg-mc-surface flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5">
-          <div className="grid gap-2">
-            <div className="admin-kicker">Selección</div>
-            <h3 id="photo-upload-title" className="text-mc-text-display m-0">
-              Añadir imágenes
-            </h3>
-            <p className="text-mc-text-secondary m-0">
-              JPEG, PNG o WebP. Máximo 25 MiB por archivo.
-            </p>
-          </div>
-          <label className="border-mc-accent bg-mc-accent focus-within:outline-mc-text-display relative inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border px-4 py-3 font-semibold text-white focus-within:outline-2 focus-within:outline-offset-3 max-sm:w-full">
-            <span>Seleccionar archivos</span>
-            <input
-              className="absolute size-px opacity-0"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              onChange={(event) => {
-                const selectedFiles = Array.from(event.currentTarget.files ?? []);
-                const validFiles = selectedFiles.filter(
-                  (file) => ACCEPTED_IMAGE_TYPES.has(file.type) && file.size <= MAX_FILE_SIZE,
-                );
-                const invalidFiles = selectedFiles.filter(
-                  (file) => !ACCEPTED_IMAGE_TYPES.has(file.type) || file.size > MAX_FILE_SIZE,
-                );
-
-                setItems((currentItems) => [...currentItems, ...validFiles.map(toPreview)]);
-                setRejectedFiles(invalidFiles.map((file) => file.name));
-                setShowIntegrationNotice(false);
-                event.currentTarget.value = "";
-              }}
-              type="file"
-            />
-          </label>
-        </div>
-
-        {rejectedFiles.length > 0 ? (
-          <mc-inline-message
-            message={`No se añadieron: ${rejectedFiles.join(", ")}. Revisa el formato o el límite de 25 MiB.`}
-            title="Algunos archivos no son válidos"
-            tone="error"
-          />
-        ) : null}
+        <BatchImagePicker
+          kicker="Selección"
+          onFilesAccepted={addFiles}
+          resetRejectedKey={pickerResetKey}
+          title="Añadir imágenes"
+          titleId="photo-upload-title"
+        />
 
         {items.length > 0 ? (
           <>
