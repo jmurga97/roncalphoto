@@ -15,11 +15,13 @@ import { Route as AuthIndexRouteImport } from './routes/_auth.index'
 import { Route as AuthTagsRouteImport } from './routes/_auth.tags'
 import { Route as AuthSessionsRouteImport } from './routes/_auth.sessions'
 import { Route as AuthPhotosRouteImport } from './routes/_auth.photos'
+import { Route as AuthDeliveriesRouteImport } from './routes/_auth.deliveries'
 import { Route as AuthTagsSlugRouteImport } from './routes/_auth.tags.$slug'
 import { Route as AuthSessionsNewRouteImport } from './routes/_auth.sessions.new'
 import { Route as AuthSessionsSlugRouteImport } from './routes/_auth.sessions.$slug'
 import { Route as AuthPhotosNewRouteImport } from './routes/_auth.photos.new'
 import { Route as AuthPhotosIdRouteImport } from './routes/_auth.photos.$id'
+import { Route as AuthDeliveriesNewRouteImport } from './routes/_auth.deliveries.new'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -50,6 +52,11 @@ const AuthPhotosRoute = AuthPhotosRouteImport.update({
   path: '/photos',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthDeliveriesRoute = AuthDeliveriesRouteImport.update({
+  id: '/deliveries',
+  path: '/deliveries',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthTagsSlugRoute = AuthTagsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -75,13 +82,20 @@ const AuthPhotosIdRoute = AuthPhotosIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthPhotosRoute,
 } as any)
+const AuthDeliveriesNewRoute = AuthDeliveriesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthDeliveriesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
   '/login': typeof LoginRoute
+  '/deliveries': typeof AuthDeliveriesRouteWithChildren
   '/photos': typeof AuthPhotosRouteWithChildren
   '/sessions': typeof AuthSessionsRouteWithChildren
   '/tags': typeof AuthTagsRouteWithChildren
+  '/deliveries/new': typeof AuthDeliveriesNewRoute
   '/photos/$id': typeof AuthPhotosIdRoute
   '/photos/new': typeof AuthPhotosNewRoute
   '/sessions/$slug': typeof AuthSessionsSlugRoute
@@ -90,10 +104,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/deliveries': typeof AuthDeliveriesRouteWithChildren
   '/photos': typeof AuthPhotosRouteWithChildren
   '/sessions': typeof AuthSessionsRouteWithChildren
   '/tags': typeof AuthTagsRouteWithChildren
   '/': typeof AuthIndexRoute
+  '/deliveries/new': typeof AuthDeliveriesNewRoute
   '/photos/$id': typeof AuthPhotosIdRoute
   '/photos/new': typeof AuthPhotosNewRoute
   '/sessions/$slug': typeof AuthSessionsSlugRoute
@@ -104,10 +120,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/login': typeof LoginRoute
+  '/_auth/deliveries': typeof AuthDeliveriesRouteWithChildren
   '/_auth/photos': typeof AuthPhotosRouteWithChildren
   '/_auth/sessions': typeof AuthSessionsRouteWithChildren
   '/_auth/tags': typeof AuthTagsRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
+  '/_auth/deliveries/new': typeof AuthDeliveriesNewRoute
   '/_auth/photos/$id': typeof AuthPhotosIdRoute
   '/_auth/photos/new': typeof AuthPhotosNewRoute
   '/_auth/sessions/$slug': typeof AuthSessionsSlugRoute
@@ -119,9 +137,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/deliveries'
     | '/photos'
     | '/sessions'
     | '/tags'
+    | '/deliveries/new'
     | '/photos/$id'
     | '/photos/new'
     | '/sessions/$slug'
@@ -130,10 +150,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/deliveries'
     | '/photos'
     | '/sessions'
     | '/tags'
     | '/'
+    | '/deliveries/new'
     | '/photos/$id'
     | '/photos/new'
     | '/sessions/$slug'
@@ -143,10 +165,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_auth'
     | '/login'
+    | '/_auth/deliveries'
     | '/_auth/photos'
     | '/_auth/sessions'
     | '/_auth/tags'
     | '/_auth/'
+    | '/_auth/deliveries/new'
     | '/_auth/photos/$id'
     | '/_auth/photos/new'
     | '/_auth/sessions/$slug'
@@ -203,6 +227,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthPhotosRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_auth/deliveries': {
+      id: '/_auth/deliveries'
+      path: '/deliveries'
+      fullPath: '/deliveries'
+      preLoaderRoute: typeof AuthDeliveriesRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_auth/tags/$slug': {
       id: '/_auth/tags/$slug'
       path: '/$slug'
@@ -238,8 +269,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthPhotosIdRouteImport
       parentRoute: typeof AuthPhotosRoute
     }
+    '/_auth/deliveries/new': {
+      id: '/_auth/deliveries/new'
+      path: '/new'
+      fullPath: '/deliveries/new'
+      preLoaderRoute: typeof AuthDeliveriesNewRouteImport
+      parentRoute: typeof AuthDeliveriesRoute
+    }
   }
 }
+
+interface AuthDeliveriesRouteChildren {
+  AuthDeliveriesNewRoute: typeof AuthDeliveriesNewRoute
+}
+
+const AuthDeliveriesRouteChildren: AuthDeliveriesRouteChildren = {
+  AuthDeliveriesNewRoute: AuthDeliveriesNewRoute,
+}
+
+const AuthDeliveriesRouteWithChildren = AuthDeliveriesRoute._addFileChildren(
+  AuthDeliveriesRouteChildren,
+)
 
 interface AuthPhotosRouteChildren {
   AuthPhotosIdRoute: typeof AuthPhotosIdRoute
@@ -282,6 +332,7 @@ const AuthTagsRouteWithChildren = AuthTagsRoute._addFileChildren(
 )
 
 interface AuthRouteChildren {
+  AuthDeliveriesRoute: typeof AuthDeliveriesRouteWithChildren
   AuthPhotosRoute: typeof AuthPhotosRouteWithChildren
   AuthSessionsRoute: typeof AuthSessionsRouteWithChildren
   AuthTagsRoute: typeof AuthTagsRouteWithChildren
@@ -289,6 +340,7 @@ interface AuthRouteChildren {
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthDeliveriesRoute: AuthDeliveriesRouteWithChildren,
   AuthPhotosRoute: AuthPhotosRouteWithChildren,
   AuthSessionsRoute: AuthSessionsRouteWithChildren,
   AuthTagsRoute: AuthTagsRouteWithChildren,

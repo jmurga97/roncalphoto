@@ -2,6 +2,7 @@ import { McAppShell, McSidebarNav } from "@murga.ing/components/react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 
+import { useDeliveries } from "@app/store/deliveries-store";
 import { useShellActions, useShellMobile, useSidebarOpen } from "@app/store/shell-store";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
@@ -21,6 +22,10 @@ function getCurrentSectionLabel(pathname: string) {
     return "Tags";
   }
 
+  if (pathname.startsWith("/deliveries")) {
+    return "Deliveries";
+  }
+
   return "Overview";
 }
 
@@ -29,6 +34,7 @@ function getNavigationItems(
   totalSessions: number,
   totalPhotos: number,
   totalTags: number,
+  totalDeliveries: number,
 ) {
   return [
     {
@@ -54,11 +60,22 @@ function getNavigationItems(
       count: totalTags,
       current: pathname.startsWith("/tags"),
     },
+    {
+      id: "deliveries",
+      label: "Deliveries",
+      count: totalDeliveries,
+      current: pathname.startsWith("/deliveries"),
+    },
   ];
 }
 
 function getFooterItems() {
   return [
+    {
+      id: "upload-delivery",
+      label: "Subir delivery",
+      description: "Crear una nueva entrega",
+    },
     {
       id: "public-site",
       label: "Ver sitio",
@@ -78,6 +95,7 @@ export function AdminShell() {
   const location = useLocation();
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
+  const deliveries = useDeliveries();
   const isMobile = useShellMobile();
   const isSidebarOpen = useSidebarOpen();
   const { closeSidebar, setSidebarOpen, toggleSidebar } = useShellActions();
@@ -98,10 +116,19 @@ export function AdminShell() {
         <McSidebarNav
           ariaLabel="Dashboard navigation"
           footerItems={getFooterItems()}
-          items={getNavigationItems(location.pathname, sessions.length, totalPhotos, tags.length)}
+          items={getNavigationItems(
+            location.pathname,
+            sessions.length,
+            totalPhotos,
+            tags.length,
+            deliveries.length,
+          )}
           onMcSelect={(event) => {
             void (async () => {
               switch (event.detail.selectedId) {
+                case "upload-delivery":
+                  await navigate({ to: "/deliveries/new" });
+                  break;
                 case "public-site":
                   window.open("/", "_blank", "noopener,noreferrer");
                   break;
@@ -118,6 +145,9 @@ export function AdminShell() {
                   break;
                 case "tags":
                   await navigate({ to: "/tags" });
+                  break;
+                case "deliveries":
+                  await navigate({ to: "/deliveries" });
                   break;
                 default:
                   await navigate({ to: "/" });

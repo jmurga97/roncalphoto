@@ -76,6 +76,7 @@
         "@murga.ing/components": "^1.0.0",
         "@roncal/auth": "workspace:*",
         "@roncal/shared": "workspace:*",
+        "@roncal/ui": "workspace:*",
         "@tanstack/react-query": "^5.90.2",
         "@tanstack/react-router": "^1.139.3",
         "lit": "^3.3.1",
