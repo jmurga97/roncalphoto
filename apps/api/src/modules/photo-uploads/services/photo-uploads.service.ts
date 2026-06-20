@@ -12,7 +12,7 @@ import type {
   WorkerUploadResult,
 } from "../types";
 import type { ImageWorkerServiceBinding } from "@/config/env/schema";
-import type { ApiPhoto } from "@roncal/shared";
+import type { ApiPhoto, CreatePhotoUploadResult, PhotoUploadStatusResult } from "@roncal/shared";
 
 async function createRequestFingerprint(input: CreatePhotoUploadInput): Promise<string> {
   const normalized = {
@@ -46,16 +46,6 @@ function requireVariantUrl(result: WorkerUploadResult, name: string): string {
   return url;
 }
 
-export interface PhotoUploadStatusResult {
-  uploadId: string;
-  photoId: string;
-  status: WorkerUploadResult["status"];
-  attempts: number;
-  originalRetentionStatus: WorkerUploadResult["originalRetentionStatus"];
-  error: WorkerUploadResult["error"];
-  photo: ApiPhoto | null;
-}
-
 export interface ImageWorkerGateway {
   createUpload(input: CreateImageWorkerUploadInput): Promise<WorkerCreateUploadResult>;
   getUpload(uploadId: string): Promise<WorkerUploadResult>;
@@ -68,7 +58,10 @@ export class PhotoUploadsService {
     private readonly imageWorker: ImageWorkerGateway,
   ) {}
 
-  async createUpload(idempotencyKey: string, input: CreatePhotoUploadInput) {
+  async createUpload(
+    idempotencyKey: string,
+    input: CreatePhotoUploadInput,
+  ): Promise<CreatePhotoUploadResult> {
     if (!(await this.repository.sessionExists(input.sessionId))) {
       throw new HttpError(400, "Session not found");
     }

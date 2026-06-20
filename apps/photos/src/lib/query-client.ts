@@ -1,11 +1,3 @@
-import { QueryClient } from "@tanstack/react-query";
+import { createQueryClient } from "@roncal/ui";
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+export const queryClient = createQueryClient();

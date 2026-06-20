@@ -1,3 +1,5 @@
+export type { CreateApiClientOptions } from "./api-client";
+export { createApiClient } from "./api-client";
 export type { HttpClientOptions } from "./http-client";
 export { ApiRequestError, getErrorMessage, HttpClient } from "./http-client";
 export {
@@ -15,11 +17,23 @@ export type {
   ApiResponse,
   ApiSession,
   ApiTagWithSessions,
+  CreatePhotoInput,
+  CreatePhotoUploadInput,
+  CreatePhotoUploadResult,
+  DeleteResult,
   Delivery,
   DeliveryPhoto,
   Photo,
   PhotoMetadata,
   PhotoSummary,
+  PhotoUploadContentType,
+  PhotoUploadError,
+  PhotoUploadMutationInput,
+  PhotoUploadOriginalRetentionStatus,
+  PhotoUploadStatus,
+  PhotoUploadStatusResult,
   Session,
   Tag,
+  SignedPhotoUpload,
+  UpdatePhotoInput,
 } from "./types";

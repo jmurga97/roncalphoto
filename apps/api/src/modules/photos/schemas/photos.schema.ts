@@ -3,6 +3,8 @@ import { z } from "@hono/zod-openapi";
 import { apiPhotoSchema, deleteResultSchema } from "@/shared/lib/contracts";
 import { createSuccessResponseSchema } from "@/shared/lib/http";
 
+import type { CreatePhotoInput, PhotoMetadata, UpdatePhotoInput } from "@roncal/shared";
+
 export const photoIdParamsSchema = z.object({
   id: z
     .string()
@@ -25,7 +27,7 @@ export const photoMetadataInputSchema = z.object({
   shutterSpeed: z.string().optional(),
   lens: z.string().optional(),
   camera: z.string().optional(),
-});
+}) satisfies z.ZodType<Partial<PhotoMetadata>>;
 
 export const createPhotoBodySchema = z.object({
   id: z.string().trim().min(1, { error: "id must be a non-empty string when provided" }).optional(),
@@ -36,7 +38,7 @@ export const createPhotoBodySchema = z.object({
   about: z.string().trim().min(1, { error: "about is required" }),
   sortOrder: z.number().optional(),
   metadata: photoMetadataInputSchema.optional(),
-});
+}) satisfies z.ZodType<CreatePhotoInput>;
 
 export const updatePhotoBodySchema = z.object({
   sessionId: z.string().trim().min(1).optional(),
@@ -46,7 +48,7 @@ export const updatePhotoBodySchema = z.object({
   about: z.string().trim().min(1).optional(),
   sortOrder: z.number().optional(),
   metadata: photoMetadataInputSchema.optional(),
-});
+}) satisfies z.ZodType<UpdatePhotoInput>;
 
 export const photoResponseSchema =
   createSuccessResponseSchema(apiPhotoSchema).openapi("PhotoResponse");

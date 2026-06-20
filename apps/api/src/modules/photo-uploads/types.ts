@@ -1,22 +1,14 @@
-import type { PhotoMetadata } from "@roncal/shared";
+import type {
+  CreatePhotoUploadInput,
+  PhotoUploadError,
+  PhotoUploadOriginalRetentionStatus,
+  PhotoUploadStatus,
+  SignedPhotoUpload,
+} from "@roncal/shared";
 
-export type ImageUploadStatus =
-  | "awaiting_upload"
-  | "queued"
-  | "processing"
-  | "succeeded"
-  | "failed";
+export type { CreatePhotoUploadInput };
 
-export interface CreatePhotoUploadInput {
-  sessionId: string;
-  filename: string;
-  contentType: "image/jpeg" | "image/png" | "image/webp";
-  sizeBytes: number;
-  alt: string;
-  about: string;
-  sortOrder?: number;
-  metadata?: Partial<PhotoMetadata>;
-}
+export type ImageUploadStatus = PhotoUploadStatus;
 
 export interface CreateImageWorkerUploadInput {
   idempotencyKey: string;
@@ -27,13 +19,7 @@ export interface CreateImageWorkerUploadInput {
 export interface WorkerCreateUploadResult {
   uploadId: string;
   status: ImageUploadStatus;
-  upload: {
-    url: string;
-    expiresAt: string;
-    headers: {
-      "Content-Type": string;
-    };
-  } | null;
+  upload: SignedPhotoUpload | null;
 }
 
 export interface WorkerImageVariant {
@@ -54,7 +40,7 @@ export interface WorkerUploadResult {
   externalId: string | null;
   status: ImageUploadStatus;
   attempts: number;
-  originalRetentionStatus: "pending" | "retained" | "deleted" | "delete_failed";
+  originalRetentionStatus: PhotoUploadOriginalRetentionStatus;
   manifest: {
     source: {
       contentType: string;
@@ -64,11 +50,7 @@ export interface WorkerUploadResult {
     };
     variants: Record<string, WorkerImageVariant>;
   } | null;
-  error: {
-    code: string;
-    message: string;
-    retryable: boolean;
-  } | null;
+  error: PhotoUploadError | null;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;

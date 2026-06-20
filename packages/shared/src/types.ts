@@ -83,6 +83,85 @@ export interface ApiTagWithSessions {
   sessions: ApiSession[];
 }
 
+export interface CreatePhotoInput {
+  id?: string;
+  sessionId: string;
+  url: string;
+  miniature: string;
+  alt: string;
+  about: string;
+  sortOrder?: number;
+  metadata?: Partial<PhotoMetadata>;
+}
+
+export type UpdatePhotoInput = Partial<Omit<CreatePhotoInput, "id">>;
+
+export interface DeleteResult {
+  deleted: true;
+}
+
+export type PhotoUploadContentType = "image/jpeg" | "image/png" | "image/webp";
+
+export type PhotoUploadStatus =
+  | "awaiting_upload"
+  | "queued"
+  | "processing"
+  | "succeeded"
+  | "failed";
+
+export type PhotoUploadOriginalRetentionStatus =
+  | "pending"
+  | "retained"
+  | "deleted"
+  | "delete_failed";
+
+export interface CreatePhotoUploadInput {
+  sessionId: string;
+  filename: string;
+  contentType: PhotoUploadContentType;
+  sizeBytes: number;
+  alt: string;
+  about: string;
+  sortOrder?: number;
+  metadata?: Partial<PhotoMetadata>;
+}
+
+export type PhotoUploadMutationInput = Omit<
+  CreatePhotoUploadInput,
+  "filename" | "contentType" | "sizeBytes"
+>;
+
+export interface SignedPhotoUpload {
+  url: string;
+  expiresAt: string;
+  headers: {
+    "Content-Type": string;
+  };
+}
+
+export interface CreatePhotoUploadResult {
+  uploadId: string;
+  photoId: string;
+  status: PhotoUploadStatus;
+  upload: SignedPhotoUpload | null;
+}
+
+export interface PhotoUploadError {
+  code: string;
+  message: string;
+  retryable: boolean;
+}
+
+export interface PhotoUploadStatusResult {
+  uploadId: string;
+  photoId: string;
+  status: PhotoUploadStatus;
+  attempts: number;
+  originalRetentionStatus: PhotoUploadOriginalRetentionStatus;
+  error: PhotoUploadError | null;
+  photo: ApiPhoto | null;
+}
+
 /**
  * Client delivery — a private, temporary handoff of a finished session.
  * Separate from the public portfolio: photos are uploaded as-is (no

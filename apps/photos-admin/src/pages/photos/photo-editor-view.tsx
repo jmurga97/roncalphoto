@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { McConfirmAction, McMediaBrowser, McResourceEditor } from "@murga.ing/components/react";
-import { getErrorMessage } from "@roncal/shared";
+import { McMediaBrowser, McResourceEditor } from "@murga.ing/components/react";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
@@ -10,6 +9,13 @@ import { z } from "zod";
 import { FormSelect } from "@components/forms/adapters/form-select";
 import { FormTextInput } from "@components/forms/adapters/form-text-input";
 import { FormTextarea } from "@components/forms/adapters/form-textarea";
+import {
+  ConfirmDelete,
+  ServerErrorMessage,
+  getEditorStatus,
+  getServerError,
+  useResourceSubmit,
+} from "@components/forms/resource-editor-helpers";
 import { invalidatePhotoData } from "@lib/api/invalidation";
 import { photoUploadsService } from "@lib/api/photo-uploads/photo-uploads";
 import { resolvePhotoUploadAttempt } from "@lib/api/photo-uploads/upload-attempt";
@@ -18,8 +24,7 @@ import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
 import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 
 import type { PhotoUploadAttempt } from "@lib/api/photo-uploads/upload-attempt";
-import type { PhotoMutationInput } from "@lib/api/photos/photos";
-import type { ApiPhoto, ApiSession } from "@roncal/shared";
+import type { ApiPhoto, ApiSession, CreatePhotoInput } from "@roncal/shared";
 
 const photoSchema = z.object({
   sessionId: z.string().trim().min(1, { error: "Selecciona una sesión." }),
@@ -78,7 +83,7 @@ function toPhotoFormValues(photo?: PhotoRecord): PhotoFormValues {
   };
 }
 
-function toPhotoMutationInput(values: PhotoFormValues): PhotoMutationInput {
+function toCreatePhotoInput(values: PhotoFormValues): CreatePhotoInput {
   return {
     sessionId: values.sessionId,
     url: values.url.trim(),
@@ -102,7 +107,7 @@ function CreatePhotoEditor() {
   const uploadAttempt = useRef<PhotoUploadAttempt | null>(null);
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const saveMutation = useMutation({
-    mutationFn: ({ file, input }: { file?: File; input: PhotoMutationInput }) => {
+    mutationFn: ({ file, input }: { file?: File; input: CreatePhotoInput }) => {
       if (!file) {
         return photosService.createPhoto(input);
       }
@@ -147,7 +152,7 @@ function EditPhotoEditor() {
   const { data: photo } = useSuspenseQuery(photoDetailQueryOptions(params.id));
   const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
   const saveMutation = useMutation({
-    mutationFn: (input: PhotoMutationInput) => photosService.updatePhoto(photo.id, input),
+    mutationFn: (input: CreatePhotoInput) => photosService.updatePhoto(photo.id, input),
   });
   const deleteMutation = useMutation({
     mutationFn: () => photosService.deletePhoto(photo.id),
@@ -250,7 +255,7 @@ function PhotoEditorForm({
   initialPhoto?: PhotoRecord;
   mode: "create" | "edit";
   onDeleteAction: () => Promise<void>;
-  onSaveAction: (input: PhotoMutationInput, file?: File) => Promise<PhotoRecord>;
+  onSaveAction: (input: CreatePhotoInput, file?: File) => Promise<PhotoRecord>;
   onUploadCancel?: () => void;
   savePending: boolean;
   sessions: ApiSession[];
@@ -261,12 +266,9 @@ function PhotoEditorForm({
     resolver: zodResolver(photoSchema),
     defaultValues: toPhotoFormValues(initialPhoto),
   });
-  const { clearErrors, formState, handleSubmit, reset, setError, watch } = form;
+  const { clearErrors, formState, reset, setError, watch } = form;
   const watchedValues = watch();
-  const serverError =
-    typeof formState.errors.root?.server?.message === "string"
-      ? formState.errors.root.server.message
-      : undefined;
+  const serverError = getServerError(form);
   const sessionOptions = sessions.map((session) => ({
     id: session.id,
     label: session.title,
@@ -274,17 +276,47 @@ function PhotoEditorForm({
   }));
   const sessionLabel =
     sessions.find((session) => session.id === watchedValues.sessionId)?.title ?? "Sin sesión";
-  const editorStatus = deletePending
-    ? { tone: "loading" as const, label: "Eliminando foto..." }
-    : savePending
-      ? { tone: "loading" as const, label: "Guardando foto..." }
-      : serverError
-        ? { tone: "error" as const, label: "Revisa el formulario" }
-        : formState.isSubmitSuccessful
-          ? { tone: "success" as const, label: "Cambios guardados" }
-          : formState.isDirty
-            ? { tone: "idle" as const, label: "Hay cambios sin guardar" }
-            : null;
+  const editorStatus = getEditorStatus({
+    deletePending,
+    isDirty: formState.isDirty,
+    isSubmitSuccessful: formState.isSubmitSuccessful,
+    labels: {
+      deletingLabel: "Eliminando foto...",
+      dirtyLabel: "Hay cambios sin guardar",
+      savedLabel: "Cambios guardados",
+      savingLabel: "Guardando foto...",
+    },
+    savePending,
+    serverError,
+  });
+  const submitResource = useResourceSubmit<PhotoFormValues, CreatePhotoInput, PhotoRecord>({
+    form,
+    onSave: (input) => onSaveAction(input, uploadFile),
+    onSaved: () => {
+      setUploadFile(undefined);
+    },
+    toFormValues: toPhotoFormValues,
+    toInput: toCreatePhotoInput,
+    validate: (input) => {
+      if (!uploadFile && input.url.length === 0) {
+        setError("url", {
+          type: "required",
+          message: "Añade un archivo o una URL principal.",
+        });
+        return false;
+      }
+
+      if (!uploadFile && input.miniature.length === 0) {
+        setError("miniature", {
+          type: "required",
+          message: "Añade un archivo o una miniatura.",
+        });
+        return false;
+      }
+
+      return true;
+    },
+  });
 
   return (
     <FormProvider {...form}>
@@ -317,51 +349,13 @@ function PhotoEditorForm({
           onMcDelete={() => {
             setDeleteConfirmOpen(true);
           }}
-          onMcSave={() => {
-            void handleSubmit(async (values) => {
-              clearErrors("root");
-              const input = toPhotoMutationInput(values);
-
-              if (!uploadFile && input.url.length === 0) {
-                setError("url", {
-                  type: "required",
-                  message: "Añade un archivo o una URL principal.",
-                });
-                return;
-              }
-
-              if (!uploadFile && input.miniature.length === 0) {
-                setError("miniature", {
-                  type: "required",
-                  message: "Añade un archivo o una miniatura.",
-                });
-                return;
-              }
-
-              try {
-                const nextPhoto = await onSaveAction(input, uploadFile);
-                setUploadFile(undefined);
-                reset(toPhotoFormValues(nextPhoto));
-              } catch (error) {
-                setError("root.server", {
-                  type: "server",
-                  message: getErrorMessage(error),
-                });
-              }
-            })();
-          }}
+          onMcSave={submitResource}
           resourceTitle={mode === "create" ? "Photo draft" : (initialPhoto?.id ?? "Photo")}
           saving={savePending}
           status={editorStatus}
         >
           <div slot="fields" className="admin-editor-layout">
-            {serverError ? (
-              <mc-inline-message
-                message={serverError}
-                title="No se pudo completar la operación"
-                tone="error"
-              />
-            ) : null}
+            <ServerErrorMessage message={serverError} />
 
             <PhotoAssetFields
               mode={mode}
@@ -456,28 +450,20 @@ function PhotoEditorForm({
               showRail={false}
             />
 
-            <McConfirmAction
+            <ConfirmDelete
               message={
                 mode === "create"
                   ? "¿Quieres descartar este borrador de foto?"
                   : "¿Seguro que quieres borrar esta foto? La eliminación es persistente."
               }
-              onMcCancel={() => {
-                setDeleteConfirmOpen(false);
+              onConfirm={onDeleteAction}
+              onErrorMessage={(message) => {
+                setError("root.server", {
+                  type: "server",
+                  message,
+                });
               }}
-              onMcConfirm={() => {
-                void (async () => {
-                  try {
-                    await onDeleteAction();
-                  } catch (error) {
-                    setDeleteConfirmOpen(false);
-                    setError("root.server", {
-                      type: "server",
-                      message: getErrorMessage(error),
-                    });
-                  }
-                })();
-              }}
+              onOpenChange={setDeleteConfirmOpen}
               open={isDeleteConfirmOpen}
               pending={deletePending}
             />

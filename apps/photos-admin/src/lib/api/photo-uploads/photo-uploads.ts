@@ -1,38 +1,13 @@
 import { apiClient } from "@lib/api/client";
 
-import type { PhotoMutationInput } from "@lib/api/photos/photos";
-import type { ApiPhoto } from "@roncal/shared";
-
-interface CreatePhotoUploadResult {
-  uploadId: string;
-  photoId: string;
-  status: PhotoUploadStatus;
-  upload: {
-    url: string;
-    expiresAt: string;
-    headers: {
-      "Content-Type": string;
-    };
-  } | null;
-}
-
-type PhotoUploadStatus = "awaiting_upload" | "queued" | "processing" | "succeeded" | "failed";
-
-interface PhotoUploadStatusResult {
-  uploadId: string;
-  photoId: string;
-  status: PhotoUploadStatus;
-  attempts: number;
-  originalRetentionStatus: "pending" | "retained" | "deleted" | "delete_failed";
-  error: {
-    code: string;
-    message: string;
-    retryable: boolean;
-  } | null;
-  photo: ApiPhoto | null;
-}
-
-export type PhotoUploadMutationInput = Omit<PhotoMutationInput, "miniature" | "url">;
+import type {
+  ApiPhoto,
+  CreatePhotoUploadInput,
+  CreatePhotoUploadResult,
+  PhotoUploadContentType,
+  PhotoUploadMutationInput,
+  PhotoUploadStatusResult,
+} from "@roncal/shared";
 
 function wait(milliseconds: number): Promise<void> {
   return new Promise((resolve) => {
@@ -66,14 +41,15 @@ export const photoUploadsService = {
     input: PhotoUploadMutationInput,
     idempotencyKey: string,
   ): Promise<ApiPhoto> {
+    const requestBody: CreatePhotoUploadInput = {
+      ...input,
+      filename: file.name,
+      contentType: file.type as PhotoUploadContentType,
+      sizeBytes: file.size,
+    };
     const created = await apiClient.post<CreatePhotoUploadResult>(
       "/api/photo-uploads",
-      {
-        ...input,
-        filename: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      },
+      requestBody,
       {
         headers: {
           "Idempotency-Key": idempotencyKey,

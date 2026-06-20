@@ -1,11 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  McConfirmAction,
-  McRelationshipPanel,
-  McResourceEditor,
-  McTagList,
-} from "@murga.ing/components/react";
-import { getErrorMessage } from "@roncal/shared";
+import { McRelationshipPanel, McResourceEditor, McTagList } from "@murga.ing/components/react";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
@@ -15,6 +9,13 @@ import { z } from "zod";
 import { FormTagPicker } from "@components/forms/adapters/form-tag-picker";
 import { FormTextInput } from "@components/forms/adapters/form-text-input";
 import { FormTextarea } from "@components/forms/adapters/form-textarea";
+import {
+  ConfirmDelete,
+  ServerErrorMessage,
+  getEditorStatus,
+  getServerError,
+  useResourceSubmit,
+} from "@components/forms/resource-editor-helpers";
 import { invalidateSessionData } from "@lib/api/invalidation";
 import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
 import { sessionsService } from "@lib/api/sessions/sessions";
@@ -158,24 +159,29 @@ function SessionEditorForm({
     resolver: zodResolver(sessionSchema),
     defaultValues: toSessionFormValues(initialSession),
   });
-  const { clearErrors, formState, handleSubmit, reset, setError, watch } = form;
+  const { clearErrors, formState, reset, setError, watch } = form;
   const selectedTagIds = watch("tagIds");
   const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
-  const serverError =
-    typeof formState.errors.root?.server?.message === "string"
-      ? formState.errors.root.server.message
-      : undefined;
-  const editorStatus = deletePending
-    ? { tone: "loading" as const, label: "Eliminando sesión..." }
-    : savePending
-      ? { tone: "loading" as const, label: "Guardando sesión..." }
-      : serverError
-        ? { tone: "error" as const, label: "Revisa el formulario" }
-        : formState.isSubmitSuccessful
-          ? { tone: "success" as const, label: "Cambios guardados" }
-          : formState.isDirty
-            ? { tone: "idle" as const, label: "Hay cambios sin guardar" }
-            : null;
+  const serverError = getServerError(form);
+  const editorStatus = getEditorStatus({
+    deletePending,
+    isDirty: formState.isDirty,
+    isSubmitSuccessful: formState.isSubmitSuccessful,
+    labels: {
+      deletingLabel: "Eliminando sesión...",
+      dirtyLabel: "Hay cambios sin guardar",
+      savedLabel: "Cambios guardados",
+      savingLabel: "Guardando sesión...",
+    },
+    savePending,
+    serverError,
+  });
+  const submitResource = useResourceSubmit<SessionFormValues, SessionMutationInput, SessionRecord>({
+    form,
+    onSave: onSaveAction,
+    toFormValues: toSessionFormValues,
+    toInput: toSessionMutationInput,
+  });
 
   return (
     <FormProvider {...form}>
@@ -205,33 +211,13 @@ function SessionEditorForm({
           onMcDelete={() => {
             setDeleteConfirmOpen(true);
           }}
-          onMcSave={() => {
-            void handleSubmit(async (values) => {
-              clearErrors("root");
-
-              try {
-                const nextSession = await onSaveAction(toSessionMutationInput(values));
-                reset(toSessionFormValues(nextSession));
-              } catch (error) {
-                setError("root.server", {
-                  type: "server",
-                  message: getErrorMessage(error),
-                });
-              }
-            })();
-          }}
+          onMcSave={submitResource}
           resourceTitle={mode === "create" ? "Session draft" : (initialSession?.title ?? "Session")}
           saving={savePending}
           status={editorStatus}
         >
           <div slot="fields" className="admin-editor-layout">
-            {serverError ? (
-              <mc-inline-message
-                message={serverError}
-                title="No se pudo completar la operación"
-                tone="error"
-              />
-            ) : null}
+            <ServerErrorMessage message={serverError} />
 
             <section className="admin-editor-section">
               <div className="admin-kicker">Identidad</div>
@@ -323,28 +309,20 @@ function SessionEditorForm({
               title="Fotos relacionadas"
             />
 
-            <McConfirmAction
+            <ConfirmDelete
               message={
                 mode === "create"
                   ? "¿Quieres descartar este borrador y volver al listado?"
                   : "¿Seguro que quieres borrar esta sesión? Esta acción es persistente."
               }
-              onMcCancel={() => {
-                setDeleteConfirmOpen(false);
+              onConfirm={onDeleteAction}
+              onErrorMessage={(message) => {
+                setError("root.server", {
+                  type: "server",
+                  message,
+                });
               }}
-              onMcConfirm={() => {
-                void (async () => {
-                  try {
-                    await onDeleteAction();
-                  } catch (error) {
-                    setDeleteConfirmOpen(false);
-                    setError("root.server", {
-                      type: "server",
-                      message: getErrorMessage(error),
-                    });
-                  }
-                })();
-              }}
+              onOpenChange={setDeleteConfirmOpen}
               open={isDeleteConfirmOpen}
               pending={deletePending}
             />

@@ -3,6 +3,15 @@ import { z } from "@hono/zod-openapi";
 import { apiPhotoSchema } from "@/shared/lib/contracts";
 import { createSuccessResponseSchema } from "@/shared/lib/http";
 
+import type {
+  CreatePhotoUploadInput,
+  CreatePhotoUploadResult,
+  PhotoUploadError,
+  PhotoUploadStatus,
+  PhotoUploadStatusResult,
+  SignedPhotoUpload,
+} from "@roncal/shared";
+
 export const photoUploadIdParamsSchema = z.object({
   uploadId: z
     .string()
@@ -51,7 +60,7 @@ export const createPhotoUploadBodySchema = z.object({
       camera: z.string().trim().optional(),
     })
     .optional(),
-});
+}) satisfies z.ZodType<CreatePhotoUploadInput>;
 
 const photoUploadStatusSchema = z.enum([
   "awaiting_upload",
@@ -59,7 +68,7 @@ const photoUploadStatusSchema = z.enum([
   "processing",
   "succeeded",
   "failed",
-]);
+]) satisfies z.ZodType<PhotoUploadStatus>;
 
 const signedUploadSchema = z
   .object({
@@ -69,31 +78,35 @@ const signedUploadSchema = z
       "Content-Type": z.string(),
     }),
   })
-  .nullable();
+  .nullable() satisfies z.ZodType<SignedPhotoUpload | null>;
+
+const createPhotoUploadResultSchema = z.object({
+  uploadId: z.string().uuid(),
+  photoId: z.string().uuid(),
+  status: photoUploadStatusSchema,
+  upload: signedUploadSchema,
+}) satisfies z.ZodType<CreatePhotoUploadResult>;
 
 export const createPhotoUploadResponseSchema = createSuccessResponseSchema(
-  z.object({
-    uploadId: z.string().uuid(),
-    photoId: z.string().uuid(),
-    status: photoUploadStatusSchema,
-    upload: signedUploadSchema,
-  }),
+  createPhotoUploadResultSchema,
 ).openapi("CreatePhotoUploadResponse");
 
+const photoUploadErrorSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+  retryable: z.boolean(),
+}) satisfies z.ZodType<PhotoUploadError>;
+
+const photoUploadStatusResultSchema = z.object({
+  uploadId: z.string().uuid(),
+  photoId: z.string().uuid(),
+  status: photoUploadStatusSchema,
+  attempts: z.number().int().nonnegative(),
+  originalRetentionStatus: z.enum(["pending", "retained", "deleted", "delete_failed"]),
+  error: photoUploadErrorSchema.nullable(),
+  photo: apiPhotoSchema.nullable(),
+}) satisfies z.ZodType<PhotoUploadStatusResult>;
+
 export const photoUploadStatusResponseSchema = createSuccessResponseSchema(
-  z.object({
-    uploadId: z.string().uuid(),
-    photoId: z.string().uuid(),
-    status: photoUploadStatusSchema,
-    attempts: z.number().int().nonnegative(),
-    originalRetentionStatus: z.enum(["pending", "retained", "deleted", "delete_failed"]),
-    error: z
-      .object({
-        code: z.string(),
-        message: z.string(),
-        retryable: z.boolean(),
-      })
-      .nullable(),
-    photo: apiPhotoSchema.nullable(),
-  }),
+  photoUploadStatusResultSchema,
 ).openapi("PhotoUploadStatusResponse");
