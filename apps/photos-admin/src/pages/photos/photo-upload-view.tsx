@@ -1,17 +1,29 @@
-import { useEffect, useRef, useState } from "react";
+import { McSelect } from "@murga.ing/components/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { BatchImagePicker } from "@components/photos/batch-image-picker";
 import { BatchPhotoPreviewGrid } from "@components/photos/batch-photo-preview-grid";
+import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { createBatchImagePreview, revokeBatchImagePreview } from "@lib/photos/batch-images";
 
 import type { BatchImageFile } from "@lib/photos/batch-images";
 
 export function PhotoUploadView() {
+  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
+  const sessionSelectId = useId();
   const [items, setItems] = useState<BatchImageFile[]>([]);
   const [pickerResetKey, setPickerResetKey] = useState(0);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [sessionSelectOpen, setSessionSelectOpen] = useState(false);
   const [showIntegrationNotice, setShowIntegrationNotice] = useState(false);
   const itemsRef = useRef(items);
   itemsRef.current = items;
+  const sessionOptions = sessions.map((session) => ({
+    id: session.id,
+    label: session.title,
+    description: session.slug,
+  }));
 
   useEffect(
     () => () => {
@@ -68,6 +80,45 @@ export function PhotoUploadView() {
           title="Añadir imágenes"
           titleId="photo-upload-title"
         />
+
+        <section className="admin-editor-section">
+          <div className="admin-form-grid">
+            <mc-field
+              hint="Opcional. Puedes dejarlo vacío y asignar sesión más adelante desde el editor de cada foto."
+              inputId={sessionSelectId}
+              label="¿Quieres agregar estas fotos a una sesión?"
+              optional
+            >
+              <div className="grid gap-3">
+                <McSelect
+                  inputId={sessionSelectId}
+                  onMcChange={(event) => {
+                    setSelectedSessionId(event.detail.selectedId ?? "");
+                    setSessionSelectOpen(false);
+                  }}
+                  onMcOpenChange={(event) => {
+                    setSessionSelectOpen(event.detail.open);
+                  }}
+                  open={sessionSelectOpen}
+                  options={sessionOptions}
+                  placeholder="Seleccionar sesión"
+                  selectedId={selectedSessionId.length > 0 ? selectedSessionId : null}
+                />
+                {selectedSessionId.length > 0 ? (
+                  <mc-button
+                    onClick={() => {
+                      setSelectedSessionId("");
+                    }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    Quitar sesión
+                  </mc-button>
+                ) : null}
+              </div>
+            </mc-field>
+          </div>
+        </section>
 
         {items.length > 0 ? (
           <>
