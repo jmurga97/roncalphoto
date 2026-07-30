@@ -1,4 +1,4 @@
-import { McSelect } from "@murga.ing/components/react";
+import { McSelect, McStatusRegion } from "@murga.ing/components/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -65,7 +65,6 @@ export function PhotoUploadView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Photos · Batch upload</div>
-        <h2>Prepara todas las fotos de una vez.</h2>
         <p>
           Selecciona un lote de imágenes y revisa sus títulos iniciales antes de iniciar la subida.
           Podrás completar sesión, copy y metadata desde el editor de cada foto.
@@ -85,7 +84,6 @@ export function PhotoUploadView() {
           <div className="admin-form-grid">
             <mc-field
               hint="Opcional. Puedes dejarlo vacío y asignar sesión más adelante desde el editor de cada foto."
-              inputId={sessionSelectId}
               label="¿Quieres agregar estas fotos a una sesión?"
               optional
             >
@@ -161,15 +159,17 @@ export function PhotoUploadView() {
             Subir fotos
           </mc-button>
         </footer>
-
-        {showIntegrationNotice ? (
-          <mc-inline-message
-            message={`${items.length} ${items.length === 1 ? "foto está preparada" : "fotos están preparadas"}. No se ha enviado ningún archivo.`}
-            title="Lote listo para integrar"
-            tone="success"
-          />
-        ) : null}
       </section>
+      <McStatusRegion
+        autoDismiss={8000}
+        dismissLabel="Cerrar estado de la subida"
+        label={`${items.length} ${items.length === 1 ? "foto está preparada" : "fotos están preparadas"}. No se ha enviado ningún archivo.`}
+        onMcDismiss={() => {
+          setShowIntegrationNotice(false);
+        }}
+        open={showIntegrationNotice}
+        tone="success"
+      />
     </div>
   );
 }

@@ -323,7 +323,6 @@ function PhotoEditorForm({
       <div className="admin-page">
         <header className="admin-page-header">
           <div className="admin-kicker">Photos</div>
-          <h2>{mode === "create" ? "Nueva foto" : (initialPhoto?.alt ?? "Editar foto")}</h2>
           <p>
             {mode === "create"
               ? "Sube una imagen para generar automáticamente la versión principal y la miniatura, o introduce URLs existentes."

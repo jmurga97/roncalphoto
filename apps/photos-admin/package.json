@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@murga.ing/components": "^1.0.0",
+    "@murga.ing/components": "^2.0.0",
     "@roncal/auth": "workspace:*",
     "@roncal/shared": "workspace:*",
     "@roncal/ui": "workspace:*",

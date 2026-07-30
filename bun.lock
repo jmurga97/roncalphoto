@@ -73,7 +73,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
-        "@murga.ing/components": "^1.0.0",
+        "@murga.ing/components": "^2.0.0",
         "@roncal/auth": "workspace:*",
         "@roncal/shared": "workspace:*",
         "@roncal/ui": "workspace:*",
@@ -391,7 +391,7 @@
 
     "@lit/reactive-element": ["@lit/reactive-element@2.1.2", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.5.0" } }, "sha512-pbCDiVMnne1lYUIaYNN5wrwQXDtHaYtg7YEFPeW+hws6U47WeFvISGUWekPGKWOP1ygrs0ef0o1VJMk1exos5A=="],
 
-    "@murga.ing/components": ["@murga.ing/components@1.0.0", "", { "peerDependencies": { "lit": "^3.3.1", "react": "^19.0.0", "react-dom": "^19.0.0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-gXrbH2l6hmVkoYRtQxOEkQoXxpD/vBnSUanuxU+DxKif7e0GVcu5apKBQpIfo4iHwnS3hLzYLieB5yHXXK0j5Q=="],
+    "@murga.ing/components": ["@murga.ing/components@2.0.0", "", { "peerDependencies": { "lit": "^3.3.1", "react": "^18.2.0 || ^19.0.0", "react-dom": "^18.2.0 || ^19.0.0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-tD5Hg1g0TtLNqE5/pmJCpKnaEtICnjw8QCDboY9yrLzqCS4T4kBpfnI0wskP+tvCzHAfQWQ1Utl6TLciGmP89Q=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@0.2.12", "", { "dependencies": { "@emnapi/core": "^1.4.3", "@emnapi/runtime": "^1.4.3", "@tybys/wasm-util": "^0.10.0" } }, "sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ=="],
 

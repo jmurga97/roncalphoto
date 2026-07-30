@@ -7,7 +7,6 @@ import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
 import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { signOut } from "@lib/auth-client";
 import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
-import { useThemeStore } from "@lib/theme";
 
 function getCurrentSectionLabel(pathname: string) {
   if (pathname.startsWith("/sessions")) {
@@ -39,29 +38,34 @@ function getNavigationItems(
   return [
     {
       id: "overview",
+      icon: "grid" as const,
       label: "Overview",
       current: pathname === "/",
     },
     {
       id: "sessions",
+      icon: "list" as const,
       label: "Sessions",
       count: totalSessions,
       current: pathname.startsWith("/sessions"),
     },
     {
       id: "photos",
+      icon: "image" as const,
       label: "Photos",
       count: totalPhotos,
       current: pathname.startsWith("/photos"),
     },
     {
       id: "tags",
+      icon: "tag" as const,
       label: "Tags",
       count: totalTags,
       current: pathname.startsWith("/tags"),
     },
     {
       id: "deliveries",
+      icon: "list" as const,
       label: "Deliveries",
       count: totalDeliveries,
       current: pathname.startsWith("/deliveries"),
@@ -98,14 +102,15 @@ export function AdminShell() {
   const { data: deliveries } = useSuspenseQuery(deliveriesListQueryOptions());
   const isMobile = useShellMobile();
   const isSidebarOpen = useSidebarOpen();
-  const { closeSidebar, setSidebarOpen, toggleSidebar } = useShellActions();
-  const theme = useThemeStore((state) => state.theme);
-  const setTheme = useThemeStore((state) => state.setTheme);
+  const { closeSidebar, setSidebarOpen } = useShellActions();
   const totalPhotos = sessions.reduce((sum, session) => sum + (session.photos?.length ?? 0), 0);
   const sectionLabel = getCurrentSectionLabel(location.pathname);
 
   return (
     <McAppShell
+      className="admin-app-shell"
+      collapseLabel="Ocultar navegación"
+      expandLabel="Abrir navegación"
       mobileOverlay={isMobile}
       onMcSidebarOpenChange={(event) => {
         setSidebarOpen(event.detail.open);
@@ -115,6 +120,7 @@ export function AdminShell() {
       <div slot="sidebar" className="admin-sidebar-slot">
         <McSidebarNav
           ariaLabel="Dashboard navigation"
+          collapsed={!isSidebarOpen}
           footerItems={getFooterItems()}
           items={getNavigationItems(
             location.pathname,
@@ -170,15 +176,6 @@ export function AdminShell() {
           </div>
           <div slot="footer" className="admin-sidebar-footer">
             <mc-status-text label={`${totalPhotos} fotos activas en D1`} polite tone="success" />
-            <mc-theme-switcher
-              aria-label="Tema de color"
-              dark-label="Oscuro"
-              light-label="Claro"
-              onmc-theme-change={(event) => {
-                setTheme(event.detail.theme);
-              }}
-              theme={theme}
-            />
           </div>
         </McSidebarNav>
       </div>
@@ -189,9 +186,6 @@ export function AdminShell() {
           <h1>{sectionLabel}</h1>
         </div>
         <div className="admin-topbar-actions">
-          <mc-button className="admin-inline-button" onClick={toggleSidebar} variant="secondary">
-            {isSidebarOpen ? "Ocultar navegación" : "Abrir navegación"}
-          </mc-button>
           <mc-button
             className="admin-inline-button"
             onClick={() => {

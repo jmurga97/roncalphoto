@@ -40,7 +40,6 @@ export function FormTagPicker<TValues extends FieldValues>({
     <mc-field
       error={fieldState.error?.message}
       hint={hint}
-      inputId={inputId}
       invalid={fieldState.invalid}
       label={label}
       optional={optional}
