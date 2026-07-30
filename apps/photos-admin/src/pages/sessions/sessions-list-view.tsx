@@ -34,7 +34,6 @@ export function SessionsListView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Sessions</div>
-        <h2>Lectura completa y edición persistente de sesiones.</h2>
         <p>
           Busca por título, slug o tags y entra al editor completo con fotos relacionadas y control
           de slug final tras guardar.
@@ -69,10 +68,10 @@ export function SessionsListView() {
         {filteredSessions.length > 0 ? (
           <McResourceTable
             columns={[
-              { id: "title", label: "Título", sortable: true },
+              { id: "title", label: "Título" },
               { id: "slug", label: "Slug" },
               { id: "tags", label: "Tags" },
-              { id: "photos", label: "Fotos", align: "end", sortable: true, width: "96px" },
+              { id: "photos", label: "Fotos", align: "end", width: "96px" },
               { id: "createdAt", label: "Creada" },
             ]}
             onMcRowSelect={(event) => {

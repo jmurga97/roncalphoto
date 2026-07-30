@@ -13,7 +13,6 @@ export function TagDetailView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Tag detail</div>
-        <h2>{data.tag.name}</h2>
         <p>
           Slug <strong>{data.tag.slug}</strong>. Esta vista mantiene la relación completa de
           sesiones sin edición directa de taxonomía.

@@ -24,7 +24,6 @@ export function DeliveriesListView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Deliveries</div>
-        <h2>Entregas preparadas para tus clientes.</h2>
         <p>
           Consulta el estado de cada entrega y despliega su detalle para revisar las fotos
           incluidas.

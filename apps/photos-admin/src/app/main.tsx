@@ -9,11 +9,9 @@ import { routeTree } from "@app/route-tree.gen";
 import { RouteErrorState } from "@components/error/error-state";
 import { LoadingState } from "@components/loading/loading-state";
 import { queryClient } from "@lib/query-client";
-import { initializeTheme } from "@lib/theme";
 import "./styles/global.css";
 
 registerMurgaComponents();
-initializeTheme();
 
 const router = createRouter({
   routeTree,

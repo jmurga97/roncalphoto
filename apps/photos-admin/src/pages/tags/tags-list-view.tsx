@@ -20,7 +20,6 @@ export function TagsListView() {
     <div className="admin-page">
       <header className="admin-page-header">
         <div className="admin-kicker">Tags</div>
-        <h2>Vista de solo lectura para taxonomía y navegación cruzada.</h2>
         <p>
           En esta iteración no hay CRUD de tags. Puedes revisar el inventario completo y saltar a
           las sesiones relacionadas.

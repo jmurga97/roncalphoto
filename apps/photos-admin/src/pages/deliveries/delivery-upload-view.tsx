@@ -68,7 +68,6 @@ export function DeliveryUploadView() {
       <div className="admin-page">
         <header className="admin-page-header">
           <div className="admin-kicker">Deliveries · Nueva entrega</div>
-          <h2>Prepara una entrega para tu cliente.</h2>
           <p>
             Completa los datos de la entrega y adjunta el lote de imágenes. Al guardar, la entrega
             aparecerá en la lista (sin enviar nada al servidor).

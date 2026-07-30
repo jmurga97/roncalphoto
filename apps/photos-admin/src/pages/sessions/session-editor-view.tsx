@@ -188,7 +188,6 @@ function SessionEditorForm({
       <div className="admin-page">
         <header className="admin-page-header">
           <div className="admin-kicker">Sessions</div>
-          <h2>{mode === "create" ? "Nueva sesión" : (initialSession?.title ?? "Editar sesión")}</h2>
           <p>
             Define identidad, copy y taxonomía. Si el slug cambia al guardar, el dashboard redirige
             automáticamente a la ruta final de la sesión.
