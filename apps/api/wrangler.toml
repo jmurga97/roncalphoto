@@ -20,6 +20,7 @@ remote = true
 [[services]]
 binding = "IMAGE_WORKER"
 service = "ming-image-worker"
+entrypoint = "ImageRpc"
 remote = true
 
 [observability]

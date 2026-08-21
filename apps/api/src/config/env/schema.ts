@@ -1,11 +1,26 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export interface EmailWorkerServiceBinding {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
 
-export interface ImageWorkerServiceBinding {
-  fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+type ImageWorkerUploadInput = {
+  presetId: string;
+  externalId: string;
+  filename: string;
+  contentType: string;
+  sizeBytes: number;
+  metadata?: { requestId?: string; source?: string };
+};
+
+export interface ImageWorkerRpcBinding {
+  createUpload(input: {
+    productId: string;
+    idempotencyKey: string;
+    upload: ImageWorkerUploadInput;
+  }): Promise<unknown>;
+  getUpload(input: { productId: string; uploadId: string }): Promise<unknown>;
+  retryUpload(input: { productId: string; uploadId: string }): Promise<unknown>;
 }
 
 export const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal"]);
@@ -15,12 +30,14 @@ export const publicEnvSchema = z.object({
   DB_RONCALPHOTO: z.custom<D1Database>((value) => typeof value === "object" && value !== null, {
     error: "DB_RONCALPHOTO binding is required",
   }),
-  IMAGE_WORKER: z.custom<ImageWorkerServiceBinding>(
+  IMAGE_WORKER: z.custom<ImageWorkerRpcBinding>(
     (value) =>
       typeof value === "object" &&
       value !== null &&
-      typeof (value as { fetch?: unknown }).fetch === "function",
-    "IMAGE_WORKER service binding must implement fetch",
+      typeof (value as { createUpload?: unknown }).createUpload === "function" &&
+      typeof (value as { getUpload?: unknown }).getUpload === "function" &&
+      typeof (value as { retryUpload?: unknown }).retryUpload === "function",
+    "IMAGE_WORKER service binding must implement the ImageRpc entrypoint",
   ),
   ALLOWED_ORIGINS: z.string().trim().optional(),
   LOG_LEVEL: logLevelSchema.default("info"),

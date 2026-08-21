@@ -11,7 +11,7 @@ import type {
   WorkerCreateUploadResult,
   WorkerUploadResult,
 } from "../types";
-import type { ImageWorkerServiceBinding } from "@/config/env/schema";
+import type { ImageWorkerRpcBinding } from "@/config/env/schema";
 import type { ApiPhoto, CreatePhotoUploadResult, PhotoUploadStatusResult } from "@roncal/shared";
 
 async function createRequestFingerprint(input: CreatePhotoUploadInput): Promise<string> {
@@ -153,7 +153,7 @@ const serviceInstances = new WeakMap<D1Database, PhotoUploadsService>();
 
 export function getPhotoUploadsService(
   database: D1Database,
-  imageWorker: ImageWorkerServiceBinding,
+  imageWorker: ImageWorkerRpcBinding,
 ): PhotoUploadsService {
   return (
     serviceInstances.get(database) ??
