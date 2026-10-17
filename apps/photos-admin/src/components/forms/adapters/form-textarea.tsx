@@ -1,5 +1,4 @@
-import { McTextarea } from "@murga.ing/components/react";
-import { useId } from "react";
+import { Field, Textarea } from "@jmurga97/components";
 import { useController, useFormContext } from "react-hook-form";
 
 import type { FieldPath, FieldValues } from "react-hook-form";
@@ -23,7 +22,6 @@ export function FormTextarea<TValues extends FieldValues>({
   required = false,
   rows = 6,
 }: FormTextareaProps<TValues>) {
-  const inputId = useId();
   const { control } = useFormContext<TValues>();
   const { field, fieldState } = useController({
     name,
@@ -31,25 +29,28 @@ export function FormTextarea<TValues extends FieldValues>({
   });
 
   return (
-    <mc-field
+    <Field
       error={fieldState.error?.message}
       hint={hint}
       invalid={fieldState.invalid}
       label={label}
       optional={optional}
+      optionalLabel="Opcional"
       required={required}
     >
-      <McTextarea
-        inputId={inputId}
-        invalid={fieldState.invalid}
-        onMcChange={(event) => {
-          field.onChange(event.detail.value);
-        }}
-        placeholder={placeholder}
-        ref={field.ref}
-        rows={rows}
-        value={String(field.value ?? "")}
-      />
-    </mc-field>
+      <div ref={(node) => field.ref(node ? { focus: () => node.querySelector("textarea")?.focus() } : null)}>
+        <Textarea
+          invalid={fieldState.invalid}
+          name={field.name}
+          onBlur={field.onBlur}
+          onValueChange={(value) => {
+            field.onChange(value);
+          }}
+          placeholder={placeholder}
+          rows={rows}
+          value={String(field.value ?? "")}
+        />
+      </div>
+    </Field>
   );
 }

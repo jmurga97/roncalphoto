@@ -1,22 +1,28 @@
-import { McSelect, McStatusRegion } from "@murga.ing/components/react";
+import { Button, Field, InlineMessage, Select, StatusText } from "@jmurga97/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { EmptyState } from "@components/empty-state";
+import { PageHeader } from "@components/page-header";
 import { BatchImagePicker } from "@components/photos/batch-image-picker";
 import { BatchPhotoPreviewGrid } from "@components/photos/batch-photo-preview-grid";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { invalidatePortfolio, trpc } from "@lib/api/client";
 import { createBatchImagePreview, revokeBatchImagePreview } from "@lib/photos/batch-images";
+import { usePhotoUpload } from "@lib/photos/use-photo-upload";
+import { getErrorMessage } from "@utils/get-error-message";
 
 import type { BatchImageFile } from "@lib/photos/batch-images";
 
 export function PhotoUploadView() {
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
-  const sessionSelectId = useId();
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const [items, setItems] = useState<BatchImageFile[]>([]);
-  const [pickerResetKey, setPickerResetKey] = useState(0);
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [sessionSelectOpen, setSessionSelectOpen] = useState(false);
-  const [showIntegrationNotice, setShowIntegrationNotice] = useState(false);
+  const [sessionLocked, setSessionLocked] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const uploadPhoto = usePhotoUpload();
   const itemsRef = useRef(items);
   itemsRef.current = items;
   const sessionOptions = sessions.map((session) => ({
@@ -35,11 +41,12 @@ export function PhotoUploadView() {
   );
 
   const addFiles = (files: File[]) => {
-    setItems((currentItems) => [...currentItems, ...files.map(createBatchImagePreview)]);
-    setShowIntegrationNotice(false);
+    if (uploading) return;
+    setItems((currentItems) => [...currentItems, ...files.map((item) => createBatchImagePreview(item))]);
   };
 
   const removeItem = (id: string) => {
+    if (uploading) return;
     setItems((currentItems) => {
       const removedItem = currentItems.find((item) => item.id === id);
 
@@ -49,7 +56,12 @@ export function PhotoUploadView() {
 
       return currentItems.filter((item) => item.id !== id);
     });
-    setShowIntegrationNotice(false);
+    if (items.length === 1) setSessionLocked(false);
+    setErrors((current) => {
+      const remaining = { ...current };
+      delete remaining[id];
+      return remaining;
+    });
   };
 
   const clearItems = () => {
@@ -57,119 +69,147 @@ export function PhotoUploadView() {
       revokeBatchImagePreview(item);
     });
     setItems([]);
-    setPickerResetKey((currentKey) => currentKey + 1);
-    setShowIntegrationNotice(false);
+    setErrors({});
+    setSessionLocked(false);
+    setProgress("");
   };
 
-  return (
-    <div className="admin-page">
-      <header className="admin-page-header">
-        <div className="admin-kicker">Photos · Batch upload</div>
-        <p>
-          Selecciona un lote de imágenes y revisa sus títulos iniciales antes de iniciar la subida.
-          Podrás completar sesión, copy y metadata desde el editor de cada foto.
-        </p>
-      </header>
+  const uploadItems = async () => {
+    if (uploading || !selectedSessionId || items.length === 0) return;
+    setUploading(true);
+    setSessionLocked(true);
+    setErrors({});
+    let uploaded = 0;
 
-      <section className="grid gap-6" aria-labelledby="photo-upload-title">
-        <BatchImagePicker
-          kicker="Selección"
-          onFilesAccepted={addFiles}
-          resetRejectedKey={pickerResetKey}
-          title="Añadir imágenes"
-          titleId="photo-upload-title"
-        />
+    try {
+      for (const [index, item] of items.entries()) {
+        setProgress(`Subiendo ${index + 1} de ${items.length}: ${item.fileName}`);
+        try {
+          await uploadPhoto(item, selectedSessionId);
+          uploaded += 1;
+          revokeBatchImagePreview(item);
+          setItems((current) => current.filter((file) => file.id !== item.id));
+        } catch (error) {
+          setErrors((current) => ({ ...current, [item.id]: getErrorMessage(error) }));
+        }
+      }
+      setProgress(`${uploaded} de ${items.length} fotos subidas`);
+      if (uploaded === items.length) {
+        setSessionLocked(false);
+      }
+      await invalidatePortfolio();
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!uploading) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [uploading]);
+
+  let sessionHint = sessionLocked
+    ? "La sesión se conserva para reintentar sin duplicar las fotos"
+    : "Todas las fotos del lote se guardarán en esta sesión";
+  if (sessions.length === 0) sessionHint = "Crea una sesión antes de subir fotos";
+  const resultTone = Object.keys(errors).length > 0 ? "error" : "success";
+
+  return (
+    <div className="ming-page">
+      <PageHeader title="Subir fotos" description="Selecciona una sesión y sube tus imágenes." />
+
+      <InlineMessage
+        title="Contenido de las fotos"
+        message="El nombre del archivo se usará como texto alternativo y descripción. Puedes editarlos después de subir la foto."
+      />
+      <section className="grid gap-ming-5" aria-labelledby="photo-upload-title">
+        <fieldset className="m-0 min-w-0 border-0 p-0" disabled={uploading}>
+          <BatchImagePicker
+            kicker="Selección"
+            onFilesAccepted={addFiles}
+            title="Añadir imágenes"
+            titleId="photo-upload-title"
+          />
+        </fieldset>
 
         <section className="admin-editor-section">
           <div className="admin-form-grid">
-            <mc-field
-              hint="Opcional. Puedes dejarlo vacío y asignar sesión más adelante desde el editor de cada foto."
-              label="¿Quieres agregar estas fotos a una sesión?"
-              optional
-            >
-              <div className="grid gap-3">
-                <McSelect
-                  inputId={sessionSelectId}
-                  onMcChange={(event) => {
-                    setSelectedSessionId(event.detail.selectedId ?? "");
-                    setSessionSelectOpen(false);
-                  }}
-                  onMcOpenChange={(event) => {
-                    setSessionSelectOpen(event.detail.open);
-                  }}
-                  open={sessionSelectOpen}
-                  options={sessionOptions}
-                  placeholder="Seleccionar sesión"
-                  selectedId={selectedSessionId.length > 0 ? selectedSessionId : null}
-                />
-                {selectedSessionId.length > 0 ? (
-                  <mc-button
-                    onClick={() => {
-                      setSelectedSessionId("");
-                    }}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    Quitar sesión
-                  </mc-button>
-                ) : null}
-              </div>
-            </mc-field>
+            <Field hint={sessionHint} label="Sesión" required>
+              <Select
+                disabled={uploading || sessionLocked}
+                required
+                onValueChange={(value) => {
+                  setSelectedSessionId(value ?? "");
+                  setSessionSelectOpen(false);
+                }}
+                onOpenChange={setSessionSelectOpen}
+                open={sessionSelectOpen}
+                options={sessionOptions}
+                placeholder="Seleccionar sesión"
+                value={selectedSessionId.length > 0 ? selectedSessionId : null}
+              />
+            </Field>
+            {selectedSessionId.length > 0 ? (
+              <Button
+                disabled={uploading || sessionLocked}
+                onClick={() => {
+                  setSelectedSessionId("");
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                Quitar sesión
+              </Button>
+            ) : null}
           </div>
         </section>
 
         {items.length > 0 ? (
           <>
-            <div className="flex min-h-11 flex-wrap items-center justify-between gap-4">
-              <mc-status-text
+            <div className="flex min-h-11 flex-wrap items-center justify-between gap-ming-4">
+              <StatusText
                 label={`${items.length} ${items.length === 1 ? "imagen seleccionada" : "imágenes seleccionadas"}`}
                 polite
-                tone="idle"
+                tone="neutral"
               />
-              <mc-button onClick={clearItems} size="sm" variant="ghost">
+              <Button disabled={uploading} onClick={clearItems} size="sm" variant="ghost">
                 Limpiar selección
-              </mc-button>
+              </Button>
             </div>
-            <BatchPhotoPreviewGrid items={items} onRemove={removeItem} />
+            <fieldset className="m-0 min-w-0 border-0 p-0" disabled={uploading}>
+              <BatchPhotoPreviewGrid items={items} onRemove={removeItem} />
+            </fieldset>
+            {items
+              .filter((item) => errors[item.id])
+              .map((item) => (
+                <InlineMessage key={item.id} title={item.fileName} message={errors[item.id]} tone="error" />
+              ))}
           </>
         ) : (
-          <div className="border-mc-border-visible grid min-h-64 content-center justify-items-center gap-3 rounded-2xl border border-dashed p-8 text-center">
-            <div className="admin-state-eyebrow">Sin selección</div>
-            <h3 className="text-mc-text-display m-0">Las imágenes aparecerán aquí</h3>
-            <p className="text-mc-text-secondary m-0">
-              El título inicial se obtiene automáticamente del nombre de cada archivo.
-            </p>
-          </div>
+          <EmptyState title="Sin imágenes" description="Selecciona los archivos que quieres subir a una sesión." />
         )}
 
-        <footer className="border-mc-border-visible bg-mc-background-translucent sticky bottom-0 z-2 flex flex-wrap items-center justify-between gap-4 border-t py-4 backdrop-blur-md">
-          <div className="grid gap-2">
-            <div className="admin-kicker">Siguiente paso</div>
-            <p className="text-mc-text-secondary m-0">
-              La integración con el servicio de subida se añadirá por separado.
+        <footer className="admin-upload-actions">
+          <div className="grid gap-ming-2">
+            <div className="admin-kicker">Subida de fotos</div>
+            <p className="text-muted-foreground m-0">
+              Las fotos aparecerán en la sesión cuando termine el procesamiento.
             </p>
+            {progress ? <StatusText label={progress} tone={uploading ? "info" : resultTone} /> : null}
           </div>
-          <mc-button
-            disabled={items.length === 0}
+          <Button
+            disabled={uploading || items.length === 0 || !selectedSessionId}
             onClick={() => {
-              setShowIntegrationNotice(true);
+              void uploadItems();
             }}
             variant="primary"
           >
-            Subir fotos
-          </mc-button>
+            {uploading ? "Subiendo fotos…" : "Subir fotos"}
+          </Button>
         </footer>
       </section>
-      <McStatusRegion
-        autoDismiss={8000}
-        dismissLabel="Cerrar estado de la subida"
-        label={`${items.length} ${items.length === 1 ? "foto está preparada" : "fotos están preparadas"}. No se ha enviado ningún archivo.`}
-        onMcDismiss={() => {
-          setShowIntegrationNotice(false);
-        }}
-        open={showIntegrationNotice}
-        tone="success"
-      />
     </div>
   );
 }

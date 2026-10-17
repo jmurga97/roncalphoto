@@ -1,15 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 import { PhotoEditorView } from "@pages/photos/photo-editor-view";
 
 export const Route = createFileRoute("/_auth/photos/$id")({
-  component: () => <PhotoEditorView mode="edit" />,
-  loader: async ({ context, params }) => {
-    await Promise.all([
-      context.queryClient.ensureQueryData(photoDetailQueryOptions(params.id)),
-      context.queryClient.ensureQueryData(sessionsListQueryOptions()),
-    ]);
-  },
+  component: PhotoEditorView,
+  loader: ({ context, params }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(trpc.photos.get.queryOptions({ id: params.id })),
+      context.queryClient.ensureQueryData(trpc.sessions.list.queryOptions()),
+    ]),
 });

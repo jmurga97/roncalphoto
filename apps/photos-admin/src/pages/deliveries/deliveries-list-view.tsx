@@ -1,84 +1,48 @@
-import { McSearchField } from "@murga.ing/components/react";
+import { Button, InlineMessage, SearchField } from "@jmurga97/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
 import { DeliveriesResourceList } from "@components/deliveries/deliveries-resource-list";
-import { EmptyState } from "@components/empty-state";
+import { PageHeader } from "@components/page-header";
 import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
 
 export function DeliveriesListView() {
-  const navigate = useNavigate();
-  const { data: deliveries } = useSuspenseQuery(deliveriesListQueryOptions());
+  const { data: deliveries, isFetching } = useSuspenseQuery(deliveriesListQueryOptions());
   const [searchValue, setSearchValue] = useState("");
-  const deferredSearch = useDeferredValue(searchValue);
-  const filteredDeliveries = deliveries.filter((delivery) => {
-    const haystack = [delivery.title, delivery.clientName, delivery.clientEmail]
-      .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(deferredSearch.toLowerCase());
-  });
+  const deferredSearch = useDeferredValue(searchValue).toLowerCase();
+  const filteredDeliveries = deliveries.filter((delivery) =>
+    [delivery.title, delivery.clientName, delivery.clientEmail].join(" ").toLowerCase().includes(deferredSearch),
+  );
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-header">
-        <div className="admin-kicker">Deliveries</div>
-        <p>
-          Consulta el estado de cada entrega y despliega su detalle para revisar las fotos
-          incluidas.
-        </p>
-      </header>
-
+    <div className="ming-page">
+      <PageHeader
+        title="Entregas"
+        description="Consulta las entregas y revisa sus imágenes."
+        actions={
+          <Button nativeButton={false} render={<Link to="/deliveries/new" />}>
+            Crear entrega
+          </Button>
+        }
+      />
       <section className="admin-table-shell">
-        <div className="admin-toolbar">
-          <div className="admin-toolbar-controls">
-            <McSearchField
-              onMcChange={(event) => {
-                setSearchValue(event.detail.value);
-              }}
-              onMcClear={() => {
-                setSearchValue("");
-              }}
-              placeholder="Buscar por cliente, email o título"
-              value={searchValue}
-            />
-            <mc-status-text
-              label={`${filteredDeliveries.length} visibles / ${deliveries.length} totales`}
-              polite
-              tone="idle"
-            />
-          </div>
-          <mc-button
-            className="admin-inline-button"
-            onClick={() => {
-              void navigate({ to: "/deliveries/new" });
-            }}
-            variant="primary"
-          >
-            Subir delivery
-          </mc-button>
-        </div>
-
-        {filteredDeliveries.length > 0 ? (
-          <DeliveriesResourceList deliveries={filteredDeliveries} />
-        ) : (
-          <EmptyState
-            action={
-              <mc-button
-                className="admin-inline-button"
-                onClick={() => {
-                  void navigate({ to: "/deliveries/new" });
-                }}
-                variant="primary"
-              >
-                Subir delivery
-              </mc-button>
-            }
-            description="Prueba con otra búsqueda o crea una nueva entrega."
-            title="No hay entregas visibles"
+        <InlineMessage
+          title="Vista de prueba"
+          message="Las entregas utilizan datos de ejemplo. Los borradores todavía no se guardan ni se envían al cliente."
+        />
+        <div className="ming-toolbar">
+          <SearchField
+            className="ming-toolbar__search"
+            aria-label="Buscar entregas"
+            clearLabel="Borrar búsqueda"
+            onValueChange={setSearchValue}
+            placeholder="Buscar por cliente, email o título"
+            value={searchValue}
           />
-        )}
+          <span className="ming-toolbar__end ming-data">{filteredDeliveries.length} entregas</span>
+        </div>
+        <DeliveriesResourceList deliveries={filteredDeliveries} refetching={isFetching} />
       </section>
     </div>
   );

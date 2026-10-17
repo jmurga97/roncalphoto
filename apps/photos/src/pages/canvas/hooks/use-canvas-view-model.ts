@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 
 import { computeCanvasLayout } from "../utils/compute-canvas-layout";
 
@@ -22,7 +22,7 @@ export interface CanvasViewModel {
 export function useCanvasViewModel(): CanvasViewModel {
   const { photo } = canvasRouteApi.useSearch();
   const navigate = canvasRouteApi.useNavigate();
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
 
   const items = useMemo(
     () =>

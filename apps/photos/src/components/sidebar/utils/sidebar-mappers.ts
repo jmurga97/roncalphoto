@@ -1,5 +1,5 @@
 import type { SidebarNavigationItem } from "../types";
-import type { Session } from "@roncal/shared";
+import type { Session } from "@roncal/api/router";
 
 export function toSidebarNavigationItem(
   session: Pick<Session, "id" | "photos" | "slug" | "title">,

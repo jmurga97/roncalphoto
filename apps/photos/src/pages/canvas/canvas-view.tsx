@@ -16,13 +16,7 @@ import {
 import { useCanvasCamera } from "./hooks/use-canvas-camera";
 import { useCanvasKeyboard } from "./hooks/use-canvas-keyboard";
 import { useCanvasViewModel } from "./hooks/use-canvas-view-model";
-import {
-  cameraCenteredOn,
-  cameraForPhoto,
-  fitBoundsCover,
-  isPlacementVisible,
-  panBy,
-} from "./utils/camera-math";
+import { cameraCenteredOn, cameraForPhoto, fitBoundsCover, isPlacementVisible, panBy } from "./utils/camera-math";
 import { computeContentBounds } from "./utils/compute-canvas-layout";
 
 import type { Camera, Size } from "./types";
@@ -32,10 +26,10 @@ export function CanvasView() {
   const worldRef = useRef<HTMLDivElement | null>(null);
   const previousCameraRef = useRef<Camera | null>(null);
   const isFirstCameraEffectRef = useRef(true);
+  // oxlint-disable-next-line unicorn/no-useless-undefined -- React 19 requires an initial ref value.
   const previousSelectedIdRef = useRef<string | undefined>(undefined);
 
-  const { items, itemsById, placements, placementsById, selectedPhotoId, setPhotoId } =
-    useCanvasViewModel();
+  const { items, itemsById, placements, placementsById, selectedPhotoId, setPhotoId } = useCanvasViewModel();
   const camera = useCanvasCamera(worldRef);
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
 
@@ -69,10 +63,7 @@ export function CanvasView() {
         ? { right: 0, bottom: viewport.height * DETAIL_PANEL_MOBILE_HEIGHT_RATIO }
         : { right: Math.min(DETAIL_PANEL_WIDTH_PX, viewport.width / 2), bottom: 0 };
 
-      camera.animateTo(
-        cameraForPhoto(placement, viewport, reserved),
-        isFirst ? 0 : FOCUS_ANIMATION_MS,
-      );
+      camera.animateTo(cameraForPhoto(placement, viewport, reserved), isFirst ? 0 : FOCUS_ANIMATION_MS);
       return;
     }
 
@@ -91,9 +82,7 @@ export function CanvasView() {
       return;
     }
 
-    const tile = document.querySelector<HTMLElement>(
-      `[data-canvas-photo="${CSS.escape(previous)}"]`,
-    );
+    const tile = document.querySelector<HTMLElement>(`[data-canvas-photo="${CSS.escape(previous)}"]`);
     tile?.focus({ preventScroll: true });
   }, [selectedPhotoId]);
 

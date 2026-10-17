@@ -23,7 +23,7 @@ function preloadSessionImage(imageSrc: string | undefined) {
   image.src = imageSrc;
 
   if (typeof image.decode === "function") {
-    void image.decode().catch(() => undefined);
+    void image.decode().catch(() => {});
   }
 }
 

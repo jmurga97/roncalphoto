@@ -9,21 +9,13 @@ interface AboutPanelShellProps {
   titleId: string;
 }
 
-export function AboutPanelShell({
-  children,
-  isOpen,
-  onClose,
-  panelId,
-  panelRef,
-  titleId,
-}: AboutPanelShellProps) {
+export function AboutPanelShell({ children, isOpen, onClose, panelId, panelRef, titleId }: AboutPanelShellProps) {
   return (
     <div
       aria-hidden={!isOpen}
-      className={[
-        "fixed inset-0 z-[70] overflow-hidden",
-        isOpen ? "pointer-events-auto" : "pointer-events-none",
-      ].join(" ")}
+      className={["fixed inset-0 z-[70] overflow-hidden", isOpen ? "pointer-events-auto" : "pointer-events-none"].join(
+        " ",
+      )}
       data-about-open={isOpen ? "true" : "false"}
     >
       <div

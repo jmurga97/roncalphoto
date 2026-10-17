@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { McRelationshipPanel, McResourceEditor, McTagList } from "@murga.ing/components/react";
+import { RelationshipPanel, ResourceEditor, StatusText, TagList } from "@jmurga97/components";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { FormTagPicker } from "@components/forms/adapters/form-tag-picker";
@@ -11,18 +11,14 @@ import { FormTextInput } from "@components/forms/adapters/form-text-input";
 import { FormTextarea } from "@components/forms/adapters/form-textarea";
 import {
   ConfirmDelete,
-  ServerErrorMessage,
   getEditorStatus,
   getServerError,
   useResourceSubmit,
 } from "@components/forms/resource-editor-helpers";
-import { invalidateSessionData } from "@lib/api/invalidation";
-import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
-import { sessionsService } from "@lib/api/sessions/sessions";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
+import { PageHeader } from "@components/page-header";
+import { invalidatePortfolio, trpc } from "@lib/api/client";
 
-import type { SessionMutationInput } from "@lib/api/sessions/sessions";
-import type { ApiSession, Tag } from "@roncal/shared";
+import type { RouterInputs, Session, Tag } from "@roncal/api/router";
 
 const sessionSchema = z.object({
   title: z.string().trim().min(1, { error: "El título es obligatorio." }),
@@ -32,7 +28,8 @@ const sessionSchema = z.object({
 });
 
 type SessionFormValues = z.infer<typeof sessionSchema>;
-type SessionRecord = ApiSession;
+type SessionRecord = Session;
+type SessionMutationInput = RouterInputs["sessions"]["create"];
 
 function toOptionalText(value: string) {
   const trimmedValue = value.trim();
@@ -60,10 +57,8 @@ function toSessionMutationInput(values: SessionFormValues): SessionMutationInput
 function CreateSessionEditor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
-  const saveMutation = useMutation({
-    mutationFn: (input: SessionMutationInput) => sessionsService.createSession(input),
-  });
+  const { data: tags } = useSuspenseQuery(trpc.tags.list.queryOptions());
+  const saveMutation = useMutation(trpc.sessions.create.mutationOptions());
 
   return (
     <SessionEditorForm
@@ -77,8 +72,8 @@ function CreateSessionEditor() {
       }}
       onSaveAction={async (input) => {
         const session = await saveMutation.mutateAsync(input);
-        await invalidateSessionData(queryClient);
-        queryClient.setQueryData(sessionDetailQueryOptions(session.slug).queryKey, session);
+        await invalidatePortfolio();
+        queryClient.setQueryData(trpc.sessions.get.queryKey({ slug: session.slug }), session);
         await navigate({
           to: "/sessions/$slug",
           params: { slug: session.slug },
@@ -95,28 +90,25 @@ function EditSessionEditor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const params = useParams({ from: "/_auth/sessions/$slug" });
-  const { data: session } = useSuspenseQuery(sessionDetailQueryOptions(params.slug));
-  const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
-  const saveMutation = useMutation({
-    mutationFn: (input: SessionMutationInput) => sessionsService.updateSession(session.slug, input),
-  });
-  const deleteMutation = useMutation({
-    mutationFn: () => sessionsService.deleteSession(session.slug),
-  });
+  const { data: session } = useSuspenseQuery(trpc.sessions.get.queryOptions({ slug: params.slug }));
+  const { data: tags } = useSuspenseQuery(trpc.tags.list.queryOptions());
+  const saveMutation = useMutation(trpc.sessions.update.mutationOptions());
+  const deleteMutation = useMutation(trpc.sessions.delete.mutationOptions());
 
   return (
     <SessionEditorForm
       initialSession={session}
       mode="edit"
       onDeleteAction={async () => {
-        await deleteMutation.mutateAsync();
-        await invalidateSessionData(queryClient);
+        await deleteMutation.mutateAsync({ slug: session.slug });
+        await invalidatePortfolio();
         await navigate({ to: "/sessions" });
+        document.querySelector("h1")?.focus();
       }}
       onSaveAction={async (input) => {
-        const nextSession = await saveMutation.mutateAsync(input);
-        await invalidateSessionData(queryClient);
-        queryClient.setQueryData(sessionDetailQueryOptions(nextSession.slug).queryKey, nextSession);
+        const nextSession = await saveMutation.mutateAsync({ slug: session.slug, data: input });
+        await invalidatePortfolio();
+        queryClient.setQueryData(trpc.sessions.get.queryKey({ slug: nextSession.slug }), nextSession);
 
         if (nextSession.slug !== session.slug) {
           await navigate({
@@ -159,20 +151,14 @@ function SessionEditorForm({
     resolver: zodResolver(sessionSchema),
     defaultValues: toSessionFormValues(initialSession),
   });
-  const { clearErrors, formState, reset, setError, watch } = form;
-  const selectedTagIds = watch("tagIds");
+  const { clearErrors, formState, reset } = form;
+  const selectedTagIds = useWatch({ control: form.control, name: "tagIds" });
   const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
   const serverError = getServerError(form);
   const editorStatus = getEditorStatus({
     deletePending,
     isDirty: formState.isDirty,
     isSubmitSuccessful: formState.isSubmitSuccessful,
-    labels: {
-      deletingLabel: "Eliminando sesión...",
-      dirtyLabel: "Hay cambios sin guardar",
-      savedLabel: "Cambios guardados",
-      savingLabel: "Guardando sesión...",
-    },
     savePending,
     serverError,
   });
@@ -185,19 +171,14 @@ function SessionEditorForm({
 
   return (
     <FormProvider {...form}>
-      <div className="admin-page">
-        <header className="admin-page-header">
-          <div className="admin-kicker">Sessions</div>
-          <p>
-            Define identidad, copy y taxonomía. Si el slug cambia al guardar, el dashboard redirige
-            automáticamente a la ruta final de la sesión.
-          </p>
-        </header>
+      <div className="ming-page">
+        <PageHeader hidden title={mode === "create" ? "Nueva sesión" : (initialSession?.title ?? "Sesión")} />
 
-        <McResourceEditor
+        <ResourceEditor
+          className="admin-resource-editor"
           deleting={deletePending}
           dirty={formState.isDirty}
-          onMcCancel={() => {
+          onCancel={() => {
             clearErrors("root");
 
             if (mode === "create") {
@@ -207,17 +188,71 @@ function SessionEditorForm({
 
             reset(toSessionFormValues(initialSession));
           }}
-          onMcDelete={() => {
-            setDeleteConfirmOpen(true);
-          }}
-          onMcSave={submitResource}
-          resourceTitle={mode === "create" ? "Session draft" : (initialSession?.title ?? "Session")}
+          onDelete={mode === "edit" ? () => setDeleteConfirmOpen(true) : undefined}
+          onSave={submitResource}
+          resourceTitle={mode === "create" ? "Nueva sesión" : (initialSession?.title ?? "Sesión")}
+          saveLabel="Guardar cambios"
+          cancelLabel="Descartar cambios"
+          deleteLabel="Eliminar"
           saving={savePending}
-          status={editorStatus}
+          status={
+            <StatusText
+              label={editorStatus?.label ?? (mode === "create" ? "Borrador" : "Sin cambios")}
+              tone={editorStatus?.tone ?? "neutral"}
+              aria-live="off"
+            />
+          }
+          aside={
+            <div className="admin-aside-stack">
+              <section className="admin-editor-section">
+                <div className="admin-kicker">Sesión</div>
+                <StatusText
+                  label={
+                    mode === "create"
+                      ? "La sesión se publicará con su slug final al primer guardado."
+                      : `${initialSession?.photos.length ?? 0} fotos relacionadas`
+                  }
+                  polite
+                  tone="neutral"
+                />
+              </section>
+              <section className="admin-editor-section">
+                <div className="admin-kicker">Etiquetas</div>
+                <TagList
+                  interactive={false}
+                  items={selectedTags.map((tag) => ({ id: tag.id, label: tag.name }))}
+                  value={selectedTagIds}
+                />
+              </section>
+              <RelationshipPanel
+                emptyLabel="Esta sesión todavía no tiene fotos vinculadas."
+                items={(initialSession?.photos ?? []).map((photo) => ({
+                  id: photo.id,
+                  label: photo.alt,
+                  description: photo.metadata.iso ? `ISO ${photo.metadata.iso}` : undefined,
+                }))}
+                onValueChange={(selectedId) => {
+                  void navigate({ to: "/photos/$id", params: { id: selectedId } });
+                }}
+                title="Fotos relacionadas"
+              />
+              <ConfirmDelete
+                title="¿Eliminar sesión?"
+                confirmLabel="Eliminar sesión"
+                message={
+                  mode === "create"
+                    ? "¿Quieres descartar este borrador y volver al listado?"
+                    : "¿Seguro que quieres borrar esta sesión? Esta acción no se puede deshacer."
+                }
+                onConfirm={onDeleteAction}
+                onOpenChange={setDeleteConfirmOpen}
+                open={isDeleteConfirmOpen}
+                pending={deletePending}
+              />
+            </div>
+          }
         >
-          <div slot="fields" className="admin-editor-layout">
-            <ServerErrorMessage message={serverError} />
-
+          <div className="admin-editor-layout">
             <section className="admin-editor-section">
               <div className="admin-kicker">Identidad</div>
               <div className="admin-form-grid admin-form-grid--two">
@@ -228,7 +263,7 @@ function SessionEditorForm({
                   required
                 />
                 <FormTextInput<SessionFormValues>
-                  hint="Déjalo vacío para autogenerarlo desde el título."
+                  hint="Déjalo vacío para generarlo a partir del título"
                   label="Slug"
                   name="slug"
                   optional
@@ -249,10 +284,10 @@ function SessionEditorForm({
             </section>
 
             <section className="admin-editor-section">
-              <div className="admin-kicker">Tags</div>
+              <div className="admin-kicker">Etiquetas</div>
               <FormTagPicker<SessionFormValues>
-                hint="Selecciona una o varias etiquetas para mantener la navegación cruzada."
-                label="Tags activos"
+                hint="Selecciona las etiquetas que describen esta sesión"
+                label="Etiquetas"
                 name="tagIds"
                 options={tags.map((tag) => ({
                   id: tag.id,
@@ -263,81 +298,7 @@ function SessionEditorForm({
               />
             </section>
           </div>
-
-          <div slot="aside" className="admin-aside-stack">
-            <section className="admin-editor-section">
-              <div className="admin-kicker">Panel lateral</div>
-              <mc-status-text
-                label={
-                  mode === "create"
-                    ? "La sesión se publicará con su slug final al primer guardado."
-                    : `${initialSession?.photos?.length ?? 0} fotos relacionadas`
-                }
-                polite
-                tone="idle"
-              />
-            </section>
-
-            <section className="admin-editor-section">
-              <div className="admin-kicker">Tags activos</div>
-              <McTagList
-                interactive={false}
-                items={selectedTags.map((tag) => ({
-                  id: tag.id,
-                  label: tag.name,
-                  selected: true,
-                }))}
-                selectedIds={selectedTagIds}
-              />
-            </section>
-
-            <McRelationshipPanel
-              emptyLabel="Esta sesión todavía no tiene fotos vinculadas."
-              items={(initialSession?.photos ?? []).map((photo) => ({
-                id: photo.id,
-                label: photo.alt,
-                count: photo.metadata.iso || undefined,
-              }))}
-              onMcSelect={(event) => {
-                void navigate({
-                  to: "/photos/$id",
-                  params: { id: event.detail.selectedId },
-                  search: { page: 1 },
-                });
-              }}
-              title="Fotos relacionadas"
-            />
-
-            <ConfirmDelete
-              message={
-                mode === "create"
-                  ? "¿Quieres descartar este borrador y volver al listado?"
-                  : "¿Seguro que quieres borrar esta sesión? Esta acción es persistente."
-              }
-              onConfirm={onDeleteAction}
-              onErrorMessage={(message) => {
-                setError("root.server", {
-                  type: "server",
-                  message,
-                });
-              }}
-              onOpenChange={setDeleteConfirmOpen}
-              open={isDeleteConfirmOpen}
-              pending={deletePending}
-            />
-          </div>
-
-          <div slot="actions">
-            <mc-status-text
-              label={
-                serverError ??
-                (formState.isDirty ? "Hay cambios pendientes" : "Todo sincronizado con la sesión")
-              }
-              polite
-              tone={serverError ? "error" : formState.isDirty ? "loading" : "success"}
-            />
-          </div>
-        </McResourceEditor>
+        </ResourceEditor>
       </div>
     </FormProvider>
   );

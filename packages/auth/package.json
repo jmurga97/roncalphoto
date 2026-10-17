@@ -4,18 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.d.ts",
-      "default": "./src/index.ts"
-    },
-    "./client": {
-      "types": "./src/client.d.ts",
-      "default": "./src/client.ts"
-    }
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
   },
   "scripts": {
-    "check": "tsc --noEmit",
-    "test": "bun test"
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.6.9",

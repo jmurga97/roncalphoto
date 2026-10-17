@@ -27,10 +27,7 @@ export function GalleryGrid({
 }: GalleryGridProps) {
   return (
     <div data-gallery-root className="photo-stage gallery-stage-enter flex h-full flex-col">
-      <div
-        className="relative min-h-0 w-full flex-1"
-        style={{ viewTransitionName: "session-stage" }}
-      >
+      <div className="relative min-h-0 w-full flex-1" style={{ viewTransitionName: "session-stage" }}>
         <header className="pointer-events-none absolute top-7 left-3 right-20 z-10 md:hidden">
           <h1 className="editorial-heading line-clamp-2 text-balance text-base leading-tight [text-shadow:0_1px_10px_rgb(0_0_0_/_0.14)] sm:text-lg">
             {sessionTitle}
@@ -45,9 +42,9 @@ export function GalleryGrid({
           ))}
         </div>
 
-        {!showThumbnails ? (
+        {showThumbnails ? null : (
           <GalleryNextPhotoPeek currentPosition={currentIndex + 1} totalPhotos={photos.length} />
-        ) : null}
+        )}
         <GalleryScrollHint galleryKey={galleryKey} photoCount={photos.length} />
       </div>
 
@@ -58,10 +55,7 @@ export function GalleryGrid({
         >
           <div className="scrollbar-hide flex h-full gap-2 overflow-x-auto overflow-y-hidden p-2 snap-x snap-mandatory">
             {photos.map((photo, index) => (
-              <div
-                className="aspect-square h-full shrink-0 snap-center"
-                key={`${photo.id}-thumbnail`}
-              >
+              <div className="aspect-square h-full shrink-0 snap-center" key={`${photo.id}-thumbnail`}>
                 <GalleryThumbnail
                   isActive={index === currentIndex}
                   onSelect={() => onSelectPhoto(photo.id)}

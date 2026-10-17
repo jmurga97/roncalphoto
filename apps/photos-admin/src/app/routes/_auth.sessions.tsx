@@ -1,15 +1,15 @@
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 import { SessionsListView } from "@pages/sessions/sessions-list-view";
 
 export const Route = createFileRoute("/_auth/sessions")({
   component: SessionsRoute,
-  loader: ({ context }) => context.queryClient.ensureQueryData(sessionsListQueryOptions()),
+  loader: ({ context }) => context.queryClient.ensureQueryData(trpc.sessions.list.queryOptions()),
 });
 
 function SessionsRoute() {
-  const location = useLocation();
+  const { pathname } = useLocation();
 
-  return location.pathname === "/sessions" ? <SessionsListView /> : <Outlet />;
+  return pathname === "/sessions" ? <SessionsListView /> : <Outlet />;
 }

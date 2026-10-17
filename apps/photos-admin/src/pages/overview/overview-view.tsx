@@ -1,107 +1,109 @@
+import { Button, OverviewPanel, ResourceTable, TagList } from "@jmurga97/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
+import { PageHeader } from "@components/page-header";
+import { trpc } from "@lib/api/client";
 
-interface OverviewViewProps {
-  userEmail: string;
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("es-ES", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-export function OverviewView({ userEmail }: OverviewViewProps) {
+export function OverviewView({ userEmail }: { userEmail: string }) {
   const navigate = useNavigate();
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
-  const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
-  const totalPhotos = sessions.reduce((sum, session) => sum + (session.photos?.length ?? 0), 0);
-  const recentSessions = [...sessions]
-    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-    .slice(0, 4);
+  const { data: sessions, isFetching } = useSuspenseQuery(trpc.sessions.list.queryOptions());
+  const { data: tags } = useSuspenseQuery(trpc.tags.list.queryOptions());
+  const totalPhotos = sessions.reduce((sum, session) => sum + session.photos.length, 0);
+  const recentSessions = sessions.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
+  const format = new Intl.NumberFormat("es-ES");
 
   return (
-    <div className="admin-page admin-overview-grid">
-      <section className="admin-overview-grid">
-        <div className="admin-page-header">
-          <div className="admin-kicker">Overview · {userEmail}</div>
-          <h2>Todo el portfolio en una sola vista.</h2>
-          <p>
-            Métricas reales de sesiones, fotos y tags combinadas con accesos rápidos para arrancar
-            edición o revisión sin salir del shell persistente.
-          </p>
-        </div>
-        <div className="admin-surface">
-          <mc-overview-panel
-            description="Datos vivos del backend: sesiones con fotos, tags y relación general del portfolio."
-            stats={[
-              {
-                id: "sessions",
-                label: "Sesiones",
-                value: String(sessions.length),
-                status: "success",
-              },
+    <div className="ming-page">
+      <PageHeader
+        title="Resumen"
+        description={`Tu portfolio, de un vistazo · ${userEmail}`}
+        actions={
+          <Button nativeButton={false} render={<Link to="/photos/new" />}>
+            Subir fotos
+          </Button>
+        }
+      />
+      <OverviewPanel
+        title="Portfolio"
+        description="Sesiones, imágenes y etiquetas publicadas"
+        stats={[
+          { id: "sessions", label: "Sesiones", value: format.format(sessions.length) },
+          { id: "photos", label: "Fotos", value: format.format(totalPhotos) },
+          { id: "tags", label: "Etiquetas", value: format.format(tags.length) },
+        ]}
+      />
+      <div className="ming-split">
+        <section className="ming-section" aria-labelledby="recent-sessions">
+          <div className="ming-cluster ming-cluster--between">
+            <h2 id="recent-sessions" className="ming-section__title">
+              Sesiones recientes
+            </h2>
+            <Button variant="ghost" size="sm" nativeButton={false} render={<Link to="/sessions" />}>
+              Ver sesiones
+            </Button>
+          </div>
+          <ResourceTable
+            ariaLabel="Sesiones recientes"
+            density="compact"
+            rows={recentSessions}
+            getRowId={(row) => row.id}
+            refetching={isFetching}
+            refetchingLabel="Actualizando sesiones…"
+            responsive="stacked"
+            columns={[
+              { id: "title", header: "Sesión", render: (row) => row.title },
               {
                 id: "photos",
-                label: "Fotos",
-                value: String(totalPhotos),
-                status: "success",
+                header: "Fotos",
+                align: "end",
+                render: (row) => format.format(row.photos.length),
               },
               {
-                id: "tags",
-                label: "Tags",
-                value: String(tags.length),
-                status: "success",
+                id: "date",
+                header: "Creada",
+                render: (row) =>
+                  new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(row.createdAt)),
               },
             ]}
-            status={{ label: "Live data", tone: "success" }}
-            title="Portfolio health"
+            onRowActivate={(row) => {
+              void navigate({ to: "/sessions/$slug", params: { slug: row.slug } });
+            }}
+            emptyState="Todavía no hay sesiones. Crea la primera para organizar tus fotos."
           />
-        </div>
-      </section>
-
-      <aside className="admin-overview-secondary">
-        <section className="admin-card">
-          <div className="admin-kicker">Actividad reciente</div>
-          <h3>Últimas sesiones activas</h3>
-          <ul className="admin-list">
-            {recentSessions.map((session) => (
-              <li key={session.id} className="admin-list-item">
-                <span className="admin-list-label">{session.title}</span>
-                <span className="admin-list-meta">{formatDate(session.createdAt)}</span>
-              </li>
-            ))}
-          </ul>
         </section>
-
-        <section className="admin-card">
-          <div className="admin-kicker">Accesos rápidos</div>
-          <h3>Flujos más usados en v1</h3>
-          <div className="admin-toolbar-controls">
-            <mc-button
+        <div className="admin-overview-secondary">
+          <section className="admin-card">
+            <h2>Organiza tu portfolio</h2>
+            <p>Crea una sesión y añade las imágenes que forman parte de ella.</p>
+            <Button
               className="admin-inline-button"
-              onClick={() => {
-                void navigate({ to: "/sessions/new" });
-              }}
-              variant="primary"
-            >
-              Nueva sesión
-            </mc-button>
-            <mc-button
-              className="admin-inline-button"
-              onClick={() => {
-                void navigate({ to: "/photos/new" });
-              }}
               variant="secondary"
+              nativeButton={false}
+              render={<Link to="/sessions/new" />}
             >
-              Subir fotos
-            </mc-button>
-          </div>
-        </section>
-      </aside>
+              Crear sesión
+            </Button>
+          </section>
+          <section className="admin-card">
+            <h2>Etiquetas</h2>
+            {tags.length > 0 ? (
+              <TagList items={tags.slice(0, 8).map((tag) => ({ id: tag.id, label: tag.name }))} />
+            ) : (
+              <p>Aún no hay etiquetas.</p>
+            )}
+            <Button
+              className="admin-inline-button"
+              variant="ghost"
+              size="sm"
+              nativeButton={false}
+              render={<Link to="/tags" />}
+            >
+              Ver etiquetas
+            </Button>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

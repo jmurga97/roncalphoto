@@ -14,7 +14,7 @@ export function DeliveryView() {
   const { token, title, photosAvailable, photos } = useDeliveryViewModel();
   const selection = useDeliverySelection(photos);
   const [mode, setMode] = useState<DeliveryViewMode>("list");
-  const [activeId, setActiveId] = useState<string | undefined>(undefined);
+  const [activeId, setActiveId] = useState<string | undefined>();
 
   if (!photosAvailable) {
     return <DeliveryExpiredState title={title} />;
@@ -32,25 +32,12 @@ export function DeliveryView() {
   return (
     <div className="relative h-full overflow-hidden">
       {mode === "list" ? (
-        <DeliveryList
-          onOpenPhoto={openGallery}
-          photos={photos}
-          selection={selection}
-          title={title}
-        />
+        <DeliveryList onOpenPhoto={openGallery} photos={photos} selection={selection} title={title} />
       ) : (
-        <DeliveryGallery
-          initialPhotoId={activeId ?? photos[0]?.id}
-          photos={photos}
-          title={title}
-          token={token}
-        />
+        <DeliveryGallery initialPhotoId={activeId ?? photos[0]?.id} photos={photos} title={title} token={token} />
       )}
 
-      <DeliveryViewToggle
-        mode={mode}
-        onToggle={() => (mode === "list" ? openGallery() : setMode("list"))}
-      />
+      <DeliveryViewToggle mode={mode} onToggle={() => (mode === "list" ? openGallery() : setMode("list"))} />
     </div>
   );
 }

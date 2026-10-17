@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import type { CanvasPhotoItem } from "../types";
 
@@ -27,15 +27,15 @@ function buildMetadataEntries(item: CanvasPhotoItem): MetadataEntry[] {
 
 export function CanvasDetailPanel({ item, onClose }: CanvasDetailPanelProps) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const lastItemRef = useRef<CanvasPhotoItem | undefined>(undefined);
+  const [lastItem, setLastItem] = useState(item);
 
-  if (item) {
-    lastItemRef.current = item;
+  if (item && item !== lastItem) {
+    setLastItem(item);
   }
 
   const isOpen = Boolean(item);
   // Keep rendering the last item while the panel slides out.
-  const displayed = item ?? lastItemRef.current;
+  const displayed = item ?? lastItem;
 
   useEffect(() => {
     if (item?.id) {
@@ -74,9 +74,7 @@ export function CanvasDetailPanel({ item, onClose }: CanvasDetailPanelProps) {
           </div>
 
           {displayed.about ? (
-            <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
-              {displayed.about}
-            </p>
+            <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">{displayed.about}</p>
           ) : null}
 
           {metadataEntries.length > 0 ? (

@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import { deliveryDetailQueryOptions } from "@lib/api/deliveries/query-options";
+import { trpc } from "@lib/api/client";
 
 import type { DeliveryPhotoViewModel } from "../types";
 
@@ -17,7 +17,7 @@ interface DeliveryViewModel {
 
 export function useDeliveryViewModel(): DeliveryViewModel {
   const { token } = deliveryRouteApi.useParams();
-  const { data: delivery } = useSuspenseQuery(deliveryDetailQueryOptions(token));
+  const { data: delivery } = useSuspenseQuery(trpc.clientDeliveries.get.queryOptions({ token }));
 
   const photos = useMemo<DeliveryPhotoViewModel[]>(
     () =>

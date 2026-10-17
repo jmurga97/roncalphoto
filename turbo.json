@@ -9,12 +9,12 @@
       "cache": false,
       "persistent": true
     },
+    "dev:local": {
+      "cache": false,
+      "persistent": true
+    },
     "check": {
       "dependsOn": ["^build"],
-      "cache": false
-    },
-    "lint": {},
-    "db:migrate": {
       "cache": false
     }
   }

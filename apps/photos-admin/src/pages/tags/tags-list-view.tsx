@@ -1,75 +1,66 @@
-import { McResourceTable, McSearchField } from "@murga.ing/components/react";
+import { InlineMessage, ResourceTable, SearchField } from "@jmurga97/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
-import { EmptyState } from "@components/empty-state";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
+import { PageHeader } from "@components/page-header";
+import { trpc } from "@lib/api/client";
 
 export function TagsListView() {
   const navigate = useNavigate();
-  const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
+  const { data: tags, isFetching } = useSuspenseQuery(trpc.tags.list.queryOptions());
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const [searchValue, setSearchValue] = useState("");
-  const deferredSearch = useDeferredValue(searchValue);
-  const filteredTags = tags.filter((tag) => {
-    const haystack = `${tag.name} ${tag.slug}`.toLowerCase();
-    return haystack.includes(deferredSearch.toLowerCase());
-  });
+  const deferredSearch = useDeferredValue(searchValue).toLowerCase();
+  const filteredTags = tags.filter((tag) => `${tag.name} ${tag.slug}`.toLowerCase().includes(deferredSearch));
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-header">
-        <div className="admin-kicker">Tags</div>
-        <p>
-          En esta iteración no hay CRUD de tags. Puedes revisar el inventario completo y saltar a
-          las sesiones relacionadas.
-        </p>
-      </header>
-
-      <mc-inline-message
-        message="La v1 mantiene tags en modo lectura porque la API pública todavía no expone mutaciones."
-        title="Tags read-only"
-        tone="loading"
-      />
-
+    <div className="ming-page">
+      <PageHeader title="Etiquetas" description="Explora las etiquetas y las sesiones relacionadas." />
       <section className="admin-table-shell">
-        <McSearchField
-          onMcChange={(event) => {
-            setSearchValue(event.detail.value);
-          }}
-          onMcClear={() => {
-            setSearchValue("");
-          }}
-          placeholder="Buscar tags por nombre o slug"
-          value={searchValue}
+        <InlineMessage
+          title="Solo lectura"
+          message="Asigna etiquetas desde el editor de cada sesión. La creación y eliminación de etiquetas todavía no están disponibles."
         />
-
-        {filteredTags.length > 0 ? (
-          <McResourceTable
-            columns={[
-              { id: "name", label: "Nombre" },
-              { id: "slug", label: "Slug" },
-            ]}
-            onMcRowSelect={(event) => {
-              void navigate({
-                to: "/tags/$slug",
-                params: { slug: event.detail.selectedId },
-              });
-            }}
-            rows={filteredTags.map((tag) => ({
-              id: tag.slug,
-              cells: {
-                name: tag.name,
-                slug: tag.slug,
-              },
-            }))}
+        <div className="ming-toolbar">
+          <SearchField
+            className="ming-toolbar__search"
+            aria-label="Buscar etiquetas"
+            clearLabel="Borrar búsqueda"
+            onValueChange={setSearchValue}
+            placeholder="Buscar por nombre o slug"
+            value={searchValue}
           />
-        ) : (
-          <EmptyState
-            description="No se encontraron tags con ese nombre o slug."
-            title="Sin resultados"
-          />
-        )}
+          <span className="ming-toolbar__end ming-data">{filteredTags.length} etiquetas</span>
+        </div>
+        <ResourceTable
+          ariaLabel="Etiquetas"
+          rows={filteredTags}
+          responsive="stacked"
+          refetching={isFetching}
+          refetchingLabel="Actualizando etiquetas…"
+          getRowId={(tag) => tag.id}
+          columns={[
+            { id: "name", header: "Etiqueta", render: (tag) => tag.name },
+            {
+              id: "slug",
+              header: "Slug",
+              render: (tag) => <span className="ming-data">{tag.slug}</span>,
+            },
+            {
+              id: "sessions",
+              header: "Sesiones",
+              align: "end",
+              render: (tag) => sessions.filter((session) => session.tags.some((item) => item.id === tag.id)).length,
+            },
+          ]}
+          emptyState={
+            searchValue ? "No hay etiquetas que coincidan. Prueba con otra búsqueda." : "Todavía no hay etiquetas."
+          }
+          onRowActivate={(tag) => {
+            void navigate({ to: "/tags/$slug", params: { slug: tag.slug } });
+          }}
+        />
       </section>
     </div>
   );

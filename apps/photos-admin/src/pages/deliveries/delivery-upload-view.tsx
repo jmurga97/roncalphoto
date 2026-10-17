@@ -1,10 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { InlineMessage, ResourceEditor, StatusText } from "@jmurga97/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 import { DeliveryPhotosSection } from "@components/deliveries/delivery-photos-section";
 import { FormTextInput } from "@components/forms/adapters/form-text-input";
+import { PageHeader } from "@components/page-header";
 import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
 import { createDeliveryFormValues, deliveryUploadSchema } from "@lib/deliveries/upload-form";
 
@@ -15,7 +17,7 @@ function getUploadStatus(form: ReturnType<typeof useForm<DeliveryFormValues>>) {
   const { formState } = form;
 
   if (formState.isSubmitting) {
-    return { tone: "loading" as const, label: "Guardando entrega..." };
+    return { tone: "info" as const, label: "Guardando…" };
   }
 
   if (formState.isSubmitSuccessful) {
@@ -27,10 +29,10 @@ function getUploadStatus(form: ReturnType<typeof useForm<DeliveryFormValues>>) {
   }
 
   if (formState.isDirty) {
-    return { tone: "idle" as const, label: "Borrador sin guardar" };
+    return { tone: "neutral" as const, label: "Sin guardar" };
   }
 
-  return { tone: "idle" as const, label: "Completa los datos de la entrega" };
+  return { tone: "neutral" as const, label: "Borrador" };
 }
 
 export function DeliveryUploadView() {
@@ -40,8 +42,8 @@ export function DeliveryUploadView() {
     resolver: zodResolver(deliveryUploadSchema),
     defaultValues: createDeliveryFormValues(),
   });
-  const { formState, handleSubmit, watch } = form;
-  const photos = watch("photos");
+  const { formState, handleSubmit } = form;
+  const photos = useWatch({ control: form.control, name: "photos" });
   const status = getUploadStatus(form);
 
   const onSubmit = (values: DeliveryFormValues) => {
@@ -56,30 +58,39 @@ export function DeliveryUploadView() {
 
     // MOCK: inserta la entrega en la caché de la lista para reflejarla sin backend.
     // Eliminar cuando exista el POST real al endpoint de deliveries.
-    queryClient.setQueryData(
-      deliveriesListQueryOptions().queryKey,
-      (current: DeliverySummary[] | undefined) => [delivery, ...(current ?? [])],
-    );
+    queryClient.setQueryData(deliveriesListQueryOptions().queryKey, (current: DeliverySummary[] | undefined) => [
+      delivery,
+      ...(current ?? []),
+    ]);
     void navigate({ to: "/deliveries" });
   };
 
   return (
     <FormProvider {...form}>
-      <div className="admin-page">
-        <header className="admin-page-header">
-          <div className="admin-kicker">Deliveries · Nueva entrega</div>
-          <p>
-            Completa los datos de la entrega y adjunta el lote de imágenes. Al guardar, la entrega
-            aparecerá en la lista (sin enviar nada al servidor).
-          </p>
-        </header>
+      <div className="ming-page">
+        <PageHeader hidden title="Nueva entrega" description="Prepara las imágenes y los datos del cliente." />
 
-        <form
-          className="admin-editor-shell"
-          onSubmit={(event) => {
-            event.preventDefault();
+        <ResourceEditor
+          className="admin-resource-editor"
+          resourceTitle="Nueva entrega"
+          description="Borrador de prueba · no se guarda ni se envía al cliente"
+          saveLabel="Guardar borrador"
+          cancelLabel="Cancelar"
+          dirty={formState.isDirty}
+          saving={formState.isSubmitting}
+          status={<StatusText label={status.label} tone={status.tone} aria-live="off" />}
+          onSave={() => {
             void handleSubmit(onSubmit)();
           }}
+          onCancel={() => {
+            void navigate({ to: "/deliveries" });
+          }}
+          aside={
+            <InlineMessage
+              title="Entrega de prueba"
+              message={`${photos.length} imágenes seleccionadas. El borrador solo aparecerá en esta sesión del panel; los archivos no se subirán.`}
+            />
+          }
         >
           <section className="admin-editor-section">
             <div className="admin-kicker">Datos de la entrega</div>
@@ -112,32 +123,9 @@ export function DeliveryUploadView() {
           <DeliveryPhotosSection />
 
           {typeof formState.errors.photos?.message === "string" ? (
-            <mc-inline-message
-              message={formState.errors.photos.message}
-              title="Falta el lote de imágenes"
-              tone="error"
-            />
+            <InlineMessage message={formState.errors.photos.message} title="Falta el lote de imágenes" tone="error" />
           ) : null}
-
-          <footer className="border-mc-border-visible bg-mc-background-translucent sticky bottom-0 z-2 flex flex-wrap items-center justify-between gap-4 border-t py-4 backdrop-blur-md">
-            <div className="grid gap-2">
-              <div className="admin-kicker">Estado</div>
-              <mc-status-text label={status.label} polite tone={status.tone} />
-              <p className="text-mc-text-secondary m-0">
-                {photos.length} {photos.length === 1 ? "imagen" : "imágenes"} en el lote.
-              </p>
-            </div>
-            <mc-button
-              disabled={formState.isSubmitting}
-              onClick={() => {
-                void handleSubmit(onSubmit)();
-              }}
-              variant="primary"
-            >
-              Guardar entrega
-            </mc-button>
-          </footer>
-        </form>
+        </ResourceEditor>
       </div>
     </FormProvider>
   );

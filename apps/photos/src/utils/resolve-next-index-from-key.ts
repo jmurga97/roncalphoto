@@ -4,11 +4,7 @@ interface KeyboardNavigationInput {
   maxIndex: number;
 }
 
-export function resolveNextIndexFromKey({
-  key,
-  currentIndex,
-  maxIndex,
-}: KeyboardNavigationInput): number | null {
+export function resolveNextIndexFromKey({ key, currentIndex, maxIndex }: KeyboardNavigationInput): number | null {
   if (key === "ArrowDown" || key === "ArrowRight") {
     return Math.min(currentIndex + 1, maxIndex);
   }

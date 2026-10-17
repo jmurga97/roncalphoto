@@ -9,15 +9,10 @@ interface SuspenseWrapperProps {
   children: ReactNode;
   errorFallback: ReactNode;
   fallback: ReactNode;
-  resetKey?: boolean | number | string | null | undefined;
+  resetKey?: boolean | number | string | null;
 }
 
-export function SuspenseWrapper({
-  children,
-  errorFallback,
-  fallback,
-  resetKey,
-}: SuspenseWrapperProps) {
+export function SuspenseWrapper({ children, errorFallback, fallback, resetKey }: SuspenseWrapperProps) {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (

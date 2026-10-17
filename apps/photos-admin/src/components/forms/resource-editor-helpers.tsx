@@ -1,19 +1,14 @@
-/* eslint-disable react-refresh/only-export-components -- small shared editor helpers intentionally colocate components and functions. */
-import { McConfirmAction } from "@murga.ing/components/react";
-import { getErrorMessage } from "@roncal/shared";
+/* oxlint-disable react/only-export-components -- small shared editor helpers intentionally colocate components and functions. */
+import { ConfirmAction } from "@jmurga97/components";
+import { toast } from "sonner";
+
+import { getErrorMessage } from "@utils/get-error-message";
 
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 
 type EditorStatus = {
   label: string;
-  tone: "error" | "idle" | "loading" | "success";
-};
-
-type EditorStatusLabels = {
-  deletingLabel: string;
-  dirtyLabel: string;
-  savedLabel: string;
-  savingLabel: string;
+  tone: "error" | "info" | "neutral" | "success";
 };
 
 export function getServerError<TFormValues extends FieldValues>(form: UseFormReturn<TFormValues>) {
@@ -25,77 +20,78 @@ export function getEditorStatus({
   deletePending,
   isDirty,
   isSubmitSuccessful,
-  labels,
   savePending,
   serverError,
 }: {
   deletePending: boolean;
   isDirty: boolean;
   isSubmitSuccessful: boolean;
-  labels: EditorStatusLabels;
   savePending: boolean;
   serverError?: string;
 }): EditorStatus | null {
   if (deletePending) {
-    return { tone: "loading", label: labels.deletingLabel };
+    return { tone: "info", label: "Eliminando…" };
   }
 
   if (savePending) {
-    return { tone: "loading", label: labels.savingLabel };
+    return { tone: "info", label: "Guardando…" };
   }
 
   if (serverError) {
     return { tone: "error", label: "Revisa el formulario" };
   }
 
-  if (isSubmitSuccessful) {
-    return { tone: "success", label: labels.savedLabel };
+  if (isDirty) {
+    return { tone: "neutral", label: "Sin guardar" };
   }
 
-  if (isDirty) {
-    return { tone: "idle", label: labels.dirtyLabel };
+  if (isSubmitSuccessful) {
+    return { tone: "success", label: "Guardado" };
   }
 
   return null;
 }
 
-export function ServerErrorMessage({ message }: { message?: string }) {
-  return message ? (
-    <mc-inline-message message={message} title="No se pudo completar la operación" tone="error" />
-  ) : null;
-}
-
 export function ConfirmDelete({
   message,
+  title,
+  confirmLabel,
   onConfirm,
-  onErrorMessage,
   onOpenChange,
   open,
   pending,
 }: {
   message: string;
+  title: string;
+  confirmLabel: string;
   onConfirm: () => Promise<void>;
-  onErrorMessage: (message: string) => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   pending: boolean;
 }) {
   return (
-    <McConfirmAction
+    <ConfirmAction
       message={message}
-      onMcCancel={() => {
+      title={title}
+      confirmLabel={confirmLabel}
+      cancelLabel="Cancelar"
+      pendingLabel="Eliminando…"
+      onCancel={() => {
         onOpenChange(false);
       }}
-      onMcConfirm={() => {
+      onConfirm={() => {
         void (async () => {
           try {
             await onConfirm();
+            onOpenChange(false);
+            toast.success("Eliminado");
           } catch (error) {
             onOpenChange(false);
-            onErrorMessage(getErrorMessage(error));
+            toast.error(getErrorMessage(error));
           }
         })();
       }}
+      onOpenChange={onOpenChange}
       open={open}
       pending={pending}
     />
@@ -105,36 +101,26 @@ export function ConfirmDelete({
 export function useResourceSubmit<TFormValues extends FieldValues, TMutationInput, TRecord>({
   form,
   onSave,
-  onSaved,
   toFormValues,
   toInput,
-  validate,
 }: {
   form: UseFormReturn<TFormValues>;
   onSave: (input: TMutationInput) => Promise<TRecord>;
-  onSaved?: (record: TRecord) => void;
   toFormValues: (record: TRecord) => TFormValues;
   toInput: (values: TFormValues) => TMutationInput;
-  validate?: (input: TMutationInput, values: TFormValues) => boolean;
 }) {
   return () => {
     void form.handleSubmit(async (values) => {
       form.clearErrors("root");
-      const input = toInput(values);
-
-      if (validate && !validate(input, values)) {
-        return;
-      }
 
       try {
-        const record = await onSave(input);
-        onSaved?.(record);
-        form.reset(toFormValues(record));
+        const saved = await onSave(toInput(values));
+        form.reset(toFormValues(saved));
+        toast.success("Guardado");
       } catch (error) {
-        form.setError("root.server", {
-          type: "server",
-          message: getErrorMessage(error),
-        });
+        const message = getErrorMessage(error);
+        form.setError("root.server", { type: "server", message });
+        toast.error(message);
       }
     })();
   };

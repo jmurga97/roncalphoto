@@ -27,12 +27,14 @@ export function useVisibleSlideObserver({
     selectedPhotoId,
   });
 
-  stateRef.current = {
-    onProgrammaticTargetReached,
-    onVisibleChange,
-    pendingProgrammaticPhotoIdRef,
-    selectedPhotoId,
-  };
+  useEffect(() => {
+    stateRef.current = {
+      onProgrammaticTargetReached,
+      onVisibleChange,
+      pendingProgrammaticPhotoIdRef,
+      selectedPhotoId,
+    };
+  }, [onProgrammaticTargetReached, onVisibleChange, pendingProgrammaticPhotoIdRef, selectedPhotoId]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -41,7 +43,7 @@ export function useVisibleSlideObserver({
       return;
     }
 
-    const slides = Array.from(container.querySelectorAll<HTMLElement>("[data-gallery-photo-id]"));
+    const slides = [...container.querySelectorAll<HTMLElement>("[data-gallery-photo-id]")];
 
     if (slides.length === 0) {
       return;

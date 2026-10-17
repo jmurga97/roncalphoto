@@ -1,113 +1,82 @@
-import { McResourceTable, McSearchField } from "@murga.ing/components/react";
+import { Button, ResourceTable, SearchField, TagList } from "@jmurga97/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
-import { EmptyState } from "@components/empty-state";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("es-ES", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
+import { PageHeader } from "@components/page-header";
+import { trpc } from "@lib/api/client";
 
 export function SessionsListView() {
   const navigate = useNavigate();
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
+  const { data: sessions, isFetching } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const [searchValue, setSearchValue] = useState("");
-  const deferredSearch = useDeferredValue(searchValue);
-  const filteredSessions = sessions.filter((session) => {
-    const haystack = [
-      session.title,
-      session.slug,
-      session.description,
-      session.tags.map((tag) => tag.name).join(" "),
-    ]
+  const deferredSearch = useDeferredValue(searchValue).toLowerCase();
+  const filteredSessions = sessions.filter((session) =>
+    [session.title, session.slug, session.description, session.tags.map((tag) => tag.name).join(" ")]
       .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(deferredSearch.toLowerCase());
-  });
+      .toLowerCase()
+      .includes(deferredSearch),
+  );
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-header">
-        <div className="admin-kicker">Sessions</div>
-        <p>
-          Busca por título, slug o tags y entra al editor completo con fotos relacionadas y control
-          de slug final tras guardar.
-        </p>
-      </header>
-
+    <div className="ming-page">
+      <PageHeader
+        title="Sesiones"
+        description="Organiza las sesiones del portfolio y sus fotos."
+        actions={
+          <Button nativeButton={false} render={<Link to="/sessions/new" />}>
+            Crear sesión
+          </Button>
+        }
+      />
       <section className="admin-table-shell">
-        <div className="admin-toolbar">
-          <div className="admin-toolbar-controls">
-            <McSearchField
-              onMcChange={(event) => {
-                setSearchValue(event.detail.value);
-              }}
-              onMcClear={() => {
-                setSearchValue("");
-              }}
-              placeholder="Buscar sesiones por título, slug o tag"
-              value={searchValue}
-            />
-          </div>
-          <mc-button
-            className="admin-inline-button"
-            onClick={() => {
-              void navigate({ to: "/sessions/new" });
-            }}
-            variant="primary"
-          >
-            Nueva sesión
-          </mc-button>
+        <div className="ming-toolbar">
+          <SearchField
+            className="ming-toolbar__search"
+            aria-label="Buscar sesiones"
+            clearLabel="Borrar búsqueda"
+            onValueChange={setSearchValue}
+            placeholder="Buscar por título, slug o etiqueta"
+            value={searchValue}
+          />
+          <span className="ming-toolbar__end ming-data">{filteredSessions.length} sesiones</span>
         </div>
-
-        {filteredSessions.length > 0 ? (
-          <McResourceTable
-            columns={[
-              { id: "title", label: "Título" },
-              { id: "slug", label: "Slug" },
-              { id: "tags", label: "Tags" },
-              { id: "photos", label: "Fotos", align: "end", width: "96px" },
-              { id: "createdAt", label: "Creada" },
-            ]}
-            onMcRowSelect={(event) => {
-              void navigate({
-                to: "/sessions/$slug",
-                params: { slug: event.detail.selectedId },
-              });
-            }}
-            rows={filteredSessions.map((session) => ({
-              id: session.slug,
-              cells: {
-                title: session.title,
-                slug: session.slug,
-                tags: session.tags.map((tag) => tag.name).join(", "),
-                photos: session.photos?.length ?? 0,
-                createdAt: formatDate(session.createdAt),
-              },
-            }))}
-          />
-        ) : (
-          <EmptyState
-            action={
-              <mc-button
-                className="admin-inline-button"
-                onClick={() => {
-                  void navigate({ to: "/sessions/new" });
-                }}
-                variant="primary"
-              >
-                Crear sesión
-              </mc-button>
-            }
-            description="Ajusta la búsqueda o abre una sesión nueva para empezar a poblar el portfolio."
-            title="No hay sesiones que coincidan"
-          />
-        )}
+        <ResourceTable
+          ariaLabel="Sesiones"
+          rows={filteredSessions}
+          responsive="stacked"
+          refetching={isFetching}
+          refetchingLabel="Actualizando sesiones…"
+          getRowId={(session) => session.id}
+          emptyState={
+            searchValue
+              ? "No hay sesiones que coincidan. Prueba con otra búsqueda."
+              : "Todavía no hay sesiones. Crea la primera para organizar tus fotos."
+          }
+          columns={[
+            { id: "title", header: "Sesión", render: (session) => session.title },
+            {
+              id: "tags",
+              header: "Etiquetas",
+              render: (session) => <TagList items={session.tags.map((tag) => ({ id: tag.id, label: tag.name }))} />,
+            },
+            {
+              id: "photos",
+              header: "Fotos",
+              align: "end",
+              render: (session) => new Intl.NumberFormat("es-ES").format(session.photos.length),
+            },
+            {
+              id: "createdAt",
+              header: "Creada",
+              render: (session) =>
+                new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(session.createdAt)),
+            },
+          ]}
+          onRowActivate={(session) => {
+            void navigate({ to: "/sessions/$slug", params: { slug: session.slug } });
+          }}
+        />
       </section>
     </div>
   );

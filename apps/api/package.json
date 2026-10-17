@@ -1,36 +1,36 @@
 {
   "name": "@roncal/api",
-  "description": "RoncalPhoto API - REST API for photography portfolio",
+  "description": "RoncalPhoto tRPC API on Cloudflare Workers",
   "private": true,
   "type": "module",
   "version": "0.0.1",
   "scripts": {
     "dev": "wrangler dev --port 8787 --inspector-port 9230",
+    "dev:local": "wrangler dev --env local --port 8787 --inspector-port 9230",
     "build": "wrangler types && tsc --noEmit",
+    "check": "tsc --noEmit && bun run db:check",
     "deploy": "bun run db:migrate && wrangler deploy",
-    "db:migrate": "wrangler d1 migrations apply DB_RONCALPHOTO --remote",
-    "db:migrations:list": "wrangler d1 migrations list DB_RONCALPHOTO --remote",
     "db:generate": "drizzle-kit generate",
-    "db:pull": "drizzle-kit pull",
-    "db:studio": "drizzle-kit studio",
-    "cf-typegen": "wrangler types",
-    "check": "tsc"
+    "db:check": "drizzle-kit check && bun scripts/check-db-migrations.ts",
+    "db:migrate": "wrangler d1 migrations apply DB_RONCALPHOTO --remote",
+    "db:migrate:local": "wrangler d1 migrations apply DB_RONCALPHOTO --local --env local",
+    "db:seed:local": "bun run db:migrate:local && wrangler d1 execute DB_RONCALPHOTO --local --env local --file seed/seed-local.sql",
+    "db:migrations:list": "wrangler d1 migrations list DB_RONCALPHOTO --remote"
   },
   "dependencies": {
-    "@hono/zod-openapi": "^1.3.0",
     "@roncal/auth": "workspace:*",
-    "@roncal/shared": "workspace:*",
-    "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
-    "hono": "^4.11.5",
-    "hono-pino": "^0.10.3",
-    "pino": "^10.3.1",
+    "@roncal/db": "workspace:*",
+    "@trpc/server": "11.18.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bun": "^1.3.6",
     "drizzle-kit": "^0.31.9",
     "typescript": "^5.9.3",
-    "wrangler": "^4.60.0"
+    "wrangler": "^4.60.0",
+    "@cloudflare/workers-types": "^4.20260502.0"
+  },
+  "exports": {
+    "./router": "./src/trpc/router.ts"
   }
 }

@@ -1,76 +1,91 @@
+import { Badge, InlineMessage, ResourceTable, StatusText } from "@jmurga97/components";
 import { SuspenseWrapper } from "@roncal/ui";
 import { lazy, useState } from "react";
 
 import { DeliveryRowMenu } from "@components/deliveries/delivery-row-menu";
+import { RowControls } from "@components/row-controls";
 
 import type { DeliverySummary } from "@lib/deliveries/types";
 
 const DeliveryDetailPanel = lazy(() => import("@components/deliveries/delivery-detail-panel"));
 
-function DetailFallback() {
-  return (
-    <p className="text-mc-text-secondary m-0 font-mono text-[0.75rem] tracking-[0.08em] uppercase">
-      [Cargando…]
-    </p>
-  );
-}
-
-function DetailError() {
-  return (
-    <p className="text-mc-accent m-0 font-mono text-[0.75rem] tracking-[0.08em] uppercase">
-      [Error al cargar el detalle]
-    </p>
-  );
-}
-
-export function DeliveriesResourceList({ deliveries }: { deliveries: DeliverySummary[] }) {
+export function DeliveriesResourceList({
+  deliveries,
+  refetching = false,
+}: {
+  deliveries: DeliverySummary[];
+  refetching?: boolean;
+}) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const selected = deliveries.find((delivery) => delivery.id === expandedId);
 
   return (
-    <ul className="border-mc-border bg-mc-surface m-0 grid list-none gap-0 overflow-hidden rounded-[0.875rem] border p-0">
-      {deliveries.map((delivery) => {
-        const expanded = expandedId === delivery.id;
-
-        return (
-          <li key={delivery.id} className="border-mc-border border-b last:border-b-0">
-            <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
-              <div className="grid min-w-0 gap-1">
-                <span className="text-mc-text-display truncate font-semibold">
-                  {delivery.clientName}
-                </span>
-                <span className="text-mc-text-secondary truncate">{delivery.title}</span>
-                <span className="text-mc-text-secondary truncate font-mono text-[0.75rem]">
-                  {delivery.clientEmail}
-                </span>
+    <div className="ming-stack">
+      <ResourceTable
+        ariaLabel="Entregas"
+        rows={deliveries}
+        getRowId={(delivery) => delivery.id}
+        responsive="stacked"
+        refetching={refetching}
+        refetchingLabel="Actualizando entregas…"
+        emptyState="No hay entregas que coincidan. Prueba con otra búsqueda o crea una entrega."
+        columns={[
+          { id: "title", header: "Entrega", render: (delivery) => delivery.title },
+          {
+            id: "seen",
+            header: "Estado",
+            render: (delivery) => (
+              <Badge tone={delivery.seen ? "success" : "neutral"}>{delivery.seen ? "Vista" : "No vista"}</Badge>
+            ),
+          },
+          {
+            id: "client",
+            header: "Cliente",
+            render: (delivery) => (
+              <div className="ming-stack ming-stack--tight">
+                <span>{delivery.clientName}</span>
+                <span className="text-muted-foreground">{delivery.clientEmail}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <mc-badge tone={delivery.seen ? "success" : "default"}>
-                  {delivery.seen ? "Vista" : "No vista"}
-                </mc-badge>
-                <DeliveryRowMenu
-                  deliveryTitle={delivery.title}
-                  expanded={expanded}
-                  onToggleDetail={() => {
-                    setExpandedId((current) => (current === delivery.id ? null : delivery.id));
-                  }}
-                />
-              </div>
-            </div>
-
-            {expanded ? (
-              <div className="border-mc-border bg-mc-surface-raised border-t px-4 py-4">
-                <SuspenseWrapper
-                  errorFallback={<DetailError />}
-                  fallback={<DetailFallback />}
-                  resetKey={delivery.id}
-                >
-                  <DeliveryDetailPanel deliveryId={delivery.id} photoCount={delivery.photoCount} />
-                </SuspenseWrapper>
-              </div>
-            ) : null}
-          </li>
-        );
-      })}
-    </ul>
+            ),
+          },
+          {
+            id: "photos",
+            header: "Fotos",
+            align: "end",
+            render: (delivery) => new Intl.NumberFormat("es-ES").format(delivery.photoCount),
+          },
+        ]}
+        onRowActivate={(delivery) => setExpandedId((current) => (current === delivery.id ? null : delivery.id))}
+        actionsLabel="Acciones"
+        renderRowActions={(delivery) => (
+          <RowControls>
+            <DeliveryRowMenu
+              deliveryTitle={delivery.title}
+              expanded={expandedId === delivery.id}
+              onToggleDetail={() => setExpandedId((current) => (current === delivery.id ? null : delivery.id))}
+            />
+          </RowControls>
+        )}
+      />
+      {selected ? (
+        <section className="ming-section" aria-labelledby="delivery-detail-title">
+          <h2 id="delivery-detail-title" className="ming-section__title">
+            {selected.title}
+          </h2>
+          <SuspenseWrapper
+            errorFallback={
+              <InlineMessage
+                tone="error"
+                message="No se pudieron cargar las fotos. Cierra el detalle y vuelve a abrirlo."
+              />
+            }
+            fallback={<StatusText label="Cargando fotos…" />}
+            resetKey={selected.id}
+          >
+            <DeliveryDetailPanel deliveryId={selected.id} photoCount={selected.photoCount} />
+          </SuspenseWrapper>
+        </section>
+      ) : null}
+    </div>
   );
 }

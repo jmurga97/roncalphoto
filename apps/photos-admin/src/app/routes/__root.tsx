@@ -18,5 +18,5 @@ export const Route = createRootRouteWithContext<PhotosAdminRouterContext>()({
   component: RootRouteComponent,
   errorComponent: RouteErrorState,
   notFoundComponent: NotFoundState,
-  pendingComponent: () => <LoadingState label="Cargando navegación del dashboard..." />,
+  pendingComponent: () => <LoadingState label="Cargando navegación del dashboard…" />,
 });

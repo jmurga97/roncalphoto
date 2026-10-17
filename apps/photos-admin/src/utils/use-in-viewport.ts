@@ -16,7 +16,7 @@ export function useInViewport<T extends Element>(rootMargin: string = DEFAULT_RO
     const node = ref.current;
 
     if (!node || isInViewport || typeof IntersectionObserver === "undefined") {
-      return undefined;
+      return;
     }
 
     const observer = new IntersectionObserver(

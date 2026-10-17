@@ -28,10 +28,7 @@ function buildMockDetailPhotos(deliveryId: string, photoCount: number): Delivery
 }
 
 // Simulates an async fetch with a 1s delay. Returns mock data only — no real request.
-function fetchDeliveryDetail(
-  deliveryId: string,
-  photoCount: number,
-): Promise<DeliveryDetailPhoto[]> {
+function fetchDeliveryDetail(deliveryId: string, photoCount: number): Promise<DeliveryDetailPhoto[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(buildMockDetailPhotos(deliveryId, photoCount));

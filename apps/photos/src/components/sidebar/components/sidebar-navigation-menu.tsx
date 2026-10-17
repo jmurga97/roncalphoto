@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 
 import { SidebarItem } from "./sidebar-item";
 import { useSidebarData } from "../hooks/use-sidebar-data";
@@ -8,7 +8,7 @@ import { toSidebarNavigationItem } from "../utils/sidebar-mappers";
 
 export function SidebarNavigationMenu() {
   const { slug } = useSidebarData();
-  const { data: sessions } = useQuery(sessionsListQueryOptions());
+  const { data: sessions } = useQuery(trpc.sessions.list.queryOptions());
   const heading = slug ? "Explora otras sesiones" : "Sesiones y tags";
   const items = sessions?.map((session) => toSidebarNavigationItem(session, slug));
 

@@ -1,44 +1,28 @@
 import {
-  McBulkActions,
-  McConfirmAction,
-  McResourceTable,
-  McSearchField,
-  McSelect,
-  McStatusRegion,
-} from "@murga.ing/components/react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+  BulkActions,
+  Button,
+  ConfirmAction,
+  DropdownMenu,
+  ResourceTable,
+  SearchField,
+  Select,
+  StatusText,
+} from "@jmurga97/components";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
+import { toast } from "sonner";
 
-import { EmptyState } from "@components/empty-state";
+import { PageHeader } from "@components/page-header";
 import { PhotoPreviewDialog } from "@components/photos/photo-preview-dialog";
-import { invalidatePhotoData } from "@lib/api/invalidation";
-import { photosService } from "@lib/api/photos/photos";
-import { photosListQueryOptions } from "@lib/api/photos/query-options";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { RowControls } from "@components/row-controls";
+import { invalidatePortfolio, trpc, trpcClient } from "@lib/api/client";
 
-import type { ApiPhoto } from "@roncal/shared";
-
-type PhotoQueueStatus = "awaiting_upload" | "queued" | "processing" | "succeeded" | "failed";
-
-type PhotoWithQueueStatus = ApiPhoto & {
-  queueStatus?: PhotoQueueStatus;
-};
+import type { Photo } from "@roncal/api/router";
 
 type BulkStatus = {
   label: string;
-  tone: "idle" | "loading" | "success" | "error";
-};
-
-const statusPresentation: Record<
-  PhotoQueueStatus,
-  { label: string; tone: "default" | "accent" | "success" | "warning" | "error" }
-> = {
-  awaiting_upload: { label: "Pendiente", tone: "default" },
-  queued: { label: "En cola", tone: "warning" },
-  processing: { label: "Procesando", tone: "warning" },
-  succeeded: { label: "Completada", tone: "success" },
-  failed: { label: "Error", tone: "error" },
+  tone: "neutral" | "info" | "success" | "error";
 };
 
 function getBulkResultLabel(actionLabel: string, successCount: number, failureCount: number) {
@@ -54,116 +38,108 @@ function PhotosTable({
   selectedIds,
   sessionTitleById,
 }: {
-  filteredPhotos: PhotoWithQueueStatus[];
+  filteredPhotos: Photo[];
   onEdit: (id: string) => void;
-  onPreview: (photo: ApiPhoto) => void;
+  onPreview: (photo: Photo) => void;
   onSelectionChange: (selectedIds: string[]) => void;
   refetching: boolean;
   selectedIds: string[];
   sessionTitleById: Map<string, string>;
 }) {
   return (
-    <McResourceTable
+    <ResourceTable
+      ariaLabel="Fotos"
+      actionsLabel="Acciones"
       columns={[
-        { id: "preview", label: "Preview", type: "media", width: "112px" },
-        { id: "alt", label: "Título", type: "text" },
-        { id: "session", label: "Sesión", type: "text" },
-        { id: "status", label: "Estado", type: "status", width: "136px" },
-      ]}
-      mobileLayout="stacked"
-      onMcSelectionChange={(event) => {
-        onSelectionChange(event.detail.selectedIds);
-      }}
-      refetching={refetching}
-      rows={filteredPhotos.map((photo) => {
-        const status = photo.queueStatus ?? "succeeded";
-        const presentation = statusPresentation[status];
-
-        return {
-          id: photo.id,
-          cells: {
-            preview: "",
-            alt: photo.alt,
-            session: sessionTitleById.get(photo.sessionId) ?? photo.sessionId,
-            status: presentation.label,
-          },
-        };
-      })}
-      selectable
-      selectedIds={selectedIds}
-      selectAllLabel="Seleccionar todas las fotos visibles"
-    >
-      {filteredPhotos.flatMap((photo) => {
-        const status = photo.queueStatus ?? "succeeded";
-        const presentation = statusPresentation[status];
-        const canPreview = status === "succeeded" && photo.url.length > 0;
-
-        return [
-          <div key={`${photo.id}:preview`} slot={`cell:${photo.id}:preview`}>
-            {canPreview ? (
-              <button
-                aria-label={`Previsualizar ${photo.alt}`}
-                className="border-mc-border-visible bg-mc-surface-raised focus-visible:outline-mc-text-display block aspect-4/3 w-20 cursor-zoom-in overflow-hidden rounded-md border p-0 focus-visible:outline-2 focus-visible:outline-offset-3 [&>img]:block [&>img]:size-full [&>img]:object-cover [&>img]:transition-transform [&>img]:duration-200 hover:[&>img]:scale-105"
-                onClick={() => {
-                  onPreview(photo);
-                }}
-                type="button"
-              >
-                <img alt="" src={photo.miniature || photo.url} />
-              </button>
+        {
+          id: "alt",
+          header: "Título",
+          render: (photo) => photo.alt,
+        },
+        {
+          id: "preview",
+          header: "Vista previa",
+          width: "112px",
+          render: (photo) =>
+            photo.url ? (
+              <RowControls>
+                <Button
+                  variant="ghost"
+                  aria-label={`Previsualizar ${photo.alt}`}
+                  className="admin-photo-preview-button"
+                  onClick={() => {
+                    onPreview(photo);
+                  }}
+                  type="button"
+                >
+                  <img alt="" src={photo.miniature || photo.url} />
+                </Button>
+              </RowControls>
             ) : (
-              <span
-                aria-label="Preview no disponible"
-                className="border-mc-border-visible text-mc-text-tertiary grid aspect-4/3 w-20 place-items-center rounded-md border border-dashed"
-              >
+              <span aria-label="Vista previa no disponible" className="admin-photo-preview-empty">
                 —
               </span>
-            )}
-          </div>,
-          <button
-            className="text-mc-text-display focus-visible:outline-mc-text-display cursor-pointer border-0 bg-transparent p-0 text-left font-semibold focus-visible:outline-2 focus-visible:outline-offset-3"
-            key={`${photo.id}:alt`}
-            onClick={() => {
-              onEdit(photo.id);
-            }}
-            slot={`cell:${photo.id}:alt`}
-            type="button"
-          >
-            {photo.alt}
-          </button>,
-          <div key={`${photo.id}:status`} slot={`cell:${photo.id}:status`}>
-            <mc-badge tone={presentation.tone}>{presentation.label}</mc-badge>
-          </div>,
-        ];
-      })}
-    </McResourceTable>
+            ),
+        },
+        {
+          id: "session",
+          header: "Sesión",
+          render: (photo) => sessionTitleById.get(photo.sessionId) ?? photo.sessionId,
+        },
+      ]}
+      onRowActivate={(photo) => onEdit(photo.id)}
+      renderRowActions={(photo) => (
+        <RowControls>
+          <DropdownMenu
+            ariaLabel={`Acciones para ${photo.alt}`}
+            align="end"
+            trigger="⋯"
+            items={[
+              { id: "edit", label: "Editar foto", onSelect: () => onEdit(photo.id) },
+              {
+                id: "preview",
+                label: "Ver foto",
+                disabled: !photo.url,
+                onSelect: () => onPreview(photo),
+              },
+            ]}
+          />
+        </RowControls>
+      )}
+      emptyState="No hay fotos que coincidan. Prueba con otra búsqueda o sube imágenes."
+      refetchingLabel="Actualizando fotos…"
+      getRowId={(photo) => photo.id}
+      onSelectionChange={(ids) => {
+        onSelectionChange(ids.map(String));
+      }}
+      refetching={refetching}
+      responsive="stacked"
+      rows={filteredPhotos}
+      selectedIds={selectedIds}
+      selectionLabels={{
+        page: "Seleccionar todas las fotos visibles",
+        row: (photo) => `Seleccionar ${photo.alt}`,
+      }}
+    />
   );
 }
 
 export function PhotosListView() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { data: photos, isFetching } = useSuspenseQuery(photosListQueryOptions());
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
+  const { data: photos, isFetching } = useSuspenseQuery(trpc.photos.list.queryOptions());
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const [searchValue, setSearchValue] = useState("");
-  const [previewPhoto, setPreviewPhoto] = useState<ApiPhoto | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [sessionSelectOpen, setSessionSelectOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [bulkPending, setBulkPending] = useState(false);
   const [bulkStatus, setBulkStatus] = useState<BulkStatus | null>(null);
-  const [statusRegionOpen, setStatusRegionOpen] = useState(false);
   const deferredSearch = useDeferredValue(searchValue);
   const sessionTitleById = new Map(sessions.map((session) => [session.id, session.title]));
-  const photosWithStatus: PhotoWithQueueStatus[] = photos;
-  const filteredPhotos = photosWithStatus.filter((photo) => {
-    const haystack = [
-      photo.alt,
-      photo.about,
-      photo.url,
-      sessionTitleById.get(photo.sessionId) ?? "",
-    ]
+  const filteredPhotos = photos.filter((photo) => {
+    const haystack = [photo.alt, photo.about, photo.url, sessionTitleById.get(photo.sessionId) ?? ""]
       .join(" ")
       .toLowerCase();
 
@@ -182,7 +158,7 @@ export function PhotosListView() {
     setBulkPending(true);
     setBulkStatus({
       label: `${actionLabel}: 0 de ${operationIds.length} completadas.`,
-      tone: "loading",
+      tone: "info",
     });
 
     const results = await Promise.allSettled(
@@ -193,7 +169,7 @@ export function PhotosListView() {
           completedCount += 1;
           setBulkStatus({
             label: `${actionLabel}: ${completedCount} de ${operationIds.length} completadas.`,
-            tone: "loading",
+            tone: "info",
           });
         }
       }),
@@ -206,7 +182,7 @@ export function PhotosListView() {
     };
 
     try {
-      await invalidatePhotoData(queryClient);
+      await invalidatePortfolio();
     } catch {
       resultStatus = {
         label: `${resultStatus.label} No se pudieron actualizar los datos visibles.`,
@@ -214,154 +190,132 @@ export function PhotosListView() {
       };
     }
     setSelectedIds(failedIds);
-    setBulkStatus(resultStatus);
-    setStatusRegionOpen(true);
+    setBulkStatus(null);
+    if (resultStatus.tone === "error") toast.error(resultStatus.label);
+    else toast.success(resultStatus.label);
     setBulkPending(false);
   }
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-header">
-        <div className="admin-kicker">Photos</div>
-        <p>
-          Revisa previews, estado de procesamiento y sesión. Abre cada título para completar su
-          edición.
-        </p>
-      </header>
+    <div className="ming-page">
+      <PageHeader
+        title="Fotos"
+        description="Revisa las imágenes, su estado y la sesión a la que pertenecen."
+        actions={
+          <Button
+            onClick={() => {
+              void navigate({ to: "/photos/new" });
+            }}
+          >
+            Subir fotos
+          </Button>
+        }
+      />
 
       <section className="admin-table-shell">
         {selectedIds.length > 0 ? (
-          <McBulkActions
-            cancelLabel="Cancelar selección"
+          <BulkActions
+            className="admin-bulk-actions"
+            clearLabel="Cancelar selección"
             count={selectedIds.length}
             disabled={bulkPending}
             label={`${selectedIds.length} seleccionadas`}
-            onMcClearSelection={() => {
+            onClearSelection={() => {
               setSelectedIds([]);
               setBulkStatus(null);
             }}
-          >
-            <McSelect
-              ariaLabel="Sesión para las fotos seleccionadas"
-              disabled={bulkPending}
-              onMcChange={(event) => {
-                setSelectedSessionId(event.detail.selectedId ?? "");
-                setSessionSelectOpen(false);
-              }}
-              onMcOpenChange={(event) => {
-                setSessionSelectOpen(event.detail.open);
-              }}
-              open={sessionSelectOpen}
-              options={sessions.map((session) => ({
-                id: session.id,
-                label: session.title,
-                description: session.slug,
-              }))}
-              placeholder="Asignar a sesión"
-              selectedId={selectedSessionId || null}
-              slot="actions"
-            />
-            <mc-button
-              disabled={bulkPending || selectedSessionId.length === 0}
-              onClick={() => {
-                void runBulkOperation({
-                  actionLabel: "Asignación",
-                  operation: (id) =>
-                    photosService.updatePhoto(id, { sessionId: selectedSessionId }),
-                });
-              }}
-              size="sm"
-              slot="actions"
-              variant="secondary"
-            >
-              Asignar a sesión
-            </mc-button>
-            <mc-button
-              disabled={bulkPending}
-              onClick={() => {
-                setConfirmDeleteOpen(true);
-              }}
-              size="sm"
-              slot="actions"
-              variant="destructive"
-            >
-              Eliminar
-            </mc-button>
-            {bulkStatus ? (
-              <mc-status-text
-                label={bulkStatus.label}
-                polite
-                slot="status"
-                tone={bulkStatus.tone}
-              />
-            ) : null}
-          </McBulkActions>
+            actions={
+              <div className="ming-cluster admin-bulk-controls">
+                <Select
+                  ariaLabel="Sesión para las fotos seleccionadas"
+                  disabled={bulkPending}
+                  onValueChange={(value) => {
+                    setSelectedSessionId(value ?? "");
+                    setSessionSelectOpen(false);
+                  }}
+                  onOpenChange={setSessionSelectOpen}
+                  open={sessionSelectOpen}
+                  options={sessions.map((session) => ({
+                    id: session.id,
+                    label: session.title,
+                    description: session.slug,
+                  }))}
+                  placeholder="Asignar a sesión"
+                  value={selectedSessionId || null}
+                />
+                <Button
+                  disabled={bulkPending || selectedSessionId.length === 0}
+                  onClick={() => {
+                    void runBulkOperation({
+                      actionLabel: "Asignación",
+                      operation: (id) =>
+                        trpcClient.photos.update.mutate({
+                          id,
+                          data: { sessionId: selectedSessionId },
+                        }),
+                    });
+                  }}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Asignar a sesión
+                </Button>
+                <Button
+                  disabled={bulkPending}
+                  onClick={() => {
+                    setConfirmDeleteOpen(true);
+                  }}
+                  size="sm"
+                  variant="destructive"
+                >
+                  Eliminar
+                </Button>
+              </div>
+            }
+            status={
+              bulkStatus && bulkPending ? <StatusText label={bulkStatus.label} polite tone={bulkStatus.tone} /> : null
+            }
+          />
         ) : (
-          <div className="admin-toolbar">
+          <div className="ming-toolbar">
             <div className="admin-toolbar-controls">
-              <McSearchField
-                onMcChange={(event) => {
-                  setSearchValue(event.detail.value);
-                }}
-                onMcClear={() => {
+              <SearchField
+                className="admin-search"
+                clearLabel="Borrar búsqueda"
+                aria-label="Buscar fotos"
+                onValueChange={setSearchValue}
+                onClear={() => {
                   setSearchValue("");
                 }}
-                placeholder="Buscar por alt, sesión o URL"
+                placeholder="Buscar por título o sesión"
                 value={searchValue}
               />
-              <mc-status-text
+              <StatusText
                 label={`${filteredPhotos.length} resultados visibles / ${photos.length} totales`}
                 polite
-                tone="idle"
+                tone="neutral"
               />
             </div>
-            <mc-button
-              className="admin-inline-button"
-              onClick={() => {
-                void navigate({ to: "/photos/new" });
-              }}
-              variant="primary"
-            >
-              Subir fotos
-            </mc-button>
           </div>
         )}
 
-        {filteredPhotos.length > 0 ? (
-          <PhotosTable
-            filteredPhotos={filteredPhotos}
-            onEdit={(id) => {
-              void navigate({
-                to: "/photos/$id",
-                params: { id },
-              });
-            }}
-            onPreview={setPreviewPhoto}
-            onSelectionChange={(nextSelectedIds) => {
-              setSelectedIds(nextSelectedIds);
-              setBulkStatus(null);
-            }}
-            refetching={isFetching}
-            selectedIds={selectedIds}
-            sessionTitleById={sessionTitleById}
-          />
-        ) : (
-          <EmptyState
-            action={
-              <mc-button
-                className="admin-inline-button"
-                onClick={() => {
-                  void navigate({ to: "/photos/new" });
-                }}
-                variant="primary"
-              >
-                Subir fotos
-              </mc-button>
-            }
-            description="Prueba con otra búsqueda o prepara un nuevo lote de imágenes."
-            title="No hay fotos visibles"
-          />
-        )}
+        <PhotosTable
+          filteredPhotos={filteredPhotos}
+          onEdit={(id) => {
+            void navigate({
+              to: "/photos/$id",
+              params: { id },
+            });
+          }}
+          onPreview={setPreviewPhoto}
+          onSelectionChange={(nextSelectedIds) => {
+            setSelectedIds(nextSelectedIds);
+            setBulkStatus(null);
+          }}
+          refetching={isFetching}
+          selectedIds={selectedIds}
+          sessionTitleById={sessionTitleById}
+        />
       </section>
 
       <PhotoPreviewDialog
@@ -370,36 +324,23 @@ export function PhotosListView() {
         }}
         photo={previewPhoto}
       />
-      <McConfirmAction
+      <ConfirmAction
         cancelLabel="Cancelar"
         confirmLabel="Eliminar fotos"
-        dialogLabel="Confirmar eliminación de fotos"
+        title={`¿Eliminar ${selectedIds.length} fotos?`}
         message={`Se eliminarán ${selectedIds.length} fotos. Esta acción no se puede deshacer.`}
-        onMcCancel={() => {
+        onCancel={() => {
           setConfirmDeleteOpen(false);
         }}
-        onMcConfirm={() => {
-          setConfirmDeleteOpen(false);
+        onConfirm={() => {
           void runBulkOperation({
             actionLabel: "Eliminación",
-            operation: (id) => photosService.deletePhoto(id),
-          });
+            operation: (id) => trpcClient.photos.delete.mutate({ id }),
+          }).then(() => setConfirmDeleteOpen(false));
         }}
-        onMcOpenChange={(event) => {
-          setConfirmDeleteOpen(event.detail.open);
-        }}
+        onOpenChange={setConfirmDeleteOpen}
         open={confirmDeleteOpen}
         pending={bulkPending}
-      />
-      <McStatusRegion
-        autoDismiss={8000}
-        dismissLabel="Cerrar resultado de la operación"
-        label={bulkStatus?.label ?? ""}
-        onMcDismiss={() => {
-          setStatusRegionOpen(false);
-        }}
-        open={statusRegionOpen}
-        tone={bulkStatus?.tone ?? "idle"}
       />
     </div>
   );

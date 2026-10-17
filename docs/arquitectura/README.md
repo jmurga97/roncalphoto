@@ -15,12 +15,12 @@ El objetivo es doble:
 
 ## Documentos
 
-| #   | Documento                                                                                      | Qué cubre                                                                                                  |
-| --- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| 01  | [Visión general](./01-vision-general.md)                                                       | Mapa del monorepo, apps, paquetes, flujo de datos y principios transversales.                              |
-| 02  | [Arquitectura del backend](./02-arquitectura-backend.md)                                       | Capas `routes → services → repositories → db`, módulos, Hono + Zod OpenAPI, D1 + Drizzle, convenciones.    |
-| 03  | [Infraestructura Cloudflare](./03-infraestructura-cloudflare.md)                               | Workers, D1, R2, Queues, service bindings, workers comunes (`ming-email-worker`, `ming-image-worker`), despliegue. |
-| 04  | [Reglas de backend e infra para nuevos productos](./04-reglas-backend-infra-nuevos-productos.md) | **Documento normativo.** Reglas adaptadas a la app de citas por notas de voz con Expo.                     |
+| #   | Documento                                                                                        | Qué cubre                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| 01  | [Visión general](./01-vision-general.md)                                                         | Mapa del monorepo, apps, paquetes, flujo de datos y principios transversales.                                      |
+| 02  | [Arquitectura del backend](./02-arquitectura-backend.md)                                         | Capas `routes → services → repositories → db`, módulos, Hono + Zod OpenAPI, D1 + Drizzle, convenciones.            |
+| 03  | [Infraestructura Cloudflare](./03-infraestructura-cloudflare.md)                                 | Workers, D1, R2, Queues, service bindings, workers comunes (`ming-email-worker`, `ming-image-worker`), despliegue. |
+| 04  | [Reglas de backend e infra para nuevos productos](./04-reglas-backend-infra-nuevos-productos.md) | **Documento normativo.** Reglas adaptadas a la app de citas por notas de voz con Expo.                             |
 
 ## Documentos relacionados (preexistentes)
 

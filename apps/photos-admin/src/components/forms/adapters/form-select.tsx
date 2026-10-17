@@ -1,5 +1,4 @@
-import { McSelect } from "@murga.ing/components/react";
-import { useId, useState } from "react";
+import { Field, Select } from "@jmurga97/components";
 import { useController, useFormContext } from "react-hook-form";
 
 import type { FieldPath, FieldValues } from "react-hook-form";
@@ -27,11 +26,9 @@ export function FormSelect<TValues extends FieldValues>({
   name,
   options,
   optional = false,
-  placeholder = "[SELECT]",
+  placeholder = "Seleccionar opción",
   required = false,
 }: FormSelectProps<TValues>) {
-  const inputId = useId();
-  const [open, setOpen] = useState(false);
   const { control } = useFormContext<TValues>();
   const { field, fieldState } = useController({
     name,
@@ -39,29 +36,25 @@ export function FormSelect<TValues extends FieldValues>({
   });
 
   return (
-    <mc-field
+    <Field
       error={fieldState.error?.message}
       hint={hint}
       invalid={fieldState.invalid}
       label={label}
       optional={optional}
+      optionalLabel="Opcional"
       required={required}
     >
-      <McSelect
-        inputId={inputId}
-        onMcChange={(event) => {
-          field.onChange(event.detail.selectedId ?? "");
-          setOpen(false);
+      <Select
+        triggerRef={field.ref}
+        name={field.name}
+        onValueChange={(value) => {
+          field.onChange(value ?? "");
         }}
-        onMcOpenChange={(event) => {
-          setOpen(event.detail.open);
-        }}
-        open={open}
         options={options}
         placeholder={placeholder}
-        ref={field.ref}
-        selectedId={typeof field.value === "string" && field.value.length > 0 ? field.value : null}
+        value={typeof field.value === "string" && field.value.length > 0 ? field.value : null}
       />
-    </mc-field>
+    </Field>
   );
 }

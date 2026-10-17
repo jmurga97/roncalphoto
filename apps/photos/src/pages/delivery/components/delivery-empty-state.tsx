@@ -8,9 +8,7 @@ export function DeliveryEmptyState({ title }: DeliveryEmptyStateProps) {
       <div className="max-w-lg rounded-2xl border ui-divider bg-[color:var(--color-surface)] p-6 text-center shadow-[var(--shadow-soft)]">
         <p className="ui-kicker">Entrega de fotos</p>
         <h1 className="editorial-heading mt-2">{title}</h1>
-        <p className="ui-muted mt-3 text-sm leading-relaxed">
-          Esta entrega todavía no tiene fotografías disponibles.
-        </p>
+        <p className="ui-muted mt-3 text-sm leading-relaxed">Esta entrega todavía no tiene fotografías disponibles.</p>
       </div>
     </div>
   );

@@ -50,6 +50,10 @@ pnpm-debug.log*
 # typescript build info
 *.tsbuildinfo
 
+# Playwright output
+test-results/
+playwright-report/
+
 # lock files (only keep bun.lock)
 package-lock.json
 yarn.lock

@@ -44,17 +44,8 @@ export const CanvasPhotoNode = memo(function CanvasPhotoNode({
       }}
       type="button"
     >
-      <span
-        className="canvas-photo-frame"
-        style={{ transform: `rotate(${placement.rotation}deg)` }}
-      >
-        <img
-          alt=""
-          className="canvas-photo-image"
-          decoding="async"
-          draggable={false}
-          src={item.miniatureSrc}
-        />
+      <span className="canvas-photo-frame" style={{ transform: `rotate(${placement.rotation}deg)` }}>
+        <img alt="" className="canvas-photo-image" decoding="async" draggable={false} src={item.miniatureSrc} />
         {isActive ? (
           <img
             alt=""

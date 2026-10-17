@@ -11,14 +11,7 @@ interface DeliveryListRowProps {
   onOpen: () => void;
 }
 
-export function DeliveryListRow({
-  photo,
-  selected,
-  disabled,
-  onToggle,
-  onDownload,
-  onOpen,
-}: DeliveryListRowProps) {
+export function DeliveryListRow({ photo, selected, disabled, onToggle, onDownload, onOpen }: DeliveryListRowProps) {
   return (
     <li className="flex items-center gap-3 rounded-[var(--radius-md)] border ui-divider bg-[color:var(--color-surface)] p-2 transition-colors sm:gap-4 sm:p-3">
       <input

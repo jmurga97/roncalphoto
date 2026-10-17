@@ -36,21 +36,9 @@ export type RichTextBlock =
 
 export type RichTextDocument = RichTextBlock[];
 
+// oxlint-disable-next-line sonarjs/regex-complexity -- One tokenizer covers comments, tags and text without changing the accepted markup.
 const TOKEN_REGEX = /<!--[\s\S]*?-->|<\/?[a-zA-Z0-9]+(?:\s[^>]*?)?\/?>|[^<]+/g;
-const ALLOWED_TAGS = new Set<AllowedTag>([
-  "a",
-  "b",
-  "br",
-  "em",
-  "h2",
-  "h3",
-  "i",
-  "li",
-  "ol",
-  "p",
-  "strong",
-  "ul",
-]);
+const ALLOWED_TAGS = new Set<AllowedTag>(["a", "b", "br", "em", "h2", "h3", "i", "li", "ol", "p", "strong", "ul"]);
 const ENTITY_MAP: Record<string, string> = {
   amp: "&",
   apos: "'",
@@ -61,7 +49,7 @@ const ENTITY_MAP: Record<string, string> = {
 };
 
 function decodeHtmlEntities(value: string) {
-  return value.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (entity, rawCode: string) => {
+  return value.replaceAll(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (entity, rawCode: string) => {
     const normalizedCode = rawCode.toLowerCase();
 
     if (Object.hasOwn(ENTITY_MAP, normalizedCode)) {
@@ -74,6 +62,7 @@ function decodeHtmlEntities(value: string) {
     }
 
     if (normalizedCode.startsWith("#")) {
+      // oxlint-disable-next-line unicorn/prefer-number-coercion -- parseInt preserves decoding of numeric prefixes in legacy content.
       const codePoint = Number.parseInt(normalizedCode.slice(1), 10);
       return Number.isNaN(codePoint) ? entity : String.fromCodePoint(codePoint);
     }
@@ -104,6 +93,18 @@ function readHref(token: string) {
   return unquotedHref ? decodeHtmlEntities(unquotedHref.trim()) : "#";
 }
 
+function closeTag(stack: Array<ParsedRootNode | ParsedTagNode>, tag: AllowedTag) {
+  while (stack.length > 1) {
+    const node = stack.pop();
+    if (node?.type === "tag" && node.tag === tag) break;
+  }
+}
+
+function appendText(parent: ParsedRootNode | ParsedTagNode | undefined, token: string) {
+  const value = decodeHtmlEntities(token);
+  if (value.length > 0) parent?.children.push({ type: "text", value });
+}
+
 function tokenizeRichText(html: string): ParsedRootNode {
   const root: ParsedRootNode = { type: "root", children: [] };
   const stack: Array<ParsedRootNode | ParsedTagNode> = [root];
@@ -114,11 +115,7 @@ function tokenizeRichText(html: string): ParsedRootNode {
     }
 
     if (!token.startsWith("<")) {
-      const decodedText = decodeHtmlEntities(token);
-
-      if (decodedText.length > 0) {
-        stack.at(-1)?.children.push({ type: "text", value: decodedText });
-      }
+      appendText(stack.at(-1), token);
 
       continue;
     }
@@ -130,13 +127,7 @@ function tokenizeRichText(html: string): ParsedRootNode {
     }
 
     if (token.startsWith("</")) {
-      while (stack.length > 1) {
-        const currentNode = stack.pop();
-
-        if (currentNode?.type === "tag" && currentNode.tag === tag) {
-          break;
-        }
-      }
+      closeTag(stack, tag);
 
       continue;
     }
@@ -244,9 +235,7 @@ function sanitizeParagraphChildren(children: RichTextInline[]) {
 
 function toListItems(node: ParsedTagNode) {
   const items = node.children
-    .filter(
-      (childNode): childNode is ParsedTagNode => childNode.type === "tag" && childNode.tag === "li",
-    )
+    .filter((childNode): childNode is ParsedTagNode => childNode.type === "tag" && childNode.tag === "li")
     .map((childNode) => sanitizeParagraphChildren(toInlineNodes(childNode.children)));
 
   if (items.length > 0) {
@@ -333,11 +322,7 @@ function renderInlineNode(node: RichTextInline, key: string): ReactNode {
     case "break":
       return <br key={key} />;
     case "emphasis":
-      return (
-        <em key={key}>
-          {node.children.map((child, index) => renderInlineNode(child, `${key}-${index}`))}
-        </em>
-      );
+      return <em key={key}>{node.children.map((child, index) => renderInlineNode(child, `${key}-${index}`))}</em>;
     case "link":
       return (
         <a href={node.href} key={key} rel="noreferrer" target="_blank">
@@ -346,9 +331,7 @@ function renderInlineNode(node: RichTextInline, key: string): ReactNode {
       );
     case "strong":
       return (
-        <strong key={key}>
-          {node.children.map((child, index) => renderInlineNode(child, `${key}-${index}`))}
-        </strong>
+        <strong key={key}>{node.children.map((child, index) => renderInlineNode(child, `${key}-${index}`))}</strong>
       );
     case "text":
       return node.value;

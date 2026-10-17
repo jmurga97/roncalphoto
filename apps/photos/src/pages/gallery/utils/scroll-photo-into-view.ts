@@ -13,11 +13,7 @@ function scrollThumbnailIntoView(thumbnail: HTMLElement | null, behavior: Scroll
   });
 }
 
-export function scrollPhotoIntoView(
-  container: HTMLDivElement | null,
-  photoId: string,
-  behavior: ScrollBehavior,
-) {
+export function scrollPhotoIntoView(container: HTMLDivElement | null, photoId: string, behavior: ScrollBehavior) {
   const root = findGalleryRoot(container);
   const slide = findGalleryElement(root, "data-gallery-photo-id", photoId);
 

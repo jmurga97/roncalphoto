@@ -6,15 +6,14 @@
     <meta name="theme-color" content="#000000" />
     <script>
       (() => {
-        const storedTheme = localStorage.getItem("roncalphoto-admin-theme");
-        const theme =
-          storedTheme === "dark" || storedTheme === "light"
-            ? storedTheme
-            : matchMedia("(prefers-color-scheme: light)").matches
-              ? "light"
-              : "dark";
-
-        document.documentElement.dataset.mcTheme = theme;
+        let theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        try {
+          const stored = localStorage.getItem("roncalphoto-admin-theme");
+          if (stored === "dark" || stored === "light") theme = stored;
+        } catch {
+          // Use the system theme when storage is unavailable.
+        }
+        document.documentElement.classList.add(theme);
         document.documentElement.style.colorScheme = theme;
         document
           .querySelector('meta[name="theme-color"]')

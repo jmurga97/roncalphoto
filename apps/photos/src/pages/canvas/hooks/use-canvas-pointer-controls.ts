@@ -106,9 +106,7 @@ function handlePinchMove(
   const midX = (currentPoint.x + other.x) / 2 - rect.left;
   const midY = (currentPoint.y + other.y) / 2 - rect.top;
 
-  camera.setCamera(
-    zoomAt(camera.cameraRef.current, midX, midY, currentDistance / previousDistance),
-  );
+  camera.setCamera(zoomAt(camera.cameraRef.current, midX, midY, currentDistance / previousDistance));
 }
 
 function handlePointerMove(
@@ -157,11 +155,7 @@ function handlePointerEnd(state: PointerGestureState, event: PointerEvent) {
   }
 }
 
-function handleClickCapture(
-  state: PointerGestureState,
-  onCanvasClick: (event: MouseEvent) => void,
-  event: MouseEvent,
-) {
+function handleClickCapture(state: PointerGestureState, onCanvasClick: (event: MouseEvent) => void, event: MouseEvent) {
   if (state.suppressNextClick) {
     state.suppressNextClick = false;
     event.preventDefault();
@@ -176,13 +170,11 @@ function handleClickCapture(
  * Excalidraw-style navigation: drag to pan, wheel/trackpad to pan,
  * ctrl/cmd+wheel or two-finger pinch to zoom toward the cursor.
  */
-export function useCanvasPointerControls({
-  camera,
-  onCanvasClick,
-  stageRef,
-}: UseCanvasPointerControlsOptions) {
+export function useCanvasPointerControls({ camera, onCanvasClick, stageRef }: UseCanvasPointerControlsOptions) {
   const onCanvasClickRef = useRef(onCanvasClick);
-  onCanvasClickRef.current = onCanvasClick;
+  useEffect(() => {
+    onCanvasClickRef.current = onCanvasClick;
+  }, [onCanvasClick]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -203,8 +195,7 @@ export function useCanvasPointerControls({
     const onPointerDown = (event: PointerEvent) => handlePointerDown(stage, camera, state, event);
     const onPointerMove = (event: PointerEvent) => handlePointerMove(stage, camera, state, event);
     const onPointerEnd = (event: PointerEvent) => handlePointerEnd(state, event);
-    const onClick = (event: MouseEvent) =>
-      handleClickCapture(state, onCanvasClickRef.current, event);
+    const onClick = (event: MouseEvent) => handleClickCapture(state, onCanvasClickRef.current, event);
 
     // React's onWheel cannot reliably preventDefault (passive listeners).
     stage.addEventListener("wheel", onWheel, { passive: false });

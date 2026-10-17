@@ -22,7 +22,9 @@ const PAN_DELTAS: Record<string, [number, number]> = {
 export function useCanvasKeyboard({ hasSelection, onClose, onPan }: UseCanvasKeyboardOptions) {
   const stateRef = useRef({ hasSelection, onClose, onPan });
 
-  stateRef.current = { hasSelection, onClose, onPan };
+  useEffect(() => {
+    stateRef.current = { hasSelection, onClose, onPan };
+  }, [hasSelection, onClose, onPan]);
 
   useEffect(() => {
     const onDocumentKeydown = (event: KeyboardEvent) => {

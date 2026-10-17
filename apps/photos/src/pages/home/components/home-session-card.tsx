@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import type { Photo, Session } from "@roncal/shared";
+import type { Photo, Session } from "@roncal/api/router";
 
 const CARD_HEIGHT_VARIANTS = [
   "h-[18rem] sm:h-[20rem] lg:h-[21rem]",
@@ -13,6 +13,7 @@ function hashString(value: string): number {
   let hash = 0;
 
   for (const character of value) {
+    // oxlint-disable-next-line unicorn/prefer-code-point -- Preserve the existing UTF-16 hash and stable photo layout.
     hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   }
 
@@ -29,6 +30,7 @@ function pickRandomPhoto(photos: Photo[]): Photo | undefined {
     return undefined;
   }
 
+  // oxlint-disable-next-line sonarjs/pseudo-random -- Only chooses a decorative preview, never credentials.
   const randomIndex = Math.floor(Math.random() * photos.length);
   return photos[randomIndex];
 }

@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 
-import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 import { resolvePhotoSelection } from "@utils/resolve-photo-selection";
 
 import type { GalleryData } from "../types";
@@ -13,7 +13,7 @@ export function useGalleryViewModel(): GalleryData {
   const { slug } = sessionRouteApi.useParams();
   const { photo } = sessionRouteApi.useSearch();
   const navigate = sessionRouteApi.useNavigate();
-  const { data: session } = useSuspenseQuery(sessionDetailQueryOptions(slug));
+  const { data: session } = useSuspenseQuery(trpc.sessions.get.queryOptions({ slug }));
 
   const photos = useMemo(
     () =>
@@ -64,13 +64,7 @@ export function useGalleryViewModel(): GalleryData {
       search: { photo: selection.normalizedPhotoId },
       to: "/session/$slug",
     });
-  }, [
-    navigate,
-    photos.length,
-    selection.isSelectionValid,
-    selection.normalizedPhotoId,
-    session.slug,
-  ]);
+  }, [navigate, photos.length, selection.isSelectionValid, selection.normalizedPhotoId, session.slug]);
 
   return {
     photos,

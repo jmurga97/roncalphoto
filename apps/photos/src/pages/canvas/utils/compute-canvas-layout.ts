@@ -1,9 +1,4 @@
-import {
-  ASPECT_BUCKETS,
-  MASONRY_COLUMN_WIDTH,
-  MASONRY_GUTTER,
-  TARGET_BLOCK_ASPECT,
-} from "../constants";
+import { ASPECT_BUCKETS, MASONRY_COLUMN_WIDTH, MASONRY_GUTTER, TARGET_BLOCK_ASPECT } from "../constants";
 import { hashString, mulberry32 } from "./seeded-random";
 
 import type { Bounds, CanvasPlacement } from "../types";
@@ -11,9 +6,7 @@ import type { Bounds, CanvasPlacement } from "../types";
 const COLUMN_STRIDE = MASONRY_COLUMN_WIDTH + MASONRY_GUTTER;
 
 function pickAspect(roll: number): number {
-  return ASPECT_BUCKETS[
-    Math.min(Math.floor(roll * ASPECT_BUCKETS.length), ASPECT_BUCKETS.length - 1)
-  ];
+  return ASPECT_BUCKETS[Math.min(Math.floor(roll * ASPECT_BUCKETS.length), ASPECT_BUCKETS.length - 1)];
 }
 
 /**
@@ -23,12 +16,9 @@ function pickAspect(roll: number): number {
  */
 function computeColumnCount(photoCount: number): number {
   const averageHeight =
-    ASPECT_BUCKETS.reduce((sum, aspect) => sum + MASONRY_COLUMN_WIDTH / aspect, 0) /
-    ASPECT_BUCKETS.length;
+    ASPECT_BUCKETS.reduce((sum, aspect) => sum + MASONRY_COLUMN_WIDTH / aspect, 0) / ASPECT_BUCKETS.length;
   const rowStride = averageHeight + MASONRY_GUTTER;
-  const columns = Math.round(
-    Math.sqrt((TARGET_BLOCK_ASPECT * photoCount * rowStride) / COLUMN_STRIDE),
-  );
+  const columns = Math.round(Math.sqrt((TARGET_BLOCK_ASPECT * photoCount * rowStride) / COLUMN_STRIDE));
 
   return Math.max(1, Math.min(columns, photoCount));
 }
@@ -41,7 +31,7 @@ function computeColumnCount(photoCount: number): number {
  */
 export function computeCanvasLayout(photoIds: string[]): CanvasPlacement[] {
   const columnCount = computeColumnCount(photoIds.length);
-  const columnHeights: number[] = new Array<number>(columnCount).fill(0);
+  const columnHeights: number[] = Array.from({ length: columnCount }, () => 0);
 
   const placements = photoIds.map((photoId) => {
     const random = mulberry32(hashString(photoId));
@@ -80,13 +70,12 @@ export function computeContentBounds(placements: CanvasPlacement[]): Bounds {
     };
   }
 
-  return placements.reduce(
-    (bounds, placement) => ({
-      minX: Math.min(bounds.minX, placement.x),
-      minY: Math.min(bounds.minY, placement.y),
-      maxX: Math.max(bounds.maxX, placement.x + placement.width),
-      maxY: Math.max(bounds.maxY, placement.y + placement.height),
-    }),
-    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity },
-  );
+  const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  for (const placement of placements) {
+    bounds.minX = Math.min(bounds.minX, placement.x);
+    bounds.minY = Math.min(bounds.minY, placement.y);
+    bounds.maxX = Math.max(bounds.maxX, placement.x + placement.width);
+    bounds.maxY = Math.max(bounds.maxY, placement.y + placement.height);
+  }
+  return bounds;
 }

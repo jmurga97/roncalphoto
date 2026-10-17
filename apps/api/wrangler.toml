@@ -9,7 +9,7 @@ upload_source_maps = true
 binding = "DB_RONCALPHOTO"
 database_id = "da274846-1de9-4c1a-92fd-0e56c5f0f7b5"
 database_name = "roncalphoto"
-migrations_dir = "src/db/migrations"
+migrations_dir = "migrations"
 remote = true
 
 [[services]]
@@ -28,7 +28,32 @@ enabled = true
 
 [vars]
 ALLOWED_ORIGINS = "https://roncalphoto-web.murgapja-fee.workers.dev,https://roncalphoto-admin.murgapja-fee.workers.dev"
-LOG_LEVEL = "info"
 NODE_ENV = "production"
 BETTER_AUTH_URL = "https://roncalphoto-api.murgapja-fee.workers.dev"
-PHOTOS_ADMIN_URL = "https://roncalphoto-admin.murgapja-fee.workers.dev"
+
+# Local development (`bun run dev:local`): Miniflare D1 seeded from seed/seed-local.sql, no remote
+# bindings. The placeholder database_id makes `wrangler deploy --env local` fail instead of
+# shipping DEV_FIXED_OTP against production data.
+[env.local]
+
+[[env.local.d1_databases]]
+binding = "DB_RONCALPHOTO"
+database_id = "local"
+database_name = "roncalphoto-local"
+migrations_dir = "migrations"
+
+# Not running locally: auth OTPs use DEV_FIXED_OTP and photo uploads are unavailable.
+[[env.local.services]]
+binding = "EMAIL_WORKER"
+service = "ming-email-worker"
+
+[[env.local.services]]
+binding = "IMAGE_WORKER"
+service = "ming-image-worker"
+entrypoint = "ImageRpc"
+
+[env.local.vars]
+ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174"
+NODE_ENV = "development"
+BETTER_AUTH_URL = "http://localhost:8787"
+DEV_FIXED_OTP = "true"

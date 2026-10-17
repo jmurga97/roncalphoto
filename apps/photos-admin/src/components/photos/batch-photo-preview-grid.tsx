@@ -1,3 +1,5 @@
+import { Button } from "@jmurga97/components";
+
 import { formatImageFileSize } from "@lib/photos/batch-images";
 
 import type { BatchImagePreview } from "@lib/photos/batch-images";
@@ -7,11 +9,11 @@ export type BatchPhotoPreview = BatchImagePreview;
 
 export function BatchPhotoPreviewGrid<TItem extends BatchImagePreview>({
   ariaLabel = "Imágenes seleccionadas",
-  contentClassName = "grid gap-4 p-4",
-  gridClassName = "m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))] gap-4 p-0",
-  imageClassName = "bg-mc-surface-raised aspect-4/3 overflow-hidden",
+  contentClassName = "grid gap-ming-4 p-ming-4",
+  gridClassName = "admin-preview-grid",
+  imageClassName = "bg-muted aspect-4/3 overflow-hidden",
   items,
-  itemClassName = "border-mc-border bg-mc-surface min-w-0 overflow-hidden rounded-[0.875rem] border",
+  itemClassName = "",
   onRemove,
   renderBody,
 }: {
@@ -29,7 +31,7 @@ export function BatchPhotoPreviewGrid<TItem extends BatchImagePreview>({
       {items.map((item, index) => (
         <li key={item.id} className={itemClassName}>
           <div className={imageClassName}>
-            <img className="block size-full object-cover" alt="" src={item.previewUrl} />
+            <img className="block size-full object-cover" alt={item.title} src={item.previewUrl} />
           </div>
           <div className={contentClassName}>
             {renderBody ? (
@@ -37,17 +39,17 @@ export function BatchPhotoPreviewGrid<TItem extends BatchImagePreview>({
             ) : (
               <>
                 <div className="min-w-0">
-                  <h3 className="text-mc-text-display m-0 truncate text-base">{item.title}</h3>
+                  <h3 className="text-foreground m-0 truncate text-base">{item.title}</h3>
                   <p
-                    className="text-mc-text-secondary m-0 truncate text-[0.8125rem]"
+                    className="text-muted-foreground m-0 truncate text-[length:var(--admin-text-body-sm)]"
                     title={item.fileName}
                   >
                     {item.fileName}
                   </p>
                 </div>
-                <div className="text-mc-text-secondary flex items-center justify-between gap-3 text-[0.8125rem]">
+                <div className="text-muted-foreground flex items-center justify-between gap-ming-3 text-[length:var(--admin-text-body-sm)]">
                   <span>{formatImageFileSize(item.fileSize)}</span>
-                  <mc-button
+                  <Button
                     aria-label={`Quitar ${item.fileName}`}
                     onClick={() => {
                       onRemove(item.id, index);
@@ -56,7 +58,7 @@ export function BatchPhotoPreviewGrid<TItem extends BatchImagePreview>({
                     variant="ghost"
                   >
                     Quitar
-                  </mc-button>
+                  </Button>
                 </div>
               </>
             )}

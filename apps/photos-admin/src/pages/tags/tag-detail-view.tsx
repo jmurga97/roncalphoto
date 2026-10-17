@@ -1,40 +1,35 @@
-import { McRelationshipPanel } from "@murga.ing/components/react";
+import { InlineMessage, RelationshipPanel } from "@jmurga97/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
-import { tagDetailQueryOptions } from "@lib/api/tags/query-options";
+import { PageHeader } from "@components/page-header";
+import { trpc } from "@lib/api/client";
 
 export function TagDetailView() {
   const navigate = useNavigate();
   const params = useParams({ from: "/_auth/tags/$slug" });
-  const { data } = useSuspenseQuery(tagDetailQueryOptions(params.slug));
+  const { data } = useSuspenseQuery(trpc.tags.get.queryOptions({ slug: params.slug }));
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-header">
-        <div className="admin-kicker">Tag detail</div>
-        <p>
-          Slug <strong>{data.tag.slug}</strong>. Esta vista mantiene la relación completa de
-          sesiones sin edición directa de taxonomía.
-        </p>
-      </header>
+    <div className="ming-page">
+      <PageHeader title={data.tag.name} description={`Etiqueta · ${data.tag.slug}`} />
 
-      <mc-inline-message
-        message="Puedes navegar a las sesiones relacionadas para editar copy, slug, tags o fotos asociadas."
+      <InlineMessage
+        message="Abre una sesión para editar su contenido, sus etiquetas o sus fotos."
         title="Solo lectura"
-        tone="idle"
+        tone="info"
       />
 
-      <McRelationshipPanel
-        emptyLabel="No hay sesiones vinculadas a este tag."
+      <RelationshipPanel
+        emptyLabel="No hay sesiones vinculadas a esta etiqueta."
         items={data.sessions.map((session) => ({
           id: session.slug,
           label: session.title,
         }))}
-        onMcSelect={(event) => {
+        onValueChange={(selectedId) => {
           void navigate({
             to: "/sessions/$slug",
-            params: { slug: event.detail.selectedId },
+            params: { slug: selectedId },
           });
         }}
         title="Sesiones relacionadas"

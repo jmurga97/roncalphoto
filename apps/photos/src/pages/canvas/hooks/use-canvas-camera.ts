@@ -95,8 +95,5 @@ export function useCanvasCamera(worldRef: RefObject<HTMLDivElement | null>): Can
     [stopAnimation],
   );
 
-  return useMemo(
-    () => ({ animateTo, cameraRef, setCamera, stopAnimation }),
-    [animateTo, setCamera, stopAnimation],
-  );
+  return useMemo(() => ({ animateTo, cameraRef, setCamera, stopAnimation }), [animateTo, setCamera, stopAnimation]);
 }

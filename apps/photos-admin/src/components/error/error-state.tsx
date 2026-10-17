@@ -1,11 +1,29 @@
-import { getErrorMessage } from "@roncal/shared";
+import { Button, InlineMessage } from "@jmurga97/components";
+import { useRouter } from "@tanstack/react-router";
 
-export function RouteErrorState({ error }: { error: Error }) {
+import { PageHeader } from "@components/page-header";
+
+export function RouteErrorState({ reset }: { error: Error; reset?: () => void }) {
+  const router = useRouter();
   return (
-    <div className="admin-state-shell admin-state-error">
-      <div className="admin-state-eyebrow">Error</div>
-      <h2>No hemos podido cargar esta vista.</h2>
-      <p>{getErrorMessage(error)}</p>
+    <div className="ming-page">
+      <PageHeader title="No se pudo cargar esta vista" />
+      <div className="ming-stack">
+        <InlineMessage
+          title="Datos no disponibles"
+          message="Comprueba tu conexión y vuelve a intentarlo."
+          tone="error"
+        />
+        <Button
+          className="admin-inline-button"
+          variant="secondary"
+          onClick={() => {
+            void router.invalidate().then(() => reset?.());
+          }}
+        >
+          Reintentar
+        </Button>
+      </div>
     </div>
   );
 }

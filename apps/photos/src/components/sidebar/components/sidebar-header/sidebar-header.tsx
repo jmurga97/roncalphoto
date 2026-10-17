@@ -14,11 +14,7 @@ export function SidebarHeader() {
   }
 
   return (
-    <SuspenseWrapper
-      errorFallback={<SidebarHeaderError />}
-      fallback={<SidebarHeaderLoading />}
-      resetKey={slug}
-    >
+    <SuspenseWrapper errorFallback={<SidebarHeaderError />} fallback={<SidebarHeaderLoading />} resetKey={slug}>
       <SidebarHeaderQueryContent />
     </SuspenseWrapper>
   );

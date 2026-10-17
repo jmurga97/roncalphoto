@@ -3,7 +3,7 @@ import { resolvePhotoSelection } from "@utils/resolve-photo-selection";
 
 import { DEFAULT_DESCRIPTION } from "../../constants";
 
-import type { Session } from "@roncal/shared";
+import type { Session } from "@roncal/api/router";
 
 export function mapSessionToSidebarHeader(session: Session, photoId?: string) {
   return {

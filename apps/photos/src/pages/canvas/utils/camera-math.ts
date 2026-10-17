@@ -38,9 +38,7 @@ export function fitBoundsCover(bounds: Bounds, viewport: Size): Camera {
     return { x: viewport.width / 2, y: viewport.height / 2, scale: 1 };
   }
 
-  const scale = clampScale(
-    Math.max(viewport.width / contentWidth, viewport.height / contentHeight),
-  );
+  const scale = clampScale(Math.max(viewport.width / contentWidth, viewport.height / contentHeight));
 
   return {
     scale,
@@ -49,11 +47,7 @@ export function fitBoundsCover(bounds: Bounds, viewport: Size): Camera {
   };
 }
 
-export function cameraCenteredOn(
-  placement: CanvasPlacement,
-  viewport: Size,
-  scale: number,
-): Camera {
+export function cameraCenteredOn(placement: CanvasPlacement, viewport: Size, scale: number): Camera {
   return {
     scale,
     x: viewport.width / 2 - (placement.x + placement.width / 2) * scale,
@@ -65,18 +59,11 @@ export function cameraCenteredOn(
  * Camera that centers a photo in the viewport area not covered by the detail
  * panel (reserved space on the right on desktop, bottom on mobile).
  */
-export function cameraForPhoto(
-  placement: CanvasPlacement,
-  viewport: Size,
-  reserved: ReservedViewportSpace,
-): Camera {
+export function cameraForPhoto(placement: CanvasPlacement, viewport: Size, reserved: ReservedViewportSpace): Camera {
   const visibleWidth = Math.max(viewport.width - reserved.right, 1);
   const visibleHeight = Math.max(viewport.height - reserved.bottom, 1);
   const scale = clampScale(
-    Math.min(
-      visibleWidth / (placement.width * FOCUS_PADDING),
-      visibleHeight / (placement.height * FOCUS_PADDING),
-    ),
+    Math.min(visibleWidth / (placement.width * FOCUS_PADDING), visibleHeight / (placement.height * FOCUS_PADDING)),
   );
 
   return {
@@ -86,11 +73,7 @@ export function cameraForPhoto(
   };
 }
 
-export function isPlacementVisible(
-  placement: CanvasPlacement,
-  camera: Camera,
-  viewport: Size,
-): boolean {
+export function isPlacementVisible(placement: CanvasPlacement, camera: Camera, viewport: Size): boolean {
   const left = placement.x * camera.scale + camera.x;
   const top = placement.y * camera.scale + camera.y;
   const right = left + placement.width * camera.scale;

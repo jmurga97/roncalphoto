@@ -1,17 +1,15 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { RoncalPhotoBrand } from "@components/brand/roncalphoto-brand";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 
 import { HomeEmptyState } from "./components/home-empty-state";
 import { HomeSessionCard } from "./components/home-session-card";
 
 export function HomeView() {
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const visibleSessions = sessions.filter((session) =>
-    session.photos.some(
-      (photo) => photo.miniature.trim().length > 0 || photo.url.trim().length > 0,
-    ),
+    session.photos.some((photo) => photo.miniature.trim().length > 0 || photo.url.trim().length > 0),
   );
 
   if (visibleSessions.length === 0) {

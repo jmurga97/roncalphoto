@@ -1,17 +1,14 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import {
-  sessionDetailQueryOptions,
-  sessionsListQueryOptions,
-} from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 import { getRelatedSessions } from "@utils/get-related-sessions";
 
 import { toSidebarNavigationItem } from "../utils/sidebar-mappers";
 
 export function useRelatedSessions(slug: string) {
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
-  const { data: session } = useSuspenseQuery(sessionDetailQueryOptions(slug));
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
+  const { data: session } = useSuspenseQuery(trpc.sessions.get.queryOptions({ slug }));
 
   return useMemo(() => {
     const relatedSessions = getRelatedSessions(sessions, session);

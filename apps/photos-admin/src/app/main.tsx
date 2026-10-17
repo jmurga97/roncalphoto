@@ -1,5 +1,6 @@
-import { registerMurgaComponents } from "@murga.ing/components/register";
-import "@murga.ing/components/react";
+import "./styles/fonts.css";
+import "@jmurga97/components/styles.css";
+import "./styles/layout.css";
 import { createBrowserHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -10,8 +11,6 @@ import { RouteErrorState } from "@components/error/error-state";
 import { LoadingState } from "@components/loading/loading-state";
 import { queryClient } from "@lib/query-client";
 import "./styles/global.css";
-
-registerMurgaComponents();
 
 const router = createRouter({
   routeTree,
@@ -31,7 +30,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const container = document.getElementById("root");
+const container = document.querySelector("#root");
 
 if (!container) {
   throw new Error("Unable to find root element");

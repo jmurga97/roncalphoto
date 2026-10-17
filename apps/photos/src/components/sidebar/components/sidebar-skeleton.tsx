@@ -4,11 +4,7 @@ interface SidebarSkeletonProps {
   titleLines?: number;
 }
 
-export function SidebarSkeleton({
-  showMetaLine = true,
-  showTags = false,
-  titleLines = 3,
-}: SidebarSkeletonProps) {
+export function SidebarSkeleton({ showMetaLine = true, showTags = false, titleLines = 3 }: SidebarSkeletonProps) {
   return (
     <div aria-hidden="true" className="space-y-4 animate-pulse">
       {showTags ? (
@@ -29,9 +25,7 @@ export function SidebarSkeleton({
           />
         ))}
       </div>
-      {showMetaLine ? (
-        <div className="h-3 w-1/2 rounded-full bg-[color:var(--color-muted)]/20" />
-      ) : null}
+      {showMetaLine ? <div className="h-3 w-1/2 rounded-full bg-[color:var(--color-muted)]/20" /> : null}
     </div>
   );
 }

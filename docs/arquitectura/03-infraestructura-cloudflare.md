@@ -8,15 +8,15 @@ que extiende esta infraestructura al producto nuevo.
 
 ## Recursos en uso hoy
 
-| Recurso                | Uso actual en RoncalPhoto                                                        |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| **Workers**            | API (`roncalphoto-api`) y dos SPAs (`roncalphoto-photos`, `roncalphoto-admin`). |
-| **D1**                 | `roncalphoto` (binding `DB_RONCALPHOTO`), SQLite remoto en prod.                 |
-| **R2**                 | Originales y media procesada (propiedad del `ming-image-worker`).               |
-| **Queues**             | Procesamiento asíncrono de imágenes (propiedad del `ming-image-worker`).        |
-| **Service bindings**   | `EMAIL_WORKER → ming-email-worker`, `IMAGE_WORKER → ming-image-worker`.         |
-| **Email Service**      | Envío transaccional (beta, requiere plan Paid) vía `ming-email-worker`.         |
-| **Observability**      | `[observability] enabled = true` en la API; logs con pino.                       |
+| Recurso              | Uso actual en RoncalPhoto                                                       |
+| -------------------- | ------------------------------------------------------------------------------- |
+| **Workers**          | API (`roncalphoto-api`) y dos SPAs (`roncalphoto-photos`, `roncalphoto-admin`). |
+| **D1**               | `roncalphoto` (binding `DB_RONCALPHOTO`), SQLite remoto en prod.                |
+| **R2**               | Originales y media procesada (propiedad del `ming-image-worker`).               |
+| **Queues**           | Procesamiento asíncrono de imágenes (propiedad del `ming-image-worker`).        |
+| **Service bindings** | `EMAIL_WORKER → ming-email-worker`, `IMAGE_WORKER → ming-image-worker`.         |
+| **Email Service**    | Envío transaccional (beta, requiere plan Paid) vía `ming-email-worker`.         |
+| **Observability**    | `[observability] enabled = true` en la API; logs con pino.                      |
 
 Recursos disponibles en la cuenta y **aún no usados** por RoncalPhoto, listos
 para productos nuevos: **KV, Durable Objects, Workers AI, Vectorize, Cron
@@ -104,13 +104,13 @@ Principio operativo crítico (detallado en [`cloudflare-production.md`](../cloud
 
 ## Targets de despliegue actuales
 
-| App                 | Proyecto Cloudflare           | Tipo                       |
-| ------------------- | ----------------------------- | -------------------------- |
-| `apps/photos`       | `roncalphoto-photos`          | Worker (static assets SPA) |
-| `apps/photos-admin` | `roncalphoto-admin`           | Worker (static assets SPA) |
-| `apps/api`          | `roncalphoto-api`             | Worker                     |
-| `ming-email-worker` | (repo standalone)             | Worker común               |
-| `ming-image-worker` | (repo standalone)             | Worker común               |
+| App                 | Proyecto Cloudflare  | Tipo                       |
+| ------------------- | -------------------- | -------------------------- |
+| `apps/photos`       | `roncalphoto-photos` | Worker (static assets SPA) |
+| `apps/photos-admin` | `roncalphoto-admin`  | Worker (static assets SPA) |
+| `apps/api`          | `roncalphoto-api`    | Worker                     |
+| `ming-email-worker` | (repo standalone)    | Worker común               |
+| `ming-image-worker` | (repo standalone)    | Worker común               |
 
 Orden de despliegue: primero los workers comunes (para que resuelvan los service
 bindings), luego la API (con sus migraciones), y al final los frontends.
@@ -125,14 +125,14 @@ bindings), luego la API (con sus migraciones), y al final los frontends.
 
 Referencia rápida de cuándo usar cada recurso (aplicado en el doc 04):
 
-| Servicio            | Cuándo usarlo                                                                          |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| **D1**              | Datos relacionales transaccionales (usuarios, perfiles, conversaciones, streaks).      |
-| **R2**             | Binarios pesados (audio de notas de voz, imágenes desbloqueadas). Acceso por URL firmada. |
+| Servicio            | Cuándo usarlo                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| **D1**              | Datos relacionales transaccionales (usuarios, perfiles, conversaciones, streaks).                |
+| **R2**              | Binarios pesados (audio de notas de voz, imágenes desbloqueadas). Acceso por URL firmada.        |
 | **KV**              | Lecturas calientes eventualmente consistentes: caché de descubrimiento, flags, presencia ligera. |
-| **Queues**          | Procesamiento asíncrono desacoplado (transcodificar/moderar audio).                    |
-| **Durable Objects** | Estado fuerte por entidad + tiempo real: presencia, coordinación de streak, WebSocket de chat. |
-| **Workers AI**      | Transcripción de voz, moderación/clasificación de contenido, embeddings.               |
-| **Vectorize**       | Búsqueda por similitud (matching opcional por intereses/embeddings).                   |
-| **Cron Triggers**   | Tareas programadas (recalcular streaks a medianoche, expirar contenido, limpiar R2).   |
-| **Email Service**   | OTP y notificaciones transaccionales vía `ming-email-worker`.                          |
+| **Queues**          | Procesamiento asíncrono desacoplado (transcodificar/moderar audio).                              |
+| **Durable Objects** | Estado fuerte por entidad + tiempo real: presencia, coordinación de streak, WebSocket de chat.   |
+| **Workers AI**      | Transcripción de voz, moderación/clasificación de contenido, embeddings.                         |
+| **Vectorize**       | Búsqueda por similitud (matching opcional por intereses/embeddings).                             |
+| **Cron Triggers**   | Tareas programadas (recalcular streaks a medianoche, expirar contenido, limpiar R2).             |
+| **Email Service**   | OTP y notificaciones transaccionales vía `ming-email-worker`.                                    |

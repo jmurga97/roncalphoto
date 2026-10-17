@@ -1,19 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { trpc } from "@lib/api/client";
 import { OverviewView } from "@pages/overview/overview-view";
-
-import { Route as AuthRoute } from "./_auth";
 
 export const Route = createFileRoute("/_auth/")({
   component: OverviewRoute,
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(trpc.sessions.list.queryOptions()),
+      context.queryClient.ensureQueryData(trpc.tags.list.queryOptions()),
+    ]),
 });
 
 function OverviewRoute() {
-  const { session } = AuthRoute.useRouteContext();
+  const { session } = Route.useRouteContext();
 
-  if (!session) {
-    return null;
-  }
-
-  return <OverviewView userEmail={session.user.email} />;
+  // `_auth` redirects to /login without a session; the guard only narrows the type.
+  return session ? <OverviewView userEmail={session.user.email} /> : null;
 }

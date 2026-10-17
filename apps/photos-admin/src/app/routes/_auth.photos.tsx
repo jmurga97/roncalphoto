@@ -1,15 +1,19 @@
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 
-import { photosListQueryOptions } from "@lib/api/photos/query-options";
+import { trpc } from "@lib/api/client";
 import { PhotosListView } from "@pages/photos/photos-list-view";
 
 export const Route = createFileRoute("/_auth/photos")({
   component: PhotosRoute,
-  loader: ({ context }) => context.queryClient.ensureQueryData(photosListQueryOptions()),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(trpc.photos.list.queryOptions()),
+      context.queryClient.ensureQueryData(trpc.sessions.list.queryOptions()),
+    ]),
 });
 
 function PhotosRoute() {
-  const location = useLocation();
+  const { pathname } = useLocation();
 
-  return location.pathname === "/photos" ? <PhotosListView /> : <Outlet />;
+  return pathname === "/photos" ? <PhotosListView /> : <Outlet />;
 }

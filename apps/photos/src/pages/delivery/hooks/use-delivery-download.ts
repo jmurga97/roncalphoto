@@ -50,43 +50,40 @@ export function useDeliveryDownload(): DeliveryDownload {
         throw new Error(`No se pudo descargar la foto (${response.status})`);
       }
       triggerBlobDownload(await response.blob(), photo.title);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No se pudo descargar la foto.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "No se pudo descargar la foto.");
     } finally {
       setIsDownloading(false);
     }
   }, []);
 
-  const downloadZipArchive = useCallback(
-    async (photos: DeliveryPhotoViewModel[], archiveName: string) => {
-      if (photos.length === 0) {
-        return;
-      }
+  const downloadZipArchive = useCallback(async (photos: DeliveryPhotoViewModel[], archiveName: string) => {
+    if (photos.length === 0) {
+      return;
+    }
 
-      setIsDownloading(true);
-      setError(null);
-      try {
-        const usedNames = new Set<string>();
-        const entries = await Promise.all(
-          photos.map(async (photo) => {
-            const response = await fetch(photo.imageSrc);
-            if (!response.ok) {
-              throw new Error(`No se pudo descargar "${photo.title}" (${response.status})`);
-            }
-            return { name: dedupeFilename(photo.title, usedNames), input: await response.blob() };
-          }),
-        );
+    setIsDownloading(true);
+    setError(null);
+    try {
+      const usedNames = new Set<string>();
+      const entries = await Promise.all(
+        photos.map(async (photo) => {
+          const response = await fetch(photo.imageSrc);
+          if (!response.ok) {
+            throw new Error(`No se pudo descargar "${photo.title}" (${response.status})`);
+          }
+          return { name: dedupeFilename(photo.title, usedNames), input: await response.blob() };
+        }),
+      );
 
-        const zipped = await downloadZip(entries).blob();
-        triggerBlobDownload(zipped, archiveName);
-      } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "No se pudo crear el archivo ZIP.");
-      } finally {
-        setIsDownloading(false);
-      }
-    },
-    [],
-  );
+      const zipped = await downloadZip(entries).blob();
+      triggerBlobDownload(zipped, archiveName);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "No se pudo crear el archivo ZIP.");
+    } finally {
+      setIsDownloading(false);
+    }
+  }, []);
 
   return { isDownloading, error, downloadOne, downloadZipArchive };
 }

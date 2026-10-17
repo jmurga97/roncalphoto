@@ -29,11 +29,11 @@ export function useDeliveryGalleryData(
 
   const selection = useMemo(() => {
     const index = galleryPhotos.findIndex((photo) => photo.id === activePhotoId);
-    const currentIndex = index < 0 ? 0 : index;
+    const currentIndex = Math.max(index, 0);
 
     return {
       currentIndex,
-      isSelectionValid: index >= 0,
+      isSelectionValid: index !== -1,
       normalizedPhotoId: galleryPhotos[currentIndex]?.id,
     };
   }, [activePhotoId, galleryPhotos]);

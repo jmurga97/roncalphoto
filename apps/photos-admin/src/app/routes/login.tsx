@@ -1,34 +1,14 @@
+import { Button, Field, Input } from "@jmurga97/components";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useId, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { authClient } from "@lib/auth-client";
+import { assertAuthResult, authClient } from "@lib/auth-client";
+import { getErrorMessage } from "@utils/get-error-message";
 
 import type { FormEvent } from "react";
 
 type LoginStep = "email" | "otp";
-
-interface AuthErrorResult {
-  error?: {
-    message?: string;
-    statusText?: string;
-  } | null;
-}
-
-function getAuthErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "No se ha podido completar la autenticación.";
-}
-
-function assertAuthResult(result: AuthErrorResult) {
-  if (!result.error) {
-    return;
-  }
-
-  throw new Error(result.error.message ?? result.error.statusText ?? "Autenticación rechazada.");
-}
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
@@ -42,18 +22,19 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginRoute() {
-  const emailInputId = useId();
-  const otpInputId = useId();
   const navigate = useNavigate();
+  const otpInputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<LoginStep>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (step === "otp") otpInputRef.current?.focus();
+  }, [step]);
 
   async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
     setIsSubmitting(true);
 
     try {
@@ -66,7 +47,7 @@ function LoginRoute() {
       setOtp("");
       setStep("otp");
     } catch (submitError) {
-      setError(getAuthErrorMessage(submitError));
+      toast.error(getErrorMessage(submitError, "No se ha podido completar la autenticación."));
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +55,6 @@ function LoginRoute() {
 
   async function handleOtpSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
     setIsSubmitting(true);
 
     try {
@@ -86,7 +66,7 @@ function LoginRoute() {
       assertAuthResult(result);
       await navigate({ to: "/" });
     } catch (submitError) {
-      setError(getAuthErrorMessage(submitError));
+      toast.error(getErrorMessage(submitError, "No se ha podido completar la autenticación."));
     } finally {
       setIsSubmitting(false);
     }
@@ -95,9 +75,9 @@ function LoginRoute() {
   return (
     <main className="admin-login-shell">
       <section className="admin-login-panel" aria-labelledby="login-title">
-        <div className="admin-page-header admin-login-header">
+        <div className="ming-page-header__title">
           <div className="admin-kicker">RoncalPhoto Dashboard</div>
-          <h2 id="login-title">Acceso privado.</h2>
+          <h1 id="login-title">Acceso al portfolio</h1>
           <p>
             {step === "email"
               ? "Introduce tu email de administración para solicitar un código de un solo uso. Solo se enviará si el correo ya está autorizado."
@@ -112,31 +92,21 @@ function LoginRoute() {
               void handleEmailSubmit(event);
             }}
           >
-            <label className="admin-login-field" htmlFor={emailInputId}>
-              <span>Email</span>
-              <input
+            <Field label="Email">
+              <Input
                 autoComplete="email"
                 disabled={isSubmitting}
-                id={emailInputId}
-                onChange={(event) => {
-                  setEmail(event.currentTarget.value);
-                }}
+                onValueChange={setEmail}
                 placeholder="nombre@roncalphoto.com"
                 required
                 type="email"
                 value={email}
               />
-            </label>
+            </Field>
 
-            {error ? (
-              <p className="admin-login-error" role="alert">
-                {error}
-              </p>
-            ) : null}
-
-            <button className="admin-login-button" disabled={isSubmitting} type="submit">
-              {isSubmitting ? "Solicitando..." : "Solicitar código"}
-            </button>
+            <Button disabled={isSubmitting} type="submit">
+              {isSubmitting ? "Solicitando…" : "Solicitar código"}
+            </Button>
           </form>
         ) : (
           <form
@@ -145,47 +115,40 @@ function LoginRoute() {
               void handleOtpSubmit(event);
             }}
           >
-            <label className="admin-login-field" htmlFor={otpInputId}>
-              <span>Código OTP</span>
-              <input
+            <Field label="Código de acceso">
+              <Input
+                ref={otpInputRef}
                 autoComplete="one-time-code"
                 disabled={isSubmitting}
-                id={otpInputId}
                 inputMode="numeric"
                 maxLength={6}
-                onChange={(event) => {
-                  setOtp(event.currentTarget.value.replace(/\D/g, "").slice(0, 6));
+                onValueChange={(value) => {
+                  setOtp(value.replaceAll(/\D/g, "").slice(0, 6));
                 }}
-                pattern="[0-9]*"
+                pattern="[0-9]{6}"
+                minLength={6}
                 placeholder="000000"
                 required
                 type="text"
                 value={otp}
               />
-            </label>
-
-            {error ? (
-              <p className="admin-login-error" role="alert">
-                {error}
-              </p>
-            ) : null}
+            </Field>
 
             <div className="admin-login-actions">
-              <button className="admin-login-button" disabled={isSubmitting} type="submit">
-                {isSubmitting ? "Verificando..." : "Entrar"}
-              </button>
-              <button
-                className="admin-login-secondary"
+              <Button disabled={isSubmitting} type="submit">
+                {isSubmitting ? "Verificando…" : "Entrar"}
+              </Button>
+              <Button
                 disabled={isSubmitting}
                 onClick={() => {
-                  setError(null);
                   setOtp("");
                   setStep("email");
                 }}
                 type="button"
+                variant="secondary"
               >
                 Cambiar email
-              </button>
+              </Button>
             </div>
           </form>
         )}

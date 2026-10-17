@@ -1,4 +1,4 @@
-import type { PhotoMetadata } from "@roncal/shared";
+import type { PhotoMetadata } from "@roncal/api/router";
 
 export interface CanvasPhotoItem {
   id: string;

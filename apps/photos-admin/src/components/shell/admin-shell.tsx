@@ -1,206 +1,126 @@
-import { McAppShell, McSidebarNav } from "@murga.ing/components/react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { AppShell, SidebarNav, Switch } from "@jmurga97/components";
+import { useQueryClient } from "@tanstack/react-query";
+import { Outlet, useLocation, useNavigate, useRouteContext } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { useShellActions, useShellMobile, useSidebarOpen } from "@app/store/shell-store";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
-import { tagsListQueryOptions } from "@lib/api/tags/query-options";
 import { signOut } from "@lib/auth-client";
-import { deliveriesListQueryOptions } from "@lib/deliveries/list-query";
 
-function getCurrentSectionLabel(pathname: string) {
-  if (pathname.startsWith("/sessions")) {
-    return "Sessions";
-  }
-
-  if (pathname.startsWith("/photos")) {
-    return "Photos";
-  }
-
-  if (pathname.startsWith("/tags")) {
-    return "Tags";
-  }
-
-  if (pathname.startsWith("/deliveries")) {
-    return "Deliveries";
-  }
-
-  return "Overview";
-}
-
-function getNavigationItems(
-  pathname: string,
-  totalSessions: number,
-  totalPhotos: number,
-  totalTags: number,
-  totalDeliveries: number,
-) {
-  return [
-    {
-      id: "overview",
-      icon: "grid" as const,
-      label: "Overview",
-      current: pathname === "/",
-    },
-    {
-      id: "sessions",
-      icon: "list" as const,
-      label: "Sessions",
-      count: totalSessions,
-      current: pathname.startsWith("/sessions"),
-    },
-    {
-      id: "photos",
-      icon: "image" as const,
-      label: "Photos",
-      count: totalPhotos,
-      current: pathname.startsWith("/photos"),
-    },
-    {
-      id: "tags",
-      icon: "tag" as const,
-      label: "Tags",
-      count: totalTags,
-      current: pathname.startsWith("/tags"),
-    },
-    {
-      id: "deliveries",
-      icon: "list" as const,
-      label: "Deliveries",
-      count: totalDeliveries,
-      current: pathname.startsWith("/deliveries"),
-    },
-  ];
-}
-
-function getFooterItems() {
-  return [
-    {
-      id: "upload-delivery",
-      label: "Subir delivery",
-      description: "Crear una nueva entrega",
-    },
-    {
-      id: "public-site",
-      label: "Ver sitio",
-      description: "Abrir portfolio publico",
-    },
-    {
-      id: "logout",
-      label: "Logout",
-      description: "Cerrar sesion del dashboard",
-    },
-  ];
-}
+const sections = [
+  { id: "overview", label: "Resumen", href: "/" },
+  { id: "sessions", label: "Sesiones", href: "/sessions" },
+  { id: "photos", label: "Fotos", href: "/photos" },
+  { id: "tags", label: "Etiquetas", href: "/tags" },
+  { id: "deliveries", label: "Entregas", href: "/deliveries" },
+];
 
 export function AdminShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const location = useLocation();
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
-  const { data: tags } = useSuspenseQuery(tagsListQueryOptions());
-  const { data: deliveries } = useSuspenseQuery(deliveriesListQueryOptions());
+  const { session } = useRouteContext({ from: "/_auth" });
+  const { pathname } = useLocation();
   const isMobile = useShellMobile();
   const isSidebarOpen = useSidebarOpen();
   const { closeSidebar, setSidebarOpen } = useShellActions();
-  const totalPhotos = sessions.reduce((sum, session) => sum + (session.photos?.length ?? 0), 0);
-  const sectionLabel = getCurrentSectionLabel(location.pathname);
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+  const [logoutPending, setLogoutPending] = useState(false);
+  const section = sections.find((item) => item.href !== "/" && pathname.startsWith(item.href)) ?? sections[0];
+  let detailLabel = pathname === section.href ? null : "Detalle";
+  if (pathname.endsWith("/new")) detailLabel = "Crear";
+
+  async function onNavigate(id: string) {
+    if (id === "logout") {
+      if (logoutPending) return;
+      setLogoutPending(true);
+      try {
+        await signOut();
+        queryClient.clear();
+        await navigate({ to: "/login" });
+      } catch {
+        toast.error("No se pudo cerrar la sesión. Inténtalo de nuevo.");
+      } finally {
+        setLogoutPending(false);
+      }
+    } else {
+      await navigate({ to: sections.find((item) => item.id === id)?.href ?? "/" });
+    }
+    if (isMobile) closeSidebar();
+  }
 
   return (
-    <McAppShell
+    <AppShell
       className="admin-app-shell"
-      collapseLabel="Ocultar navegación"
-      expandLabel="Abrir navegación"
-      mobileOverlay={isMobile}
-      onMcSidebarOpenChange={(event) => {
-        setSidebarOpen(event.detail.open);
-      }}
-      sidebarOpen={isSidebarOpen}
-    >
-      <div slot="sidebar" className="admin-sidebar-slot">
-        <McSidebarNav
-          ariaLabel="Dashboard navigation"
-          collapsed={!isSidebarOpen}
-          footerItems={getFooterItems()}
-          items={getNavigationItems(
-            location.pathname,
-            sessions.length,
-            totalPhotos,
-            tags.length,
-            deliveries.length,
-          )}
-          onMcSelect={(event) => {
-            void (async () => {
-              switch (event.detail.selectedId) {
-                case "upload-delivery":
-                  await navigate({ to: "/deliveries/new" });
-                  break;
-                case "public-site":
-                  window.open("/", "_blank", "noopener,noreferrer");
-                  break;
-                case "logout":
-                  await signOut();
-                  queryClient.clear();
-                  await navigate({ to: "/login" });
-                  break;
-                case "sessions":
-                  await navigate({ to: "/sessions" });
-                  break;
-                case "photos":
-                  await navigate({ to: "/photos", search: { page: 1 } });
-                  break;
-                case "tags":
-                  await navigate({ to: "/tags" });
-                  break;
-                case "deliveries":
-                  await navigate({ to: "/deliveries" });
-                  break;
-                default:
-                  await navigate({ to: "/" });
-                  break;
-              }
-
-              if (isMobile) {
-                closeSidebar();
-              }
-            })();
-          }}
-          open={false}
-        >
-          <div slot="header" className="admin-sidebar-identity">
-            <div className="admin-sidebar-kicker">Dashboard</div>
-            <div className="admin-sidebar-title">RoncalPhoto</div>
-            <p className="admin-sidebar-copy">
-              Overview, lectura completa y edición persistente de sesiones y fotos.
-            </p>
-          </div>
-          <div slot="footer" className="admin-sidebar-footer">
-            <mc-status-text label={`${totalPhotos} fotos activas en D1`} polite tone="success" />
-          </div>
-        </McSidebarNav>
-      </div>
-
-      <header slot="header" className="admin-topbar">
-        <div>
-          <div className="admin-kicker">RoncalPhoto Dashboard</div>
-          <h1>{sectionLabel}</h1>
-        </div>
-        <div className="admin-topbar-actions">
-          <mc-button
-            className="admin-inline-button"
-            onClick={() => {
-              void navigate({ to: "/photos/new", search: { page: 1 } });
+      open={isSidebarOpen}
+      onOpenChange={setSidebarOpen}
+      navigationLabel="Navegación del panel"
+      closeNavigationLabel="Cerrar navegación"
+      hideNavigationLabel="Ocultar navegación"
+      showNavigationLabel="Mostrar navegación"
+      header={
+        <nav aria-label="Ruta">
+          <ol className="ming-breadcrumb">
+            <li>RoncalPhoto</li>
+            <li aria-current={detailLabel ? undefined : "page"}>{section.label}</li>
+            {detailLabel ? <li aria-current="page">{detailLabel}</li> : null}
+          </ol>
+        </nav>
+      }
+      navigation={
+        <div className="admin-sidebar-slot">
+          <SidebarNav
+            ariaLabel="Navegación del panel"
+            header={
+              <div className="admin-sidebar-identity">
+                <span className="admin-sidebar-kicker">Portfolio</span>
+                <span className="admin-sidebar-title">RoncalPhoto</span>
+              </div>
+            }
+            items={sections.map((item) => ({ ...item, current: item.id === section.id }))}
+            onNavigate={(id) => {
+              void onNavigate(id);
             }}
-            variant="primary"
-          >
-            Subir fotos
-          </mc-button>
+            footerItems={[
+              {
+                id: "logout",
+                label: logoutPending ? "Cerrando sesión…" : "Cerrar sesión",
+                disabled: logoutPending,
+              },
+            ]}
+            footer={
+              <div className="admin-sidebar-footer">
+                <p className="admin-sidebar-copy break-all">{session?.user.email}</p>
+                <a className="admin-link" href="https://roncalphoto.com" target="_blank" rel="noopener noreferrer">
+                  Ver portfolio ↗
+                </a>
+                <Switch
+                  label="Modo oscuro"
+                  checked={dark}
+                  onCheckedChange={(checked) => {
+                    setDark(checked);
+                    const theme = checked ? "dark" : "light";
+                    document.documentElement.classList.remove("light", "dark");
+                    document.documentElement.classList.add(theme);
+                    document.documentElement.style.colorScheme = theme;
+                    document
+                      .querySelector('meta[name="theme-color"]')
+                      ?.setAttribute("content", checked ? "#000000" : "#f5f5f5");
+                    try {
+                      localStorage.setItem("roncalphoto-admin-theme", theme);
+                    } catch {
+                      /* Theme still applies when storage is unavailable. */
+                    }
+                  }}
+                />
+              </div>
+            }
+          />
         </div>
-      </header>
-
-      <div slot="main" className="admin-main-slot">
+      }
+    >
+      <div className="admin-main-slot">
         <Outlet />
       </div>
-    </McAppShell>
+    </AppShell>
   );
 }

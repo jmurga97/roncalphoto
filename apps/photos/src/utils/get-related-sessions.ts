@@ -1,4 +1,4 @@
-import type { Session } from "@roncal/shared";
+import type { Session } from "@roncal/api/router";
 
 export function getRelatedSessions(sessions: Session[], activeSession?: Session): Session[] {
   if (!activeSession) {

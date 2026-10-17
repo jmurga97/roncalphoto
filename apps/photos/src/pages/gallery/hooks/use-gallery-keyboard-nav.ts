@@ -11,22 +11,20 @@ interface UseGalleryKeyboardNavOptions {
   photos: GalleryPhotoViewModel[];
 }
 
-export function useGalleryKeyboardNav({
-  currentIndex,
-  onSelectPhoto,
-  photos,
-}: UseGalleryKeyboardNavOptions) {
+export function useGalleryKeyboardNav({ currentIndex, onSelectPhoto, photos }: UseGalleryKeyboardNavOptions) {
   const stateRef = useRef({
     currentIndex,
     onSelectPhoto,
     photos,
   });
 
-  stateRef.current = {
-    currentIndex,
-    onSelectPhoto,
-    photos,
-  };
+  useEffect(() => {
+    stateRef.current = {
+      currentIndex,
+      onSelectPhoto,
+      photos,
+    };
+  }, [currentIndex, onSelectPhoto, photos]);
 
   useEffect(() => {
     const onDocumentKeydown = (event: KeyboardEvent) => {

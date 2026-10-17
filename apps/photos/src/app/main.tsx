@@ -27,7 +27,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const container = document.getElementById("root");
+const container = document.querySelector("#root");
 
 if (!container) {
   throw new Error("Unable to find root element");

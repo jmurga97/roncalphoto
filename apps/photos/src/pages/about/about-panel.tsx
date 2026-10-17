@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { useSidebarAboutOpen, useSidebarActions } from "@app/store";
-import {
-  ABOUT_PANEL_ID,
-  ABOUT_PANEL_TITLE_ID,
-  ABOUT_TRIGGER_ID,
-} from "@components/sidebar/constants";
+import { ABOUT_PANEL_ID, ABOUT_PANEL_TITLE_ID, ABOUT_TRIGGER_ID } from "@components/sidebar/constants";
 import { focusSidebarToggle } from "@components/sidebar/utils/sidebar-dom";
 import { isEditableTarget } from "@utils/is-editable-target";
 
@@ -13,7 +9,7 @@ import { AboutPanelContent } from "./components/about-panel-content";
 import { AboutPanelShell } from "./components/about-panel-shell";
 
 function focusAboutTrigger() {
-  const trigger = document.getElementById(ABOUT_TRIGGER_ID);
+  const trigger = document.querySelector(`#${ABOUT_TRIGGER_ID}`);
 
   if (!(trigger instanceof HTMLElement)) {
     return false;
@@ -59,8 +55,7 @@ export function AboutPanel() {
       return;
     }
 
-    triggerToRestoreRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    triggerToRestoreRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     panelRef.current?.querySelector<HTMLElement>("[data-about-focus-target]")?.focus();
   }, [isOpen]);
 

@@ -1,4 +1,4 @@
-import type { Photo } from "@roncal/shared";
+import type { Photo } from "@roncal/api/router";
 
 export interface PhotoSelection {
   isValid: boolean;

@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "id": "photos-admin-upload",
+      "allowed": {
+        "origins": [
+          "https://roncalphoto-admin.murgapja-fee.workers.dev",
+          "http://localhost:5173",
+          "http://127.0.0.1:5173"
+        ],
+        "methods": ["PUT"],
+        "headers": ["Content-Type"]
+      },
+      "maxAgeSeconds": 3600
+    }
+  ]
+}

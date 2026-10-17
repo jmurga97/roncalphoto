@@ -14,13 +14,13 @@ trabajo: **Eco** (sustituible). Las decisiones se expresan como reglas (`DEBE` /
 
 ## 1. Concepto del producto y su traducción técnica
 
-| Regla de producto                                                        | Implicación técnica                                                                                   |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Hombres y mujeres se descubren por **radio / ciudad / país**.            | Servicio de descubrimiento geográfico (geohash en D1 + caché en KV). Sin geolocalización exacta expuesta. |
-| Cada perfil muestra una **descripción corta**.                           | Tabla `profiles` mínima; el cliente no envía imágenes al inicio.                                       |
-| El contacto se inicia **enviando una nota de voz**. No hay chat ni imágenes. | Pipeline de audio asíncrono (R2 + Queue + Workers AI). Chat e imágenes **deshabilitados por defecto**. |
-| **Streak de 10 días seguidos hablando** desbloquea chat e imágenes.      | Contador de streak server-authoritative + sistema de _gates_ de capacidades.                          |
-| Seguridad (es una app de citas).                                         | Moderación de audio (transcripción + clasificación con Workers AI), reportes, bloqueos.               |
+| Regla de producto                                                            | Implicación técnica                                                                                       |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Hombres y mujeres se descubren por **radio / ciudad / país**.                | Servicio de descubrimiento geográfico (geohash en D1 + caché en KV). Sin geolocalización exacta expuesta. |
+| Cada perfil muestra una **descripción corta**.                               | Tabla `profiles` mínima; el cliente no envía imágenes al inicio.                                          |
+| El contacto se inicia **enviando una nota de voz**. No hay chat ni imágenes. | Pipeline de audio asíncrono (R2 + Queue + Workers AI). Chat e imágenes **deshabilitados por defecto**.    |
+| **Streak de 10 días seguidos hablando** desbloquea chat e imágenes.          | Contador de streak server-authoritative + sistema de _gates_ de capacidades.                              |
+| Seguridad (es una app de citas).                                             | Moderación de audio (transcripción + clasificación con Workers AI), reportes, bloqueos.                   |
 
 **Principio rector heredado:** la API del producto es la única autoridad de
 negocio; el cliente Expo solo la consume. Los workers comunes
@@ -48,13 +48,13 @@ invocados por _service binding_, nunca expuestos al cliente.
                               └───────────────────────┘
 ```
 
-| Pieza                | Tipo                         | Regla                                                                              |
-| -------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
-| `eco-api`            | Worker (Hono)                | Única superficie pública. Aplica auth, CORS, rate limiting, validación, moderación gating. |
-| `ming-email-worker`  | Worker común (reutilizado)   | OTP de acceso y notificaciones transaccionales. Se añade `productId=eco`.          |
-| `ming-audio-worker`  | Worker común (**nuevo**)     | Pipeline de notas de voz: ingest, transcode, transcripción, moderación. Service binding. |
-| Durable Objects      | dentro de `eco-api` o worker dedicado | Tiempo real: presencia, coordinación de conversación, WebSocket de chat (tras desbloqueo). |
-| App Expo             | Cliente nativo               | NO contiene lógica de negocio sensible ni secretos de servidor.                    |
+| Pieza               | Tipo                                  | Regla                                                                                      |
+| ------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `eco-api`           | Worker (Hono)                         | Única superficie pública. Aplica auth, CORS, rate limiting, validación, moderación gating. |
+| `ming-email-worker` | Worker común (reutilizado)            | OTP de acceso y notificaciones transaccionales. Se añade `productId=eco`.                  |
+| `ming-audio-worker` | Worker común (**nuevo**)              | Pipeline de notas de voz: ingest, transcode, transcripción, moderación. Service binding.   |
+| Durable Objects     | dentro de `eco-api` o worker dedicado | Tiempo real: presencia, coordinación de conversación, WebSocket de chat (tras desbloqueo). |
+| App Expo            | Cliente nativo                        | NO contiene lógica de negocio sensible ni secretos de servidor.                            |
 
 > **Regla de reutilización:** NO se reimplementa email dentro de `eco`. Se
 > reutiliza `ming-email-worker` añadiendo un `productId`, un perfil de remitente
@@ -75,18 +75,18 @@ Replica **exactamente** la arquitectura del documento 02:
 
 ### 3.1 Módulos propuestos
 
-| Módulo            | Responsabilidad                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| `auth`            | OTP de acceso vía `ming-email-worker`, sesiones (Better Auth, `packages/auth`).              |
-| `profiles`        | Perfil mínimo: nombre, género, descripción corta, preferencias, ubicación aproximada.        |
-| `discovery`       | Búsqueda por radio/ciudad/país. Devuelve tarjetas con descripción corta (sin datos sensibles). |
-| `voice-notes`     | Subida idempotente de notas de voz (patrón `pending_*` + R2 + `ming-audio-worker`).          |
-| `conversations`   | Hilo entre dos usuarios; estado, participantes, última actividad.                            |
-| `streaks`         | Contador server-authoritative de días consecutivos con intercambio válido.                   |
-| `capabilities`    | _Gates_: qué puede hacer una conversación (voz siempre; chat/imagen según streak).           |
-| `chat`            | Mensajería de texto, **deshabilitada hasta desbloqueo**. Tiempo real con Durable Object.     |
-| `media-unlocks`   | Envío de imágenes con cuota ("cada tanto"), habilitado tras streak.                          |
-| `safety`          | Reportes, bloqueos, resultados de moderación, sanciones.                                     |
+| Módulo          | Responsabilidad                                                                                |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `auth`          | OTP de acceso vía `ming-email-worker`, sesiones (Better Auth, `packages/auth`).                |
+| `profiles`      | Perfil mínimo: nombre, género, descripción corta, preferencias, ubicación aproximada.          |
+| `discovery`     | Búsqueda por radio/ciudad/país. Devuelve tarjetas con descripción corta (sin datos sensibles). |
+| `voice-notes`   | Subida idempotente de notas de voz (patrón `pending_*` + R2 + `ming-audio-worker`).            |
+| `conversations` | Hilo entre dos usuarios; estado, participantes, última actividad.                              |
+| `streaks`       | Contador server-authoritative de días consecutivos con intercambio válido.                     |
+| `capabilities`  | _Gates_: qué puede hacer una conversación (voz siempre; chat/imagen según streak).             |
+| `chat`          | Mensajería de texto, **deshabilitada hasta desbloqueo**. Tiempo real con Durable Object.       |
+| `media-unlocks` | Envío de imágenes con cuota ("cada tanto"), habilitado tras streak.                            |
+| `safety`        | Reportes, bloqueos, resultados de moderación, sanciones.                                       |
 
 > Los módulos **NO** se importan entre sí. Si `conversations` necesita saber si
 > hay chat habilitado, llama a `capabilities` a través de `src/shared/` o de un
@@ -249,15 +249,15 @@ texto desbloqueado** y la **presencia** sí se benefician:
 
 ## 8. Seguridad y moderación (obligatorio en una app de citas)
 
-| Control                    | Dónde                                  | Regla                                                                       |
-| -------------------------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| Moderación de audio        | `ming-audio-worker` (Workers AI)       | Transcribir + clasificar. Solo notas `ready` se entregan. Resto `rejected`. |
-| Moderación de texto        | `eco-api` / Workers AI                 | Filtrar mensajes de chat tras desbloqueo.                                    |
-| Moderación de imágenes     | `ming-image-worker`                    | Reutilizar su moderación. Sin desnudez no consentida, etc.                   |
-| Bloqueos                   | módulo `safety` (D1 `blocks`)          | Un usuario bloqueado NO aparece en discovery ni puede enviar notas.          |
-| Reportes                   | módulo `safety` (D1 `reports`)         | Cualquier nota/usuario reportable; cola de revisión.                        |
-| Rate limiting / antiabuso  | `eco-api` (KV)                         | Límite de notas por usuario/hora; límite de contactos nuevos por día.       |
-| Privacidad de ubicación    | `discovery`                            | Geohash truncado, nunca coordenada exacta (ver §5).                          |
+| Control                   | Dónde                            | Regla                                                                       |
+| ------------------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| Moderación de audio       | `ming-audio-worker` (Workers AI) | Transcribir + clasificar. Solo notas `ready` se entregan. Resto `rejected`. |
+| Moderación de texto       | `eco-api` / Workers AI           | Filtrar mensajes de chat tras desbloqueo.                                   |
+| Moderación de imágenes    | `ming-image-worker`              | Reutilizar su moderación. Sin desnudez no consentida, etc.                  |
+| Bloqueos                  | módulo `safety` (D1 `blocks`)    | Un usuario bloqueado NO aparece en discovery ni puede enviar notas.         |
+| Reportes                  | módulo `safety` (D1 `reports`)   | Cualquier nota/usuario reportable; cola de revisión.                        |
+| Rate limiting / antiabuso | `eco-api` (KV)                   | Límite de notas por usuario/hora; límite de contactos nuevos por día.       |
+| Privacidad de ubicación   | `discovery`                      | Geohash truncado, nunca coordenada exacta (ver §5).                         |
 
 Reglas duras:
 
@@ -284,19 +284,19 @@ Reglas duras:
 
 ## 10. Mapa de infraestructura del producto
 
-| Necesidad                              | Recurso Cloudflare         | Binding (sugerido)        |
-| -------------------------------------- | -------------------------- | ------------------------- |
-| Datos relacionales                     | D1                         | `DB_ECO`                  |
-| Audio y media binaria                  | R2 (propiedad audio-worker)| (interno del worker)      |
-| Caché de discovery / presencia / flags | KV                         | `ECO_KV`                  |
-| Procesado asíncrono de audio           | Queues (+ DLQ)             | (interno del worker)      |
-| Transcripción y moderación             | Workers AI                 | `AI`                      |
-| Tiempo real (chat/presencia)           | Durable Objects            | `CONVERSATION_DO`         |
-| Matching por similitud (opcional)      | Vectorize                  | `ECO_VECTORS`             |
-| Cierre de día / streaks / limpieza     | Cron Triggers              | (trigger en `eco-api`)    |
-| Email OTP / notificaciones             | `ming-email-worker`        | `EMAIL_WORKER`            |
-| Pipeline de notas de voz               | `ming-audio-worker`        | `AUDIO_WORKER`            |
-| Imágenes (post-desbloqueo)             | `ming-image-worker`        | `IMAGE_WORKER`            |
+| Necesidad                              | Recurso Cloudflare          | Binding (sugerido)     |
+| -------------------------------------- | --------------------------- | ---------------------- |
+| Datos relacionales                     | D1                          | `DB_ECO`               |
+| Audio y media binaria                  | R2 (propiedad audio-worker) | (interno del worker)   |
+| Caché de discovery / presencia / flags | KV                          | `ECO_KV`               |
+| Procesado asíncrono de audio           | Queues (+ DLQ)              | (interno del worker)   |
+| Transcripción y moderación             | Workers AI                  | `AI`                   |
+| Tiempo real (chat/presencia)           | Durable Objects             | `CONVERSATION_DO`      |
+| Matching por similitud (opcional)      | Vectorize                   | `ECO_VECTORS`          |
+| Cierre de día / streaks / limpieza     | Cron Triggers               | (trigger en `eco-api`) |
+| Email OTP / notificaciones             | `ming-email-worker`         | `EMAIL_WORKER`         |
+| Pipeline de notas de voz               | `ming-audio-worker`         | `AUDIO_WORKER`         |
+| Imágenes (post-desbloqueo)             | `ming-image-worker`         | `IMAGE_WORKER`         |
 
 Todos los _service bindings_ se tipan en `src/config/env/schema.ts` con
 `z.custom<...>` comprobando `fetch`, igual que `EMAIL_WORKER`/`IMAGE_WORKER` hoy.

@@ -36,11 +36,12 @@ interface UseGalleryScrollHintOptions {
 }
 
 export function useGalleryScrollHint({ galleryKey, photoCount }: UseGalleryScrollHintOptions) {
-  const [shownForGalleryKey, setShownForGalleryKey] = useState<string | undefined>(undefined);
+  const [shownForGalleryKey, setShownForGalleryKey] = useState<string | undefined>();
   const [shouldShowScrollHint, setShouldShowScrollHint] = useState(false);
 
   useEffect(() => {
     if (photoCount === 0) {
+      // oxlint-disable-next-line react/set-state-in-effect -- Sync the one-time hint with localStorage when gallery data arrives.
       setShouldShowScrollHint(false);
       return;
     }

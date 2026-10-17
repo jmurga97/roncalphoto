@@ -1,0 +1,22 @@
+{
+  "name": "@roncal/db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./mappers": "./src/mappers.ts",
+    "./schema": "./src/schema/index.ts",
+    "./repositories/*": "./src/repositories/*.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260502.0",
+    "typescript": "^5.9.3"
+  }
+}

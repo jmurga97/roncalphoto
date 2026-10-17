@@ -1,14 +1,12 @@
+import { Button } from "@jmurga97/components";
 import { useEffect, useRef } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
+import { EmptyState } from "@components/empty-state";
 import { FormTextInput } from "@components/forms/adapters/form-text-input";
 import { BatchImagePicker } from "@components/photos/batch-image-picker";
 import { BatchPhotoPreviewGrid } from "@components/photos/batch-photo-preview-grid";
-import {
-  createBatchImagePreview,
-  formatImageFileSize,
-  revokeBatchImagePreview,
-} from "@lib/photos/batch-images";
+import { createBatchImagePreview, formatImageFileSize, revokeBatchImagePreview } from "@lib/photos/batch-images";
 
 import type { DeliveryFormValues, DeliveryPhotoFormValue } from "@lib/deliveries/upload-form";
 
@@ -46,7 +44,7 @@ export function DeliveryPhotosSection() {
   );
 
   const addFiles = (files: File[]) => {
-    append(files.map(toPhotoValue));
+    append(files.map((item) => toPhotoValue(item)));
   };
 
   const removePhoto = (index: number) => {
@@ -61,19 +59,11 @@ export function DeliveryPhotosSection() {
 
   return (
     <section className="admin-editor-section">
-      <BatchImagePicker
-        kicker="Lote de imágenes"
-        onFilesAccepted={addFiles}
-        title="Añadir imágenes"
-      />
+      <BatchImagePicker kicker="Lote de imágenes" onFilesAccepted={addFiles} title="Añadir imágenes" />
 
       {fields.length > 0 ? (
         <BatchPhotoPreviewGrid
           ariaLabel="Imágenes del lote"
-          contentClassName="grid gap-4"
-          gridClassName="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-4 p-0"
-          imageClassName="bg-mc-surface-raised aspect-4/3 overflow-hidden rounded-md"
-          itemClassName="border-mc-border bg-mc-surface grid min-w-0 gap-4 overflow-hidden rounded-[0.875rem] border p-4"
           items={fields}
           onRemove={(_id, index) => {
             removePhoto(index);
@@ -86,15 +76,10 @@ export function DeliveryPhotosSection() {
                 placeholder="Título de la foto"
                 required
               />
-              <FormTextInput<DeliveryFormValues>
-                label="Fecha"
-                name={`photos.${index}.date`}
-                required
-                type="date"
-              />
-              <div className="text-mc-text-secondary flex items-center justify-between gap-3 text-[0.8125rem]">
+              <FormTextInput<DeliveryFormValues> label="Fecha" name={`photos.${index}.date`} required type="date" />
+              <div className="text-muted-foreground flex items-center justify-between gap-ming-3 text-[length:var(--admin-text-body-sm)]">
                 <span title={field.fileName}>{formatImageFileSize(field.fileSize)}</span>
-                <mc-button
+                <Button
                   aria-label={`Quitar ${field.fileName}`}
                   onClick={() => {
                     removePhoto(index);
@@ -103,19 +88,16 @@ export function DeliveryPhotosSection() {
                   variant="ghost"
                 >
                   Quitar
-                </mc-button>
+                </Button>
               </div>
             </>
           )}
         />
       ) : (
-        <div className="border-mc-border-visible grid min-h-48 content-center justify-items-center gap-3 rounded-2xl border border-dashed p-8 text-center">
-          <div className="admin-state-eyebrow">Sin selección</div>
-          <h3 className="text-mc-text-display m-0">Las imágenes aparecerán aquí</h3>
-          <p className="text-mc-text-secondary m-0">
-            El título inicial se obtiene del nombre de cada archivo.
-          </p>
-        </div>
+        <EmptyState
+          title="Sin imágenes"
+          description="Selecciona los archivos de la entrega. El título inicial se obtiene de su nombre."
+        />
       )}
     </section>
   );

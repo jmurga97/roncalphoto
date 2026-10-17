@@ -1,5 +1,4 @@
-import { McTagPicker } from "@murga.ing/components/react";
-import { useId, useState } from "react";
+import { Field, TagPicker } from "@jmurga97/components";
 import { useController, useFormContext } from "react-hook-form";
 
 import type { FieldPath, FieldValues } from "react-hook-form";
@@ -28,8 +27,6 @@ export function FormTagPicker<TValues extends FieldValues>({
   optional = false,
   required = false,
 }: FormTagPickerProps<TValues>) {
-  const inputId = useId();
-  const [open, setOpen] = useState(false);
   const { control } = useFormContext<TValues>();
   const { field, fieldState } = useController({
     name,
@@ -37,27 +34,31 @@ export function FormTagPicker<TValues extends FieldValues>({
   });
 
   return (
-    <mc-field
+    <Field
       error={fieldState.error?.message}
       hint={hint}
       invalid={fieldState.invalid}
       label={label}
       optional={optional}
+      optionalLabel="Opcional"
       required={required}
     >
-      <McTagPicker
-        inputId={inputId}
-        onMcChange={(event) => {
-          field.onChange(event.detail.selectedIds);
+      <div
+        ref={(node) => {
+          field.ref(node ? { focus: () => node.querySelector("input")?.focus() } : null);
         }}
-        onMcOpenChange={(event) => {
-          setOpen(event.detail.open);
-        }}
-        open={open}
-        options={options}
-        ref={field.ref}
-        selectedIds={Array.isArray(field.value) ? field.value : []}
-      />
-    </mc-field>
+      >
+        <TagPicker
+          ariaLabel={label}
+          placeholder="Buscar etiquetas"
+          emptyLabel="No hay etiquetas que coincidan"
+          onValueChange={(selectedIds) => {
+            field.onChange(selectedIds);
+          }}
+          options={options}
+          value={Array.isArray(field.value) ? field.value : []}
+        />
+      </div>
+    </Field>
   );
 }

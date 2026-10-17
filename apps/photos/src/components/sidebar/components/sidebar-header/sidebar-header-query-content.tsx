@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { sessionDetailQueryOptions } from "@lib/api/sessions/query-options";
+import { trpc } from "@lib/api/client";
 import { RichTextRenderer } from "@utils/render-rich-text";
 
 import { mapSessionToSidebarHeader } from "./map-session-to-sidebar-header";
@@ -20,10 +20,9 @@ export function SidebarHeaderQueryContent() {
 function SidebarHeaderQueryContentBody({ photoId, slug }: { photoId?: string; slug: string }) {
   const {
     data: { activePhotoAbout, descriptionDocument, tags, title },
-  } = useSuspenseQuery({
-    ...sessionDetailQueryOptions(slug),
-    select: (session) => mapSessionToSidebarHeader(session, photoId),
-  });
+  } = useSuspenseQuery(
+    trpc.sessions.get.queryOptions({ slug }, { select: (session) => mapSessionToSidebarHeader(session, photoId) }),
+  );
 
   return (
     <SidebarHeaderContent

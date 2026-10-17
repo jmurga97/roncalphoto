@@ -29,9 +29,7 @@ export function useDeliverySelection(photos: DeliveryPhotoViewModel[]): Delivery
   const allSelected = photos.length > 0 && selected.size === photos.length;
 
   const toggleAll = useCallback(() => {
-    setSelected((previous) =>
-      previous.size === photos.length ? new Set() : new Set(photos.map((photo) => photo.id)),
-    );
+    setSelected((previous) => (previous.size === photos.length ? new Set() : new Set(photos.map((photo) => photo.id))));
   }, [photos]);
 
   const isSelected = useCallback((photoId: string) => selected.has(photoId), [selected]);

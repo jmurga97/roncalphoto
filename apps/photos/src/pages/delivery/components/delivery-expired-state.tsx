@@ -9,8 +9,8 @@ export function DeliveryExpiredState({ title }: DeliveryExpiredStateProps) {
         <p className="ui-kicker">Entrega caducada</p>
         <h1 className="editorial-heading mt-2">{title}</h1>
         <p className="ui-muted mt-3 text-sm leading-relaxed">
-          Las fotografías de esta entrega ya no están disponibles. Las imágenes se conservan durante
-          90 días. Si necesitas acceder a ellas de nuevo, ponte en contacto con el estudio.
+          Las fotografías de esta entrega ya no están disponibles. Las imágenes se conservan durante 90 días. Si
+          necesitas acceder a ellas de nuevo, ponte en contacto con el estudio.
         </p>
       </div>
     </div>

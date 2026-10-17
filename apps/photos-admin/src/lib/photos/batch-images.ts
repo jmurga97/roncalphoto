@@ -1,5 +1,5 @@
 export const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-export const ACCEPTED_IMAGE_ACCEPT = Array.from(ACCEPTED_IMAGE_TYPES).join(",");
+export const ACCEPTED_IMAGE_ACCEPT = [...ACCEPTED_IMAGE_TYPES].join(",");
 export const MAX_IMAGE_FILE_SIZE = 25 * 1024 * 1024;
 
 export interface BatchImagePreview {
@@ -28,14 +28,14 @@ export function formatImageFileSize(sizeBytes: number) {
 }
 
 export function isAcceptedImageFile(file: File) {
-  return ACCEPTED_IMAGE_TYPES.has(file.type) && file.size <= MAX_IMAGE_FILE_SIZE;
+  return ACCEPTED_IMAGE_TYPES.has(file.type) && file.size > 0 && file.size <= MAX_IMAGE_FILE_SIZE;
 }
 
 export function partitionImageFiles(fileList: FileList | File[] | null) {
-  const selectedFiles = Array.from(fileList ?? []);
+  const selectedFiles = [...(fileList ?? [])];
 
   return {
-    validFiles: selectedFiles.filter(isAcceptedImageFile),
+    validFiles: selectedFiles.filter((item) => isAcceptedImageFile(item)),
     rejectedFiles: selectedFiles.filter((file) => !isAcceptedImageFile(file)),
   };
 }

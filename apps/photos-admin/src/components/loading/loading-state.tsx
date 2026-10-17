@@ -1,9 +1,9 @@
-export function LoadingState({ label = "Cargando dashboard..." }: { label?: string }) {
+import { StatusText } from "@jmurga97/components";
+
+export function LoadingState({ label = "Cargando panel…" }: { label?: string }) {
   return (
-    <div className="admin-state-shell">
-      <div className="admin-state-eyebrow">Cargando</div>
-      <h2>{label}</h2>
-      <p>Preparando sesiones, fotos y tags desde D1.</p>
+    <div className="ming-page">
+      <StatusText label={label} tone="info" />
     </div>
   );
 }

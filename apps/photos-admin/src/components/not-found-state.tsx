@@ -1,14 +1,15 @@
+import { Button } from "@jmurga97/components";
 import { Link } from "@tanstack/react-router";
+
+import { PageHeader } from "@components/page-header";
 
 export function NotFoundState() {
   return (
-    <div className="admin-state-shell admin-state-not-found">
-      <div className="admin-state-eyebrow">404</div>
-      <h2>Esta ruta no existe en el dashboard.</h2>
-      <p>Puedes volver al overview o entrar directamente en sesiones, fotos o tags.</p>
-      <Link className="admin-link" to="/">
-        Ir al overview
-      </Link>
+    <div className="ming-page">
+      <PageHeader title="Página no encontrada" description="Vuelve al resumen para continuar con tu portfolio." />
+      <Button className="admin-inline-button" variant="secondary" nativeButton={false} render={<Link to="/" />}>
+        Volver al resumen
+      </Button>
     </div>
   );
 }

@@ -14,18 +14,10 @@ export interface SidebarHeaderContentProps {
   title: string;
 }
 
-export function SidebarHeaderContent({
-  activePhotoAbout,
-  bodyContent,
-  tags = [],
-  title,
-}: SidebarHeaderContentProps) {
+export function SidebarHeaderContent({ activePhotoAbout, bodyContent, tags = [], title }: SidebarHeaderContentProps) {
   return (
     <header className="space-y-3 border-b pb-6 ui-divider">
-      <RoncalPhotoBrand
-        className="block rounded-sm focus-visible:outline-none"
-        sidebarFocusTarget
-      />
+      <RoncalPhotoBrand className="block rounded-sm focus-visible:outline-none" sidebarFocusTarget />
       <h1 className="editorial-heading mt-2">{title}</h1>
       {tags.length > 0 ? (
         <ul
@@ -42,11 +34,7 @@ export function SidebarHeaderContent({
         </ul>
       ) : null}
       <div className="editorial-prose">{bodyContent}</div>
-      <p
-        aria-live="polite"
-        className="ui-muted mt-3 text-sm leading-relaxed"
-        hidden={!activePhotoAbout}
-      >
+      <p aria-live="polite" className="ui-muted mt-3 text-sm leading-relaxed" hidden={!activePhotoAbout}>
         {activePhotoAbout ?? ""}
       </p>
     </header>

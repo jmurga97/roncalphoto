@@ -41,11 +41,7 @@ export function CanvasStage({
   useCanvasPointerControls({ camera, onCanvasClick: handleCanvasClick, stageRef });
 
   return (
-    <div
-      className="canvas-stage"
-      data-selected={selectedPhotoId ? "true" : undefined}
-      ref={stageRef}
-    >
+    <div className="canvas-stage" data-selected={selectedPhotoId ? "true" : undefined} ref={stageRef}>
       <div className="canvas-world" ref={worldRef}>
         {items.map((item) => {
           const placement = placementsById.get(item.id);

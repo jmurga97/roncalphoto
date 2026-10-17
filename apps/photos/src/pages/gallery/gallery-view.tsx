@@ -20,15 +20,18 @@ export function GalleryView({ galleryData, showThumbnails }: GalleryViewProps) {
   const screenMode = useScreenMode();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasInitialScrollAlignedRef = useRef(false);
+  // oxlint-disable-next-line unicorn/no-useless-undefined -- React 19 requires an initial ref value.
   const pendingProgrammaticPhotoIdRef = useRef<string | undefined>(undefined);
   const sessionSlugRef = useRef(galleryData.sessionSlug);
 
   // Reset scroll-tracking state when navigating to a different session
-  if (sessionSlugRef.current !== galleryData.sessionSlug) {
-    sessionSlugRef.current = galleryData.sessionSlug;
-    hasInitialScrollAlignedRef.current = false;
-    pendingProgrammaticPhotoIdRef.current = undefined;
-  }
+  useEffect(() => {
+    if (sessionSlugRef.current !== galleryData.sessionSlug) {
+      sessionSlugRef.current = galleryData.sessionSlug;
+      hasInitialScrollAlignedRef.current = false;
+      pendingProgrammaticPhotoIdRef.current = undefined;
+    }
+  }, [galleryData.sessionSlug]);
 
   function selectPhoto(photoId: string, options: { behavior?: ScrollBehavior; scroll: boolean }) {
     if (options.scroll) {
@@ -57,6 +60,7 @@ export function GalleryView({ galleryData, showThumbnails }: GalleryViewProps) {
     scrollPhotoIntoView(containerRef.current, galleryData.selection.normalizedPhotoId, "auto");
     hasInitialScrollAlignedRef.current = true;
   }, [
+    galleryData.sessionSlug,
     galleryData.photos.length,
     galleryData.selection.isSelectionValid,
     galleryData.selection.normalizedPhotoId,

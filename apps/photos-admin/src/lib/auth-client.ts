@@ -1,30 +1,16 @@
 import { createEmailOtpAuthClient } from "@roncal/auth/client";
-import { resolveApiBaseUrl } from "@roncal/shared";
 
-const baseURL = `${resolveApiBaseUrl({
-  viteApiUrl: import.meta.env.VITE_API_URL,
-})}/api/auth`;
+import { API_URL } from "./api/client";
 
-export const authClient = createEmailOtpAuthClient({ baseURL });
+export const authClient = createEmailOtpAuthClient(`${API_URL}/api/auth`);
 
-export type Session = typeof authClient.$Infer.Session;
-
-interface AuthClientResult {
-  error?: {
-    message?: string;
-    statusText?: string;
-  } | null;
-}
-
-function assertAuthClientResult(result: AuthClientResult) {
-  if (!result.error) {
-    return;
+/** Better Auth resolves with `{ error }` instead of throwing. */
+export function assertAuthResult(result: { error?: { message?: string; statusText?: string } | null }) {
+  if (result.error) {
+    throw new Error(result.error.message ?? result.error.statusText ?? "Autenticación rechazada.");
   }
-
-  throw new Error(result.error.message ?? result.error.statusText ?? "Autenticación rechazada.");
 }
 
 export async function signOut(): Promise<void> {
-  const result = await authClient.signOut();
-  assertAuthClientResult(result);
+  assertAuthResult(await authClient.signOut());
 }

@@ -25,11 +25,7 @@ function SidebarRelatedSectionContentBody({ slug }: { slug: string }) {
 
   return (
     <section className="mt-6 border-t py-6 ui-divider">
-      {items.length > 0 ? (
-        <RelatedSessionsList items={items} />
-      ) : (
-        <p className="ui-muted text-xs">{visibleNotice}</p>
-      )}
+      {items.length > 0 ? <RelatedSessionsList items={items} /> : <p className="ui-muted text-xs">{visibleNotice}</p>}
     </section>
   );
 }

@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { McMediaBrowser, McResourceEditor } from "@murga.ing/components/react";
+import { MediaBrowser, ResourceEditor, StatusText } from "@jmurga97/components";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { useState } from "react";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { FormSelect } from "@components/forms/adapters/form-select";
@@ -11,40 +11,29 @@ import { FormTextInput } from "@components/forms/adapters/form-text-input";
 import { FormTextarea } from "@components/forms/adapters/form-textarea";
 import {
   ConfirmDelete,
-  ServerErrorMessage,
   getEditorStatus,
   getServerError,
   useResourceSubmit,
 } from "@components/forms/resource-editor-helpers";
-import { invalidatePhotoData } from "@lib/api/invalidation";
-import { photoUploadsService } from "@lib/api/photo-uploads/photo-uploads";
-import { resolvePhotoUploadAttempt } from "@lib/api/photo-uploads/upload-attempt";
-import { photosService } from "@lib/api/photos/photos";
-import { photoDetailQueryOptions } from "@lib/api/photos/query-options";
-import { sessionsListQueryOptions } from "@lib/api/sessions/query-options";
+import { PageHeader } from "@components/page-header";
+import { invalidatePortfolio, trpc } from "@lib/api/client";
 
-import type { PhotoUploadAttempt } from "@lib/api/photo-uploads/upload-attempt";
-import type { ApiPhoto, ApiSession, CreatePhotoInput } from "@roncal/shared";
+import type { Photo, RouterInputs } from "@roncal/api/router";
+
+const urlField = (error: string) => z.string().trim().pipe(z.url({ error }));
 
 const photoSchema = z.object({
   sessionId: z.string().trim().min(1, { error: "Selecciona una sesión." }),
-  url: z.string().trim(),
-  miniature: z.string().trim(),
-  alt: z.string().trim().min(1, { error: "El alt es obligatorio." }),
-  about: z.string().trim().min(1, { error: "El texto about es obligatorio." }),
+  url: urlField("Introduce la URL de la imagen principal."),
+  miniature: urlField("Introduce la URL de la miniatura."),
+  alt: z.string().trim().min(1, { error: "Escribe un texto alternativo" }),
+  about: z.string().trim().min(1, { error: "Escribe una descripción" }),
   sortOrder: z
     .string()
     .trim()
-    .refine((value) => /^-?\d+$/.test(value), {
-      error: "El orden debe ser un número entero.",
-    }),
+    .regex(/^-?\d+$/, { error: "El orden debe ser un número entero." }),
   metadata: z.object({
-    iso: z
-      .string()
-      .trim()
-      .refine((value) => value === "" || /^-?\d+$/.test(value), {
-        error: "El ISO debe ser un número entero.",
-      }),
+    iso: z.string().trim().regex(/^\d*$/, { error: "El ISO debe ser un número entero." }),
     aperture: z.string().trim(),
     shutterSpeed: z.string().trim(),
     lens: z.string().trim(),
@@ -53,327 +42,190 @@ const photoSchema = z.object({
 });
 
 type PhotoFormValues = z.infer<typeof photoSchema>;
-type PhotoRecord = ApiPhoto;
+type PhotoInput = RouterInputs["photos"]["update"]["data"];
 
-function toOptionalText(value: string) {
-  const trimmedValue = value.trim();
-  return trimmedValue.length > 0 ? trimmedValue : undefined;
-}
-
-function toOptionalNumber(value: string) {
-  const trimmedValue = value.trim();
-  return trimmedValue.length > 0 ? Number(trimmedValue) : undefined;
-}
-
-function toPhotoFormValues(photo?: PhotoRecord): PhotoFormValues {
+function toPhotoFormValues(photo: Photo): PhotoFormValues {
   return {
-    sessionId: photo?.sessionId ?? "",
-    url: photo?.url ?? "",
-    miniature: photo?.miniature ?? "",
-    alt: photo?.alt ?? "",
-    about: photo?.about ?? "",
-    sortOrder: String(photo?.sortOrder ?? 0),
-    metadata: {
-      iso: photo?.metadata.iso ? String(photo.metadata.iso) : "",
-      aperture: photo?.metadata.aperture ?? "",
-      shutterSpeed: photo?.metadata.shutterSpeed ?? "",
-      lens: photo?.metadata.lens ?? "",
-      camera: photo?.metadata.camera ?? "",
-    },
+    sessionId: photo.sessionId,
+    url: photo.url,
+    miniature: photo.miniature,
+    alt: photo.alt,
+    about: photo.about,
+    sortOrder: String(photo.sortOrder),
+    metadata: { ...photo.metadata, iso: photo.metadata.iso ? String(photo.metadata.iso) : "" },
   };
 }
 
-function toCreatePhotoInput(values: PhotoFormValues): CreatePhotoInput {
+// Every field is sent: empty metadata strings clear the stored value.
+function toPhotoInput({ sortOrder, metadata, ...values }: PhotoFormValues): PhotoInput {
   return {
-    sessionId: values.sessionId,
-    url: values.url.trim(),
-    miniature: values.miniature.trim(),
-    alt: values.alt.trim(),
-    about: values.about.trim(),
-    sortOrder: Number(values.sortOrder),
-    metadata: {
-      iso: toOptionalNumber(values.metadata.iso),
-      aperture: toOptionalText(values.metadata.aperture),
-      shutterSpeed: toOptionalText(values.metadata.shutterSpeed),
-      lens: toOptionalText(values.metadata.lens),
-      camera: toOptionalText(values.metadata.camera),
-    },
+    ...values,
+    sortOrder: Number(sortOrder),
+    metadata: { ...metadata, iso: Number(metadata.iso) || null },
   };
 }
 
-function CreatePhotoEditor() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const uploadAttempt = useRef<PhotoUploadAttempt | null>(null);
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
-  const saveMutation = useMutation({
-    mutationFn: ({ file, input }: { file?: File; input: CreatePhotoInput }) => {
-      if (!file) {
-        return photosService.createPhoto(input);
-      }
-
-      const attempt = resolvePhotoUploadAttempt(uploadAttempt.current, file, input);
-      uploadAttempt.current = attempt;
-      return photoUploadsService.uploadPhoto(file, input, attempt.idempotencyKey);
-    },
-  });
-
-  return (
-    <PhotoEditorForm
-      mode="create"
-      onDeleteAction={() => {
-        void navigate({ to: "/photos" });
-        return Promise.resolve();
-      }}
-      onSaveAction={async (input, file) => {
-        const photo = await saveMutation.mutateAsync({ input, file });
-        uploadAttempt.current = null;
-        await invalidatePhotoData(queryClient);
-        queryClient.setQueryData(photoDetailQueryOptions(photo.id).queryKey, photo);
-        await navigate({
-          to: "/photos/$id",
-          params: { id: photo.id },
-        });
-        return photo;
-      }}
-      onUploadCancel={() => {
-        uploadAttempt.current = null;
-      }}
-      savePending={saveMutation.isPending}
-      sessions={sessions}
-    />
-  );
-}
-
-function EditPhotoEditor() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const params = useParams({ from: "/_auth/photos/$id" });
-  const { data: photo } = useSuspenseQuery(photoDetailQueryOptions(params.id));
-  const { data: sessions } = useSuspenseQuery(sessionsListQueryOptions());
-  const saveMutation = useMutation({
-    mutationFn: (input: CreatePhotoInput) => photosService.updatePhoto(photo.id, input),
-  });
-  const deleteMutation = useMutation({
-    mutationFn: () => photosService.deletePhoto(photo.id),
-  });
-
-  return (
-    <PhotoEditorForm
-      initialPhoto={photo}
-      mode="edit"
-      onDeleteAction={async () => {
-        await deleteMutation.mutateAsync();
-        await invalidatePhotoData(queryClient);
-        await navigate({ to: "/photos" });
-      }}
-      onSaveAction={async (input) => {
-        const nextPhoto = await saveMutation.mutateAsync(input);
-        await invalidatePhotoData(queryClient);
-        queryClient.setQueryData(photoDetailQueryOptions(nextPhoto.id).queryKey, nextPhoto);
-        return nextPhoto;
-      }}
-      savePending={saveMutation.isPending}
-      deletePending={deleteMutation.isPending}
-      sessions={sessions}
-    />
-  );
-}
-
-function PhotoAssetFields({
-  mode,
-  onUploadFileChange,
-  sessionOptions,
-  uploadFile,
-}: {
-  mode: "create" | "edit";
-  onUploadFileChange: (file?: File) => void;
-  sessionOptions: Array<{ id: string; label: string; description: string }>;
-  uploadFile?: File;
-}) {
+function PhotoMetadataFields() {
   return (
     <section className="admin-editor-section">
-      <div className="admin-kicker">Asset</div>
-      {mode === "create" ? (
-        <label className="admin-upload-field">
-          <span>Archivo de imagen</span>
-          <input
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => {
-              onUploadFileChange(event.currentTarget.files?.[0]);
-            }}
-            type="file"
-          />
-          <small>JPEG, PNG o WebP. Máximo 25 MiB. El archivo se sube directamente a R2.</small>
-        </label>
-      ) : null}
+      <div className="admin-kicker">Metadata técnica</div>
       <div className="admin-form-grid admin-form-grid--two">
-        <FormSelect<PhotoFormValues>
-          label="Sesión"
-          name="sessionId"
-          options={sessionOptions}
-          placeholder="[SELECT SESSION]"
-          required
-        />
+        <FormTextInput<PhotoFormValues> label="ISO" name="metadata.iso" optional placeholder="400" type="number" />
+        <FormTextInput<PhotoFormValues> label="Apertura" name="metadata.aperture" optional placeholder="f/2.8" />
         <FormTextInput<PhotoFormValues>
-          label="Orden"
-          name="sortOrder"
-          placeholder="0"
-          required
-          type="number"
+          label="Velocidad de obturación"
+          name="metadata.shutterSpeed"
+          optional
+          placeholder="1/250"
         />
-      </div>
-      <div className="admin-form-grid">
-        <FormTextInput<PhotoFormValues>
-          label="URL principal"
-          name="url"
-          placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover.jpg"
-          required={mode === "edit" || !uploadFile}
-        />
-        <FormTextInput<PhotoFormValues>
-          label="Miniatura"
-          name="miniature"
-          placeholder="https://images.roncalphoto.com/sessions/editorial-atardecer/cover-thumb.jpg"
-          required={mode === "edit" || !uploadFile}
-        />
+        <FormTextInput<PhotoFormValues> label="Objetivo" name="metadata.lens" optional placeholder="85mm f/1.8" />
+        <FormTextInput<PhotoFormValues> label="Cámara" name="metadata.camera" optional placeholder="Canon EOS R5" />
       </div>
     </section>
   );
 }
 
-function PhotoEditorForm({
-  deletePending = false,
-  initialPhoto,
-  mode,
-  onDeleteAction,
-  onSaveAction,
-  onUploadCancel,
-  savePending,
-  sessions,
-}: {
-  deletePending?: boolean;
-  initialPhoto?: PhotoRecord;
-  mode: "create" | "edit";
-  onDeleteAction: () => Promise<void>;
-  onSaveAction: (input: CreatePhotoInput, file?: File) => Promise<PhotoRecord>;
-  onUploadCancel?: () => void;
-  savePending: boolean;
-  sessions: ApiSession[];
-}) {
+export function PhotoEditorView() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { id } = useParams({ from: "/_auth/photos/$id" });
+  const { data: photo } = useSuspenseQuery(trpc.photos.get.queryOptions({ id }));
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
+  const saveMutation = useMutation(trpc.photos.update.mutationOptions());
+  const deleteMutation = useMutation(trpc.photos.delete.mutationOptions());
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File>();
   const form = useForm<PhotoFormValues>({
     resolver: zodResolver(photoSchema),
-    defaultValues: toPhotoFormValues(initialPhoto),
+    defaultValues: toPhotoFormValues(photo),
   });
-  const { clearErrors, formState, reset, setError, watch } = form;
-  const watchedValues = watch();
+  const { clearErrors, formState, reset } = form;
+  const [sessionId, sortOrder, url, miniature, alt, about] = useWatch({
+    control: form.control,
+    name: ["sessionId", "sortOrder", "url", "miniature", "alt", "about"],
+  });
   const serverError = getServerError(form);
-  const sessionOptions = sessions.map((session) => ({
-    id: session.id,
-    label: session.title,
-    description: session.slug,
-  }));
-  const sessionLabel =
-    sessions.find((session) => session.id === watchedValues.sessionId)?.title ?? "Sin sesión";
+  const sessionLabel = sessions.find((session) => session.id === sessionId)?.title ?? "Sin sesión";
   const editorStatus = getEditorStatus({
-    deletePending,
+    deletePending: deleteMutation.isPending,
     isDirty: formState.isDirty,
     isSubmitSuccessful: formState.isSubmitSuccessful,
-    labels: {
-      deletingLabel: "Eliminando foto...",
-      dirtyLabel: "Hay cambios sin guardar",
-      savedLabel: "Cambios guardados",
-      savingLabel: "Guardando foto...",
-    },
-    savePending,
+    savePending: saveMutation.isPending,
     serverError,
   });
-  const submitResource = useResourceSubmit<PhotoFormValues, CreatePhotoInput, PhotoRecord>({
+  const submitResource = useResourceSubmit<PhotoFormValues, PhotoInput, Photo>({
     form,
-    onSave: (input) => onSaveAction(input, uploadFile),
-    onSaved: () => {
-      setUploadFile(undefined);
+    onSave: async (data) => {
+      const savedPhoto = await saveMutation.mutateAsync({ id: photo.id, data });
+      await invalidatePortfolio();
+      queryClient.setQueryData(trpc.photos.get.queryKey({ id: photo.id }), savedPhoto);
+      return savedPhoto;
     },
     toFormValues: toPhotoFormValues,
-    toInput: toCreatePhotoInput,
-    validate: (input) => {
-      if (!uploadFile && input.url.length === 0) {
-        setError("url", {
-          type: "required",
-          message: "Añade un archivo o una URL principal.",
-        });
-        return false;
-      }
-
-      if (!uploadFile && input.miniature.length === 0) {
-        setError("miniature", {
-          type: "required",
-          message: "Añade un archivo o una miniatura.",
-        });
-        return false;
-      }
-
-      return true;
-    },
+    toInput: toPhotoInput,
   });
 
   return (
     <FormProvider {...form}>
-      <div className="admin-page">
-        <header className="admin-page-header">
-          <div className="admin-kicker">Photos</div>
-          <p>
-            {mode === "create"
-              ? "Sube una imagen para generar automáticamente la versión principal y la miniatura, o introduce URLs existentes."
-              : "Edita URL principal, miniatura, relación con la sesión, copy y metadata técnica."}
-          </p>
-        </header>
+      <div className="ming-page">
+        <PageHeader hidden title={photo.alt} />
 
-        <McResourceEditor
-          deleting={deletePending}
+        <ResourceEditor
+          className="admin-resource-editor"
+          deleting={deleteMutation.isPending}
           dirty={formState.isDirty}
-          onMcCancel={() => {
+          onCancel={() => {
             clearErrors("root");
-
-            if (mode === "create") {
-              onUploadCancel?.();
-              reset(toPhotoFormValues());
-              setUploadFile(undefined);
-              return;
-            }
-
-            reset(toPhotoFormValues(initialPhoto));
+            reset(toPhotoFormValues(photo));
           }}
-          onMcDelete={() => {
-            setDeleteConfirmOpen(true);
-          }}
-          onMcSave={submitResource}
-          resourceTitle={mode === "create" ? "Photo draft" : (initialPhoto?.id ?? "Photo")}
-          saving={savePending}
-          status={editorStatus}
-        >
-          <div slot="fields" className="admin-editor-layout">
-            <ServerErrorMessage message={serverError} />
-
-            <PhotoAssetFields
-              mode={mode}
-              onUploadFileChange={setUploadFile}
-              sessionOptions={sessionOptions}
-              uploadFile={uploadFile}
+          onDelete={() => setDeleteConfirmOpen(true)}
+          onSave={submitResource}
+          resourceTitle={photo.alt}
+          saveLabel="Guardar cambios"
+          cancelLabel="Descartar cambios"
+          deleteLabel="Eliminar"
+          saving={saveMutation.isPending}
+          status={
+            <StatusText
+              label={editorStatus?.label ?? "Sin cambios"}
+              tone={editorStatus?.tone ?? "neutral"}
+              aria-live="off"
             />
+          }
+          aside={
+            <div className="admin-aside-stack">
+              <section className="admin-editor-section">
+                <div className="admin-kicker">Vista previa</div>
+                <StatusText label={`${sessionLabel} · orden ${sortOrder}`} polite tone="neutral" />
+              </section>
+              <MediaBrowser
+                emptyLabel="Añade una URL principal para ver la previsualización."
+                items={
+                  url.trim()
+                    ? [
+                        {
+                          id: photo.id,
+                          src: url,
+                          thumbnailSrc: miniature || undefined,
+                          alt: alt || "Previsualización",
+                          caption: about || undefined,
+                        },
+                      ]
+                    : []
+                }
+                selectedId={photo.id}
+                showRail={false}
+              />
+              <ConfirmDelete
+                title="¿Eliminar foto?"
+                confirmLabel="Eliminar foto"
+                message="¿Seguro que quieres borrar esta foto? Esta acción no se puede deshacer."
+                onConfirm={async () => {
+                  await deleteMutation.mutateAsync({ id: photo.id });
+                  await invalidatePortfolio();
+                  await navigate({ to: "/photos" });
+                  document.querySelector("h1")?.focus();
+                }}
+                onOpenChange={setDeleteConfirmOpen}
+                open={isDeleteConfirmOpen}
+                pending={deleteMutation.isPending}
+              />
+            </div>
+          }
+        >
+          <div className="admin-editor-layout">
+            <section className="admin-editor-section">
+              <div className="admin-kicker">Imagen</div>
+              <div className="admin-form-grid admin-form-grid--two">
+                <FormSelect<PhotoFormValues>
+                  label="Sesión"
+                  name="sessionId"
+                  options={sessions.map((session) => ({
+                    id: session.id,
+                    label: session.title,
+                    description: session.slug,
+                  }))}
+                  placeholder="Seleccionar sesión"
+                  required
+                />
+                <FormTextInput<PhotoFormValues> label="Orden" name="sortOrder" placeholder="0" required type="number" />
+              </div>
+              <div className="admin-form-grid">
+                <FormTextInput<PhotoFormValues> label="URL principal" name="url" required />
+                <FormTextInput<PhotoFormValues> label="Miniatura" name="miniature" required />
+              </div>
+            </section>
 
             <section className="admin-editor-section">
-              <div className="admin-kicker">Copy</div>
+              <div className="admin-kicker">Contenido</div>
               <div className="admin-form-grid">
                 <FormTextInput<PhotoFormValues>
-                  label="Alt"
+                  label="Texto alternativo"
                   name="alt"
                   placeholder="Retrato editorial a contraluz"
                   required
                 />
                 <FormTextarea<PhotoFormValues>
-                  label="About"
+                  label="Descripción"
                   name="about"
                   placeholder="Contexto, intención, dirección o apuntes de la imagen."
                   required
@@ -382,108 +234,10 @@ function PhotoEditorForm({
               </div>
             </section>
 
-            <section className="admin-editor-section">
-              <div className="admin-kicker">Metadata técnica</div>
-              <div className="admin-form-grid admin-form-grid--two">
-                <FormTextInput<PhotoFormValues>
-                  label="ISO"
-                  name="metadata.iso"
-                  optional
-                  placeholder="400"
-                  type="number"
-                />
-                <FormTextInput<PhotoFormValues>
-                  label="Apertura"
-                  name="metadata.aperture"
-                  optional
-                  placeholder="f/2.8"
-                />
-                <FormTextInput<PhotoFormValues>
-                  label="Shutter speed"
-                  name="metadata.shutterSpeed"
-                  optional
-                  placeholder="1/250"
-                />
-                <FormTextInput<PhotoFormValues>
-                  label="Lens"
-                  name="metadata.lens"
-                  optional
-                  placeholder="85mm f/1.8"
-                />
-                <FormTextInput<PhotoFormValues>
-                  label="Camera"
-                  name="metadata.camera"
-                  optional
-                  placeholder="Canon EOS R5"
-                />
-              </div>
-            </section>
+            <PhotoMetadataFields />
           </div>
-
-          <div slot="aside" className="admin-aside-stack">
-            <section className="admin-editor-section">
-              <div className="admin-kicker">Preview lateral</div>
-              <mc-status-text
-                label={`${sessionLabel} · orden ${watchedValues.sortOrder}`}
-                polite
-                tone="idle"
-              />
-            </section>
-
-            <McMediaBrowser
-              emptyLabel="Añade una URL principal para ver la previsualización."
-              items={
-                watchedValues.url.trim().length > 0
-                  ? [
-                      {
-                        id: initialPhoto?.id ?? "preview",
-                        src: watchedValues.url,
-                        thumbnailSrc: watchedValues.miniature || undefined,
-                        alt: watchedValues.alt || "Previsualización",
-                        caption: watchedValues.about || undefined,
-                      },
-                    ]
-                  : []
-              }
-              selectedId={initialPhoto?.id ?? "preview"}
-              showRail={false}
-            />
-
-            <ConfirmDelete
-              message={
-                mode === "create"
-                  ? "¿Quieres descartar este borrador de foto?"
-                  : "¿Seguro que quieres borrar esta foto? La eliminación es persistente."
-              }
-              onConfirm={onDeleteAction}
-              onErrorMessage={(message) => {
-                setError("root.server", {
-                  type: "server",
-                  message,
-                });
-              }}
-              onOpenChange={setDeleteConfirmOpen}
-              open={isDeleteConfirmOpen}
-              pending={deletePending}
-            />
-          </div>
-
-          <div slot="actions">
-            <mc-status-text
-              label={
-                serverError ??
-                (formState.isDirty ? "Hay cambios pendientes" : "Todo sincronizado con la foto")
-              }
-              polite
-              tone={serverError ? "error" : formState.isDirty ? "loading" : "success"}
-            />
-          </div>
-        </McResourceEditor>
+        </ResourceEditor>
       </div>
     </FormProvider>
   );
-}
-
-export function PhotoEditorView({ mode }: { mode: "create" | "edit" }) {
-  return mode === "create" ? <CreatePhotoEditor /> : <EditPhotoEditor />;
 }

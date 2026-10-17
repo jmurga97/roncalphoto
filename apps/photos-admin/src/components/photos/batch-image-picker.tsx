@@ -1,70 +1,57 @@
-import { useEffect, useState } from "react";
+import { Button } from "@jmurga97/components";
+import { useRef } from "react";
+import { toast } from "sonner";
 
 import { ACCEPTED_IMAGE_ACCEPT, partitionImageFiles } from "@lib/photos/batch-images";
 
 interface BatchImagePickerProps {
   description?: string;
-  kicker: string;
+  kicker?: string;
   onFilesAccepted: (files: File[]) => void;
-  resetRejectedKey?: string | number;
-  title: string;
+  title?: string;
   titleId?: string;
 }
 
 export function BatchImagePicker({
-  description = "JPEG, PNG o WebP. Máximo 25 MiB por archivo.",
-  kicker,
+  description = "JPEG, PNG o WebP. Máximo 25 MiB por imagen.",
   onFilesAccepted,
-  resetRejectedKey,
-  title,
+  title = "Añadir imágenes",
   titleId,
 }: BatchImagePickerProps) {
-  const [rejectedFiles, setRejectedFiles] = useState<string[]>([]);
-
-  useEffect(() => {
-    setRejectedFiles([]);
-  }, [resetRejectedKey]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <>
-      <div className="border-mc-border-visible bg-mc-surface flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5">
-        <div className="grid gap-2">
-          <div className="admin-kicker">{kicker}</div>
-          <h3 id={titleId} className="text-mc-text-display m-0">
+    <div className="ming-stack">
+      <div className="ming-cluster ming-cluster--between">
+        <div className="ming-stack ming-stack--tight">
+          <h2 id={titleId} className="ming-section__title">
             {title}
-          </h3>
-          <p className="text-mc-text-secondary m-0">{description}</p>
+          </h2>
+          <p className="admin-copy">{description}</p>
         </div>
-        <label className="border-mc-accent bg-mc-accent focus-within:outline-mc-text-display relative inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border px-4 py-3 font-semibold text-white focus-within:outline-2 focus-within:outline-offset-3 max-sm:w-full">
-          <span>Seleccionar archivos</span>
-          <input
-            className="absolute size-px opacity-0"
-            accept={ACCEPTED_IMAGE_ACCEPT}
-            multiple
-            onChange={(event) => {
-              const { validFiles, rejectedFiles: nextRejectedFiles } = partitionImageFiles(
-                event.currentTarget.files,
-              );
-
-              if (validFiles.length > 0) {
-                onFilesAccepted(validFiles);
-              }
-
-              setRejectedFiles(nextRejectedFiles.map((file) => file.name));
-              event.currentTarget.value = "";
-            }}
-            type="file"
-          />
-        </label>
-      </div>
-
-      {rejectedFiles.length > 0 ? (
-        <mc-inline-message
-          message={`No se añadieron: ${rejectedFiles.join(", ")}. Revisa el formato o el límite de 25 MiB.`}
-          title="Algunos archivos no son válidos"
-          tone="error"
+        <Button variant="secondary" onClick={() => inputRef.current?.click()}>
+          Seleccionar archivos
+        </Button>
+        <input
+          ref={inputRef}
+          className="admin-file-input"
+          aria-label="Archivos de imagen"
+          tabIndex={-1}
+          accept={ACCEPTED_IMAGE_ACCEPT}
+          multiple
+          type="file"
+          onChange={(event) => {
+            const { validFiles, rejectedFiles: rejected } = partitionImageFiles(event.currentTarget.files);
+            if (validFiles.length > 0) onFilesAccepted(validFiles);
+            if (rejected.length > 0) {
+              toast.error("Algunos archivos no son válidos", {
+                description: `No se añadieron: ${rejected.map((file) => file.name).join(", ")}. Revisa el formato o el límite de 25 MiB.`,
+              });
+            }
+            event.currentTarget.value = "";
+          }}
         />
-      ) : null}
-    </>
+      </div>
+    </div>
   );
 }
