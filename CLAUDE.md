@@ -179,3 +179,11 @@ for `@jmurga97/components`.
 - Gallery: main photo + thumbnails
 - Keyboard navigation: arrows + Escape
 - Smooth CSS transitions and animations
+- Public photos: for combined/chained transitions, follow React's
+  [transition-type class recommendation](https://react.dev/reference/react/addTransitionType#customize-animations-using-view-transition-class).
+  With a React version that exports these APIs, use `addTransitionType` inside `startTransition`
+  and type-to-class maps on `ViewTransition` (`enter`/`exit`/`update`/`layout`/`share`). Multiple
+  matching types combine their classes; use `default` for unmatched types and `none` to opt out.
+  Keep shared-element names for identity and classes for animation styling. Let React coordinate
+  these transitions; migrate existing browser/router drivers together rather than mixing them.
+  Until the installed React supports these APIs, retain the current native transitions and reduced-motion handling.
