@@ -15,7 +15,11 @@ export default defineConfig({
       target: "react",
       autoCodeSplitting: true,
     }),
-    react(),
+    react({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
     tailwindcss(),
   ],
   resolve: {
@@ -38,7 +42,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ["react", "react-dom"],
-          tanstack: ["@tanstack/react-router", "@tanstack/react-query", "zod"],
+          tanstack: ["@tanstack/react-router", "@tanstack/react-query"],
           state: ["zustand"],
         },
       },
