@@ -1,7 +1,14 @@
 name = 'roncalphoto-web'
+main = "worker/index.tsx"
 compatibility_date = "2026-05-06"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+CONTACT_EMAIL = "mariagabrielaroncal@gmail.com"
+SERVICE_AREA = "Valencia"
+
 [assets]
+binding = "ASSETS"
+run_worker_first = true
 directory = "./dist"
 not_found_handling = "single-page-application"

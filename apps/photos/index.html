@@ -2,19 +2,28 @@
 <html lang="es" class="h-full">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="RoncalPhoto portfolio de fotografia profesional" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="theme-color" content="#f0ece7" />
+    <meta
+      name="description"
+      content="Estudio de fotografía para bodas, eventos, inmuebles, arquitectura y momentos cotidianos. Descubre el portfolio de RoncalPhoto."
+    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>RoncalPhoto</title>
+    <link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <title>RoncalPhoto | Fotografía de bodas, eventos y espacios</title>
     <script>
       (() => {
         const storedLayoutUi = window.localStorage.getItem("roncal-layout-ui");
-        let theme = "light";
+        let theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
         if (storedLayoutUi) {
           try {
             const parsedValue = JSON.parse(storedLayoutUi);
-            const persistedTheme = parsedValue?.state?.theme;
+            const persistedTheme = parsedValue?.version === 1 ? parsedValue.state?.theme : undefined;
 
             if (persistedTheme === "dark" || persistedTheme === "light") {
               theme = persistedTheme;
@@ -23,6 +32,10 @@
         }
 
         document.documentElement.dataset.theme = theme;
+        // Status bar / browser chrome = --color-bg; the store effect keeps it in sync after load.
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", theme === "dark" ? "#171513" : "#f0ece7");
       })();
     </script>
   </head>

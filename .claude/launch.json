@@ -12,6 +12,21 @@
       "runtimeExecutable": "bun",
       "runtimeArgs": ["run", "dev:local"],
       "port": 5174
+    },
+    {
+      "name": "photos-worker-local",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "apps/photos",
+        "preview",
+        "--port",
+        "8788",
+        "--var",
+        "API_URL:http://localhost:8787"
+      ],
+      "port": 8788
     }
   ]
 }
