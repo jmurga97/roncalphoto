@@ -20,6 +20,7 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export type Session = RouterOutputs["sessions"]["get"];
+export type SessionSummary = RouterOutputs["sessions"]["list"][number];
 export type Photo = RouterOutputs["photos"]["get"];
 export type PhotoMetadata = Photo["metadata"];
 export type Tag = RouterOutputs["tags"]["list"][number];

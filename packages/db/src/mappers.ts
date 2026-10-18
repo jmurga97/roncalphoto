@@ -8,6 +8,7 @@ type SessionRow = typeof sessions.$inferSelect & {
   photos: PhotoRow[];
   sessionTags: { tag: Tag }[];
 };
+type SessionSummaryRow = typeof sessions.$inferSelect & { sessionTags: { tag: Tag }[] };
 type DeliveryRow = typeof clientDeliveries.$inferSelect & {
   photos: (typeof deliveryPhotos.$inferSelect)[];
 };
@@ -28,9 +29,30 @@ export function toPhoto({ iso, aperture, shutterSpeed, lens, camera, ...photo }:
 export function toSession({ photos, sessionTags, ...session }: SessionRow) {
   return {
     ...session,
+    createdAt: toIsoUtc(session.createdAt),
     tags: sessionTags.map(({ tag }) => tag).toSorted((a, b) => a.name.localeCompare(b.name)),
     photos: photos.map((photo) => toPhoto(photo)),
   };
+}
+
+export function toSessionSummary(
+  { sessionTags, ...session }: SessionSummaryRow,
+  photoCount: number,
+  firstPhotoId?: string,
+) {
+  return {
+    ...session,
+    createdAt: toIsoUtc(session.createdAt),
+    firstPhotoId,
+    photoCount,
+    tags: sessionTags.map(({ tag }) => tag).toSorted((a, b) => a.name.localeCompare(b.name)),
+  };
+}
+
+function toIsoUtc(value: string) {
+  const iso = value.replace(" ", "T");
+
+  return /(?:Z|[+-]\d{2}:\d{2})$/u.test(iso) ? iso : `${iso}Z`;
 }
 
 export function toDelivery({ id, token, title, photosDeletedAt, photos }: DeliveryRow) {
@@ -56,4 +78,5 @@ export function toDelivery({ id, token, title, photosDeletedAt, photos }: Delive
 
 export type Photo = ReturnType<typeof toPhoto>;
 export type Session = ReturnType<typeof toSession>;
+export type SessionSummary = ReturnType<typeof toSessionSummary>;
 export type Delivery = ReturnType<typeof toDelivery>;

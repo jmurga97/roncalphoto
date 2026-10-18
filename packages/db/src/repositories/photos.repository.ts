@@ -1,7 +1,7 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, count, eq, like, or } from "drizzle-orm";
 
 import { toPhoto } from "../mappers";
-import { photos } from "../schema";
+import { photos, sessions } from "../schema";
 
 import type { AppDb } from "../client";
 
@@ -17,10 +17,33 @@ export function toPhotoColumns<T extends Partial<PhotoValues>>({ metadata, ...ph
   return { ...photo, ...metadata };
 }
 
-export async function list(db: AppDb) {
-  const rows = await db.select().from(photos).orderBy(asc(photos.sessionId), asc(photos.sortOrder), asc(photos.id));
+export async function list(db: AppDb, { limit, offset, search }: { limit: number; offset: number; search: string }) {
+  const where = search
+    ? or(
+        like(photos.alt, `%${search}%`),
+        like(photos.about, `%${search}%`),
+        like(photos.url, `%${search}%`),
+        like(sessions.title, `%${search}%`),
+      )
+    : undefined;
+  const [rows, totalRow] = await Promise.all([
+    db
+      .select({ photo: photos })
+      .from(photos)
+      .innerJoin(sessions, eq(photos.sessionId, sessions.id))
+      .where(where)
+      .orderBy(asc(photos.sessionId), asc(photos.sortOrder), asc(photos.id))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ total: count() })
+      .from(photos)
+      .innerJoin(sessions, eq(photos.sessionId, sessions.id))
+      .where(where)
+      .get(),
+  ]);
 
-  return rows.map((item) => toPhoto(item));
+  return { items: rows.map(({ photo }) => toPhoto(photo)), total: totalRow?.total ?? 0 };
 }
 
 export async function findById(db: AppDb, id: string) {

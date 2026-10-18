@@ -38,6 +38,10 @@ export function listSessions(db: AppDb) {
   return sessionsRepository.list(db);
 }
 
+export function listCanvasSessions(db: AppDb) {
+  return sessionsRepository.listWithPhotos(db);
+}
+
 export async function getSession(db: AppDb, slug: string) {
   return orNotFound(await sessionsRepository.findBySlug(db, slug), "Session");
 }

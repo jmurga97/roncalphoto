@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, like, ne, or } from "drizzle-orm";
 
-import { toSession } from "../mappers";
+import { toSession, toSessionSummary } from "../mappers";
 import { photos, sessions, sessionTags } from "../schema";
 
 import type { AppDb } from "../client";
@@ -22,8 +22,30 @@ export async function list(db: AppDb, { tagId }: { tagId?: string } = {}) {
   const taggedSessions = tagId
     ? db.select({ id: sessionTags.sessionId }).from(sessionTags).where(eq(sessionTags.tagId, tagId))
     : undefined;
+  const [rows, photoRows] = await Promise.all([
+    db.query.sessions.findMany({
+      where: taggedSessions ? inArray(sessions.id, taggedSessions) : undefined,
+      orderBy: [desc(sessions.createdAt), desc(sessions.id)],
+      with: { sessionTags: { with: { tag: true } } },
+    }),
+    db
+      .select({ id: photos.id, sessionId: photos.sessionId })
+      .from(photos)
+      .orderBy(asc(photos.sessionId), asc(photos.sortOrder), asc(photos.id)),
+  ]);
+  const photoCounts = new Map<string, number>();
+  const firstPhotoIds = new Map<string, string>();
+
+  for (const photo of photoRows) {
+    photoCounts.set(photo.sessionId, (photoCounts.get(photo.sessionId) ?? 0) + 1);
+    if (!firstPhotoIds.has(photo.sessionId)) firstPhotoIds.set(photo.sessionId, photo.id);
+  }
+
+  return rows.map((item) => toSessionSummary(item, photoCounts.get(item.id) ?? 0, firstPhotoIds.get(item.id)));
+}
+
+export async function listWithPhotos(db: AppDb) {
   const rows = await db.query.sessions.findMany({
-    where: taggedSessions ? inArray(sessions.id, taggedSessions) : undefined,
     orderBy: [desc(sessions.createdAt), desc(sessions.id)],
     with: withRelations(),
   });

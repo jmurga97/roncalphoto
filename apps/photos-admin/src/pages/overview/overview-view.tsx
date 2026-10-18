@@ -9,7 +9,7 @@ export function OverviewView({ userEmail }: { userEmail: string }) {
   const navigate = useNavigate();
   const { data: sessions, isFetching } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const { data: tags } = useSuspenseQuery(trpc.tags.list.queryOptions());
-  const totalPhotos = sessions.reduce((sum, session) => sum + session.photos.length, 0);
+  const totalPhotos = sessions.reduce((sum, session) => sum + session.photoCount, 0);
   const recentSessions = sessions.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
   const format = new Intl.NumberFormat("es-ES");
 
@@ -52,18 +52,25 @@ export function OverviewView({ userEmail }: { userEmail: string }) {
             refetchingLabel="Actualizando sesiones…"
             responsive="stacked"
             columns={[
-              { id: "title", header: "Sesión", render: (row) => row.title },
+              {
+                id: "title",
+                header: "Sesión",
+                render: (row) => <span className="[overflow-wrap:anywhere]">{row.title}</span>,
+              },
               {
                 id: "photos",
                 header: "Fotos",
                 align: "end",
-                render: (row) => format.format(row.photos.length),
+                render: (row) => format.format(row.photoCount),
               },
               {
                 id: "date",
                 header: "Creada",
-                render: (row) =>
-                  new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(row.createdAt)),
+                render: (row) => (
+                  <span className="whitespace-nowrap">
+                    {new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(row.createdAt))}
+                  </span>
+                ),
               },
             ]}
             onRowActivate={(row) => {

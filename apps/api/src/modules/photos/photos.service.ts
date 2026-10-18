@@ -2,11 +2,11 @@ import * as photosRepository from "@roncal/db/repositories/photos.repository";
 
 import { orNotFound } from "../../shared/errors";
 
-import type { UpdatePhotoInput } from "./photos-input.schema";
+import type { ListPhotosInput, UpdatePhotoInput } from "./photos-input.schema";
 import type { AppDb } from "@roncal/db/client";
 
-export function listPhotos(db: AppDb) {
-  return photosRepository.list(db);
+export function listPhotos(db: AppDb, input: ListPhotosInput) {
+  return photosRepository.list(db, input);
 }
 
 export async function getPhoto(db: AppDb, id: string) {

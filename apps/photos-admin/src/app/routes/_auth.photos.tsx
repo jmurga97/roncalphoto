@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_auth/photos")({
   component: PhotosRoute,
   loader: ({ context }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(trpc.photos.list.queryOptions()),
+      context.queryClient.ensureQueryData(trpc.photos.list.queryOptions({ limit: 50, offset: 0, search: "" })),
       context.queryClient.ensureQueryData(trpc.sessions.list.queryOptions()),
     ]),
 });

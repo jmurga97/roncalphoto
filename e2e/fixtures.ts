@@ -36,10 +36,17 @@ export type Procedures = Map<string, Procedure>;
 /** tRPC procedure path -> fake resolver. Tests can override entries per test. */
 function defaultProcedures(): Procedures {
   return new Map<string, Procedure>([
-    ["sessions.list", () => [session]],
+    [
+      "sessions.list",
+      () => {
+        const { photos, ...summary } = session;
+
+        return [{ ...summary, firstPhotoId: photos[0]?.id, photoCount: photos.length }];
+      },
+    ],
     ["sessions.get", () => session],
     ["sessions.update", (input) => ({ ...session, ...input?.data })],
-    ["photos.list", () => [photo]],
+    ["photos.list", () => ({ items: [photo], total: 1 })],
     ["photos.get", () => photo],
     ["photos.update", (input) => ({ ...photo, ...input?.data })],
     ["photos.delete", () => ({ id: photo.id })],

@@ -25,6 +25,8 @@ type BulkStatus = {
   tone: "neutral" | "info" | "success" | "error";
 };
 
+const PAGE_SIZE = 50;
+
 function getBulkResultLabel(actionLabel: string, successCount: number, failureCount: number) {
   return `${actionLabel}: ${successCount} correctas, ${failureCount} fallidas.`;
 }
@@ -54,7 +56,7 @@ function PhotosTable({
         {
           id: "alt",
           header: "Título",
-          render: (photo) => photo.alt,
+          render: (photo) => <span className="[overflow-wrap:anywhere]">{photo.alt}</span>,
         },
         {
           id: "preview",
@@ -66,13 +68,19 @@ function PhotosTable({
                 <Button
                   variant="ghost"
                   aria-label={`Previsualizar ${photo.alt}`}
-                  className="admin-photo-preview-button"
+                  className="admin-photo-preview-button bg-[var(--color-surface-2)]"
                   onClick={() => {
                     onPreview(photo);
                   }}
                   type="button"
                 >
-                  <img alt="" src={photo.miniature || photo.url} />
+                  <img
+                    alt=""
+                    onError={(event) => {
+                      event.currentTarget.hidden = true;
+                    }}
+                    src={photo.miniature || photo.url}
+                  />
                 </Button>
               </RowControls>
             ) : (
@@ -84,7 +92,9 @@ function PhotosTable({
         {
           id: "session",
           header: "Sesión",
-          render: (photo) => sessionTitleById.get(photo.sessionId) ?? photo.sessionId,
+          render: (photo) => (
+            <span className="[overflow-wrap:anywhere]">{sessionTitleById.get(photo.sessionId) ?? photo.sessionId}</span>
+          ),
         },
       ]}
       onRowActivate={(photo) => onEdit(photo.id)}
@@ -126,9 +136,13 @@ function PhotosTable({
 
 export function PhotosListView() {
   const navigate = useNavigate();
-  const { data: photos, isFetching } = useSuspenseQuery(trpc.photos.list.queryOptions());
-  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
+  const [page, setPage] = useState(0);
   const [searchValue, setSearchValue] = useState("");
+  const deferredSearch = useDeferredValue(searchValue);
+  const { data: photos, isFetching } = useSuspenseQuery(
+    trpc.photos.list.queryOptions({ limit: PAGE_SIZE, offset: page * PAGE_SIZE, search: deferredSearch }),
+  );
+  const { data: sessions } = useSuspenseQuery(trpc.sessions.list.queryOptions());
   const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
@@ -136,15 +150,8 @@ export function PhotosListView() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [bulkPending, setBulkPending] = useState(false);
   const [bulkStatus, setBulkStatus] = useState<BulkStatus | null>(null);
-  const deferredSearch = useDeferredValue(searchValue);
   const sessionTitleById = new Map(sessions.map((session) => [session.id, session.title]));
-  const filteredPhotos = photos.filter((photo) => {
-    const haystack = [photo.alt, photo.about, photo.url, sessionTitleById.get(photo.sessionId) ?? ""]
-      .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(deferredSearch.toLowerCase());
-  });
+  const pageCount = Math.max(1, Math.ceil(photos.total / PAGE_SIZE));
 
   async function runBulkOperation({
     actionLabel,
@@ -189,6 +196,7 @@ export function PhotosListView() {
         tone: "error",
       };
     }
+    setPage(0);
     setSelectedIds(failedIds);
     setBulkStatus(null);
     if (resultStatus.tone === "error") toast.error(resultStatus.label);
@@ -219,7 +227,7 @@ export function PhotosListView() {
             clearLabel="Cancelar selección"
             count={selectedIds.length}
             disabled={bulkPending}
-            label={`${selectedIds.length} seleccionadas`}
+            label={`${selectedIds.length} ${selectedIds.length === 1 ? "seleccionada" : "seleccionadas"}`}
             onClearSelection={() => {
               setSelectedIds([]);
               setBulkStatus(null);
@@ -283,15 +291,19 @@ export function PhotosListView() {
                 className="admin-search"
                 clearLabel="Borrar búsqueda"
                 aria-label="Buscar fotos"
-                onValueChange={setSearchValue}
+                onValueChange={(value) => {
+                  setSearchValue(value);
+                  setPage(0);
+                }}
                 onClear={() => {
                   setSearchValue("");
+                  setPage(0);
                 }}
                 placeholder="Buscar por título o sesión"
                 value={searchValue}
               />
               <StatusText
-                label={`${filteredPhotos.length} resultados visibles / ${photos.length} totales`}
+                label={`${photos.items.length} ${photos.items.length === 1 ? "resultado visible" : "resultados visibles"} / ${photos.total} ${photos.total === 1 ? "total" : "totales"}`}
                 polite
                 tone="neutral"
               />
@@ -300,7 +312,7 @@ export function PhotosListView() {
         )}
 
         <PhotosTable
-          filteredPhotos={filteredPhotos}
+          filteredPhotos={photos.items}
           onEdit={(id) => {
             void navigate({
               to: "/photos/$id",
@@ -316,6 +328,19 @@ export function PhotosListView() {
           selectedIds={selectedIds}
           sessionTitleById={sessionTitleById}
         />
+        <div className="ming-cluster ming-cluster--between mt-3">
+          <span className="ming-data">
+            Página {page + 1} de {pageCount}
+          </span>
+          <div className="ming-cluster">
+            <Button disabled={page === 0} onClick={() => setPage(page - 1)} size="sm" variant="secondary">
+              Anterior
+            </Button>
+            <Button disabled={page + 1 >= pageCount} onClick={() => setPage(page + 1)} size="sm" variant="secondary">
+              Siguiente
+            </Button>
+          </div>
+        </div>
       </section>
 
       <PhotoPreviewDialog
@@ -327,8 +352,8 @@ export function PhotosListView() {
       <ConfirmAction
         cancelLabel="Cancelar"
         confirmLabel="Eliminar fotos"
-        title={`¿Eliminar ${selectedIds.length} fotos?`}
-        message={`Se eliminarán ${selectedIds.length} fotos. Esta acción no se puede deshacer.`}
+        title={`¿Eliminar ${selectedIds.length} ${selectedIds.length === 1 ? "foto" : "fotos"}?`}
+        message={`Se eliminarán ${selectedIds.length} ${selectedIds.length === 1 ? "foto" : "fotos"}. Esta acción no se puede deshacer.`}
         onCancel={() => {
           setConfirmDeleteOpen(false);
         }}

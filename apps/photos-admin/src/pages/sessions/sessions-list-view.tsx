@@ -39,7 +39,9 @@ export function SessionsListView() {
             placeholder="Buscar por título, slug o etiqueta"
             value={searchValue}
           />
-          <span className="ming-toolbar__end ming-data">{filteredSessions.length} sesiones</span>
+          <span className="ming-toolbar__end ming-data">
+            {filteredSessions.length} {filteredSessions.length === 1 ? "sesión" : "sesiones"}
+          </span>
         </div>
         <ResourceTable
           ariaLabel="Sesiones"
@@ -54,23 +56,37 @@ export function SessionsListView() {
               : "Todavía no hay sesiones. Crea la primera para organizar tus fotos."
           }
           columns={[
-            { id: "title", header: "Sesión", render: (session) => session.title },
+            {
+              id: "title",
+              header: "Sesión",
+              render: (session) => <span className="[overflow-wrap:anywhere]">{session.title}</span>,
+            },
             {
               id: "tags",
               header: "Etiquetas",
-              render: (session) => <TagList items={session.tags.map((tag) => ({ id: tag.id, label: tag.name }))} />,
+              render: (session) => (
+                <TagList
+                  items={[
+                    ...session.tags.slice(0, 3).map((tag) => ({ id: tag.id, label: tag.name })),
+                    ...(session.tags.length > 3 ? [{ id: "more", label: `+${session.tags.length - 3}` }] : []),
+                  ]}
+                />
+              ),
             },
             {
               id: "photos",
               header: "Fotos",
               align: "end",
-              render: (session) => new Intl.NumberFormat("es-ES").format(session.photos.length),
+              render: (session) => new Intl.NumberFormat("es-ES").format(session.photoCount),
             },
             {
               id: "createdAt",
               header: "Creada",
-              render: (session) =>
-                new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(session.createdAt)),
+              render: (session) => (
+                <span className="whitespace-nowrap">
+                  {new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(session.createdAt))}
+                </span>
+              ),
             },
           ]}
           onRowActivate={(session) => {
