@@ -1,5 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import { dataMode } from "@lib/api/client";
+
 import type { DeliveryDetailPhoto, DeliveryPhotoStatus } from "@lib/deliveries/types";
 
 const DETAIL_LOAD_DELAY_MS = 1000;
@@ -18,10 +20,20 @@ function buildThumbnailDataUrl(index: number) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+// Dev-only worst case: real camera filenames instead of "Toma 01".
+const WORST_TITLES = [
+  "IMG_20260614_183245_HDR_Edited_Final_Final2_ForPrint_300dpi.jpg",
+  "DSC_0001-Editado-final-v3 (copia).jpg",
+  "Primer baile 💃🕺",
+];
+
 function buildMockDetailPhotos(deliveryId: string, photoCount: number): DeliveryDetailPhoto[] {
   return Array.from({ length: photoCount }, (_, index) => ({
     id: `${deliveryId}-photo-${index + 1}`,
-    title: `Toma ${String(index + 1).padStart(2, "0")}`,
+    title:
+      import.meta.env.DEV && dataMode === "worst"
+        ? (WORST_TITLES[index] ?? `DSC_${6001 + index}.jpg`)
+        : `Toma ${String(index + 1).padStart(2, "0")}`,
     thumbnailUrl: buildThumbnailDataUrl(index),
     status: STATUS_BY_INDEX[index % STATUS_BY_INDEX.length],
   }));

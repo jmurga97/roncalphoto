@@ -5,8 +5,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "wrangler dev --port 8787 --inspector-port 9230",
-    "dev:local": "wrangler dev --env local --port 8787 --inspector-port 9230",
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8787 --inspector-port 9230",
+    "dev:local": "wrangler dev --env local --ip 0.0.0.0 --port 8787 --inspector-port 9230",
     "build": "wrangler types && tsc --noEmit",
     "check": "tsc --noEmit && bun run db:check",
     "deploy": "bun run db:migrate && wrangler deploy",
@@ -31,6 +31,7 @@
     "@cloudflare/workers-types": "^4.20260502.0"
   },
   "exports": {
-    "./router": "./src/trpc/router.ts"
+    "./router": "./src/trpc/router.ts",
+    "./dev-fixtures": "./seed/dev-fixtures.ts"
   }
 }
