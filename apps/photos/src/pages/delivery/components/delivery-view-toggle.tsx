@@ -11,7 +11,7 @@ export function DeliveryViewToggle({ mode, onToggle }: DeliveryViewToggleProps) 
   return (
     <button
       aria-label={label}
-      className="fixed bottom-5 right-5 z-20 flex items-center gap-2 rounded-full border ui-divider bg-[color:var(--color-surface)] px-4 py-2.5 text-sm font-semibold shadow-[var(--shadow-soft)] transition-transform hover:scale-105"
+      className="fixed right-5 bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] z-20 flex items-center gap-2 rounded-full border ui-divider bg-[color:var(--color-surface)] px-4 py-2.5 text-sm font-semibold shadow-[var(--shadow-soft)] transition-transform hover:scale-105"
       onClick={onToggle}
       type="button"
     >

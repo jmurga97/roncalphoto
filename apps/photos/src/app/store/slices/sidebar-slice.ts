@@ -2,14 +2,14 @@ import type { AppStore } from "../store";
 import type { StateCreator } from "zustand";
 
 export interface SidebarSliceState {
-  isAboutOpen: boolean;
+  highlightedSessionSlug?: string;
   isSidebarOpenDesktop: boolean;
   isSidebarOpenMobile: boolean;
 }
 
 export interface SidebarSliceActions {
   resetMobileSidebarState: () => void;
-  setAboutOpen: (isOpen: boolean) => void;
+  setHighlightedSessionSlug: (slug?: string) => void;
   setSidebarOpenDesktop: (isOpen: boolean) => void;
   setSidebarOpenMobile: (isOpen: boolean) => void;
 }
@@ -19,15 +19,14 @@ export type SidebarSlice = SidebarSliceState & SidebarSliceActions;
 type StoreSlice<T> = StateCreator<AppStore, [["zustand/persist", unknown]], [], T>;
 
 export const createSidebarSlice: StoreSlice<SidebarSlice> = (set, get) => ({
-  isAboutOpen: false,
   isSidebarOpenDesktop: true,
   isSidebarOpenMobile: false,
-  setAboutOpen: (isOpen) => {
-    if (get().isAboutOpen === isOpen) {
+  setHighlightedSessionSlug: (slug) => {
+    if (get().highlightedSessionSlug === slug) {
       return;
     }
 
-    set({ isAboutOpen: isOpen });
+    set({ highlightedSessionSlug: slug });
   },
   resetMobileSidebarState: () => {
     if (!get().isSidebarOpenMobile) {

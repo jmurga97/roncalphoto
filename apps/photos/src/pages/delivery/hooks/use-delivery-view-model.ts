@@ -25,7 +25,7 @@ export function useDeliveryViewModel(): DeliveryViewModel {
         id: photo.id,
         title: photo.title,
         imageSrc: photo.url,
-        // No optimization pipeline: the original doubles as its own thumbnail.
+        // shortcut: delivery records lack a thumbnail URL; store the worker variant when delivery creation is added.
         thumbnailSrc: photo.url,
         sizeBytes: photo.sizeBytes,
       })),

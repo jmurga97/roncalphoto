@@ -1,14 +1,11 @@
-import { z } from "zod";
-
-const photoSearchSchema = z.object({
-  photo: z.preprocess(
-    (value) => (typeof value === "string" && value.length > 0 ? value : undefined),
-    z.string().optional(),
-  ),
-});
-
-export type PhotoSearch = z.infer<typeof photoSearchSchema>;
+export interface PhotoSearch {
+  photo?: string;
+  tag?: string;
+}
 
 export function validatePhotoSearch(search: Record<string, unknown>): PhotoSearch {
-  return photoSearchSchema.parse(search);
+  return {
+    photo: typeof search.photo === "string" && search.photo.length > 0 ? search.photo : undefined,
+    tag: typeof search.tag === "string" && search.tag.length > 0 ? search.tag : undefined,
+  };
 }

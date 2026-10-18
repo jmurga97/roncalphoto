@@ -19,35 +19,40 @@ const PAN_DELTAS: Record<string, [number, number]> = {
   ArrowUp: [0, KEYBOARD_PAN_STEP_PX],
 };
 
-export function useCanvasKeyboard({ hasSelection, onClose, onPan }: UseCanvasKeyboardOptions) {
-  const stateRef = useRef({ hasSelection, onClose, onPan });
+/**
+ * Without a selection the arrows pan the canvas. With the session stage open
+ * the arrows belong to its gallery and Escape closes it.
+ */
+export function useCanvasKeyboard(options: UseCanvasKeyboardOptions) {
+  const optionsRef = useRef(options);
 
   useEffect(() => {
-    stateRef.current = { hasSelection, onClose, onPan };
-  }, [hasSelection, onClose, onPan]);
+    optionsRef.current = options;
+  });
 
   useEffect(() => {
     const onDocumentKeydown = (event: KeyboardEvent) => {
-      if (isEditableTarget(event.target)) {
+      if (isEditableTarget(event.target) || event.defaultPrevented) {
         return;
       }
 
-      const current = stateRef.current;
+      const current = optionsRef.current;
 
-      if (event.key === "Escape" && current.hasSelection) {
-        event.preventDefault();
-        current.onClose();
+      if (current.hasSelection) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          current.onClose();
+        }
+
         return;
       }
 
       const delta = PAN_DELTAS[event.key];
 
-      if (!delta || current.hasSelection) {
-        return;
+      if (delta) {
+        event.preventDefault();
+        current.onPan(delta[0], delta[1]);
       }
-
-      event.preventDefault();
-      current.onPan(delta[0], delta[1]);
     };
 
     document.addEventListener("keydown", onDocumentKeydown);

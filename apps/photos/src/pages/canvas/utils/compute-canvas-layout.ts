@@ -1,4 +1,10 @@
-import { ASPECT_BUCKETS, MASONRY_COLUMN_WIDTH, MASONRY_GUTTER, TARGET_BLOCK_ASPECT } from "../constants";
+import {
+  ASPECT_BUCKETS,
+  MASONRY_COLUMN_WIDTH,
+  MASONRY_GUTTER,
+  MASONRY_MAX_STAGGER,
+  TARGET_BLOCK_ASPECT,
+} from "../constants";
 import { hashString, mulberry32 } from "./seeded-random";
 
 import type { Bounds, CanvasPlacement } from "../types";
@@ -24,14 +30,26 @@ function computeColumnCount(photoCount: number): number {
 }
 
 /**
+ * Seeded per-column start offsets so the top edge is ragged like the bottom
+ * one instead of a straight line. The highest column starts at 0.
+ */
+function computeColumnOffsets(columnCount: number): number[] {
+  const random = mulberry32(columnCount);
+  const offsets = Array.from({ length: columnCount }, () => Math.round(random() * MASONRY_MAX_STAGGER));
+  const top = Math.min(...offsets);
+
+  return offsets.map((offset) => offset - top);
+}
+
+/**
  * Deterministic masonry: photos are packed tightly into equal-width columns
  * (shortest column first) with varied heights seeded by the photo id, so the
- * layout is stable across reloads without storing positions anywhere. The
- * block is centered on the world origin.
+ * layout is stable across reloads without storing positions anywhere. Columns
+ * start at staggered heights and the block is centered on the world origin.
  */
 export function computeCanvasLayout(photoIds: string[]): CanvasPlacement[] {
   const columnCount = computeColumnCount(photoIds.length);
-  const columnHeights: number[] = Array.from({ length: columnCount }, () => 0);
+  const columnHeights = computeColumnOffsets(columnCount);
 
   const placements = photoIds.map((photoId) => {
     const random = mulberry32(hashString(photoId));

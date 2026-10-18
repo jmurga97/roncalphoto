@@ -1,14 +1,10 @@
-import type { PhotoMetadata } from "@roncal/api/router";
-
 export interface CanvasPhotoItem {
   id: string;
   alt: string;
   miniatureSrc: string;
   fullSrc: string;
-  about: string;
-  metadata: PhotoMetadata;
   sessionSlug: string;
-  sessionTitle: string;
+  sessionTagSlugs: string[];
 }
 
 export interface CanvasPlacement {
@@ -36,9 +32,4 @@ export interface Bounds {
   minY: number;
   maxX: number;
   maxY: number;
-}
-
-export interface ReservedViewportSpace {
-  right: number;
-  bottom: number;
 }

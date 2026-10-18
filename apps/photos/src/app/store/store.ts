@@ -29,6 +29,10 @@ export const useAppStore = create<AppStore>()(
         theme: state.theme,
       }),
       storage: createJSONStorage(() => localStorage),
+      // v1: the theme follows the system unless chosen explicitly; v0 always persisted a default
+      // "light", so it is dropped. index.html reads the theme only from v1 state.
+      version: 1,
+      migrate: (persistedState) => ({ ...(persistedState as Partial<AppStore>), theme: undefined }),
     },
   ),
 );
@@ -49,31 +53,31 @@ export function useSidebarOpen() {
   return isMobile ? isSidebarOpenMobile : isSidebarOpenDesktop;
 }
 
-export function useTheme() {
-  return useAppStore((state) => state.theme);
+export function useHighlightedSessionSlug() {
+  return useAppStore((state) => state.highlightedSessionSlug);
 }
 
-export function useSidebarAboutOpen() {
-  return useAppStore((state) => state.isAboutOpen);
+export function useSetHighlightedSessionSlug() {
+  return useAppStore((state) => state.setHighlightedSessionSlug);
+}
+
+export function useTheme() {
+  return useAppStore((state) => state.theme);
 }
 
 export function useSidebarActions() {
   const isMobile = useSidebarMobile();
   const {
-    isAboutOpen,
     isSidebarOpenDesktop,
     isSidebarOpenMobile,
     resetMobileSidebarState,
-    setAboutOpen,
     setSidebarOpenDesktop,
     setSidebarOpenMobile,
   } = useAppStore(
     useShallow((state) => ({
-      isAboutOpen: state.isAboutOpen,
       isSidebarOpenDesktop: state.isSidebarOpenDesktop,
       isSidebarOpenMobile: state.isSidebarOpenMobile,
       resetMobileSidebarState: state.resetMobileSidebarState,
-      setAboutOpen: state.setAboutOpen,
       setSidebarOpenDesktop: state.setSidebarOpenDesktop,
       setSidebarOpenMobile: state.setSidebarOpenMobile,
     })),
@@ -81,9 +85,6 @@ export function useSidebarActions() {
 
   return useMemo(
     () => ({
-      closeAbout: () => {
-        setAboutOpen(false);
-      },
       closeSidebar: () => {
         if (isMobile) {
           setSidebarOpenMobile(false);
@@ -94,42 +95,15 @@ export function useSidebarActions() {
       },
       openSidebar: () => {
         if (isMobile) {
-          if (isAboutOpen) {
-            setAboutOpen(false);
-          }
-
           setSidebarOpenMobile(true);
           return;
         }
 
         setSidebarOpenDesktop(true);
       },
-      openAbout: () => {
-        if (isMobile) {
-          setSidebarOpenMobile(false);
-        }
-
-        setAboutOpen(true);
-      },
       resetMobileSidebarState,
-      toggleAbout: () => {
-        if (isAboutOpen) {
-          setAboutOpen(false);
-          return;
-        }
-
-        if (isMobile) {
-          setSidebarOpenMobile(false);
-        }
-
-        setAboutOpen(true);
-      },
       toggleSidebar: () => {
         if (isMobile) {
-          if (!isSidebarOpenMobile && isAboutOpen) {
-            setAboutOpen(false);
-          }
-
           setSidebarOpenMobile(!isSidebarOpenMobile);
           return;
         }
@@ -139,11 +113,9 @@ export function useSidebarActions() {
     }),
     [
       isMobile,
-      isAboutOpen,
       isSidebarOpenDesktop,
       isSidebarOpenMobile,
       resetMobileSidebarState,
-      setAboutOpen,
       setSidebarOpenDesktop,
       setSidebarOpenMobile,
     ],
@@ -154,7 +126,6 @@ export function useThemeActions() {
   return useAppStore(
     useShallow((state) => ({
       setTheme: state.setTheme,
-      toggleTheme: state.toggleTheme,
     })),
   );
 }

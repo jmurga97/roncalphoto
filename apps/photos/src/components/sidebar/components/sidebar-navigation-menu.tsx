@@ -3,28 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@lib/api/client";
 
 import { SidebarItem } from "./sidebar-item";
-import { useSidebarData } from "../hooks/use-sidebar-data";
-import { toSidebarNavigationItem } from "../utils/sidebar-mappers";
 
 export function SidebarNavigationMenu() {
-  const { slug } = useSidebarData();
   const { data: sessions } = useQuery(trpc.sessions.list.queryOptions());
-  const heading = slug ? "Explora otras sesiones" : "Sesiones y tags";
-  const items = sessions?.map((session) => toSidebarNavigationItem(session, slug));
+  const sessionsWithPhotos = sessions?.filter((session) => session.photoCount > 0) ?? [];
+
+  if (sessionsWithPhotos.length === 0) return null;
 
   return (
-    <section className="pt-6">
+    <section className="pt-5">
       <header className="mb-3.5">
         <p className="ui-kicker">Navegación</p>
-        <h2 className="mt-1 text-sm font-semibold uppercase tracking-[0.08em]">{heading}</h2>
+        <h2 className="mt-1 text-sm font-semibold uppercase tracking-[0.08em]">Sesiones</h2>
       </header>
 
-      <ul
-        className="h-[clamp(40vh,28rem,56vh)] overflow-x-hidden overflow-y-auto rounded-md border bg-[color:color-mix(in_srgb,var(--color-surface-2)_28%,transparent)] p-0 [scrollbar-gutter:stable] max-md:h-[min(56vh,34rem)] ui-divider"
-        data-sidebar-scroll-list="true"
-      >
-        {items?.map((item) => (
-          <SidebarItem item={item} key={item.id} />
+      <ul className="ml-1 max-h-[38dvh] overflow-x-hidden overflow-y-auto p-0">
+        {sessionsWithPhotos.map((session) => (
+          <SidebarItem key={session.id} session={session} />
         ))}
       </ul>
     </section>

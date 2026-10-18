@@ -12,7 +12,12 @@ export function RoncalPhotoBrand({
   sidebarFocusTarget = false,
 }: RoncalPhotoBrandProps) {
   return (
-    <Link className={className} data-sidebar-focus-target={sidebarFocusTarget ? "true" : undefined} to="/">
+    <Link
+      className={className}
+      data-sidebar-focus-target={sidebarFocusTarget ? "true" : undefined}
+      search={{ photo: undefined, tag: undefined }}
+      to="/"
+    >
       <span className={labelClassName}>RoncalPhoto</span>
     </Link>
   );

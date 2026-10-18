@@ -2,10 +2,10 @@ import { createBrowserHistory, createRouter, RouterProvider } from "@tanstack/re
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import { CanvasLoadingState } from "@/pages/canvas/components/canvas-loading-state";
 import { AppProviders } from "@app/providers";
 import { routeTree } from "@app/route-tree.gen";
 import { RouteErrorState } from "@components/error/error-state";
-import { LoadingState } from "@components/loading/loading-state";
 import { queryClient } from "@lib/query-client";
 import "./styles/global.css";
 
@@ -16,7 +16,7 @@ const router = createRouter({
     queryClient,
   },
   defaultErrorComponent: RouteErrorState,
-  defaultPendingComponent: () => <LoadingState />,
+  defaultPendingComponent: CanvasLoadingState,
   defaultPendingMinMs: 250,
   defaultPendingMs: 120,
 });

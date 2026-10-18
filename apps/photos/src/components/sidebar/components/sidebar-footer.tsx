@@ -1,41 +1,31 @@
-import { useSidebarAboutOpen, useSidebarActions, useTheme, useThemeActions } from "@app/store";
-import { ABOUT_PANEL_ID, ABOUT_TRIGGER_ID } from "@components/sidebar/constants";
+import { STUDIO_SECTIONS } from "@components/studio/studio-sections";
 
-export function SidebarFooter() {
-  const isAboutOpen = useSidebarAboutOpen();
-  const theme = useTheme();
-  const { toggleAbout } = useSidebarActions();
-  const { toggleTheme } = useThemeActions();
+import type { StudioSection } from "@components/studio/studio-sections";
 
+interface SidebarFooterProps {
+  onOpenStudio: (section: StudioSection) => void;
+}
+
+export function SidebarFooter({ onOpenStudio }: SidebarFooterProps) {
   return (
     <footer className="mt-auto border-t pt-6 ui-divider">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-4">
-          <p className="ui-muted text-xs">Estudio</p>
+      <nav aria-label="Estudio" className="flex flex-col gap-1">
+        {STUDIO_SECTIONS.map(({ id, label }) => (
           <button
-            aria-controls={ABOUT_PANEL_ID}
-            aria-expanded={isAboutOpen}
-            className="rounded-md border ui-divider px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ui-link"
-            id={ABOUT_TRIGGER_ID}
-            onClick={toggleAbout}
+            aria-controls="estudio"
+            aria-haspopup="dialog"
+            className="sidebar-link-action ui-link flex min-h-11 w-full items-center justify-between gap-4 text-left text-sm font-semibold"
+            key={id}
+            onClick={() => onOpenStudio(id)}
             type="button"
           >
-            Sobre nosotros
+            {label}
+            <span aria-hidden="true" className="sidebar-link-indicator">
+              ↗
+            </span>
           </button>
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <p className="ui-muted text-xs">Modo visual</p>
-          <button
-            aria-label="Cambiar tema"
-            className="rounded-md border ui-divider px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ui-link"
-            onClick={toggleTheme}
-            type="button"
-          >
-            {theme === "dark" ? "Tema oscuro" : "Tema claro"}
-          </button>
-        </div>
-      </div>
+        ))}
+      </nav>
     </footer>
   );
 }

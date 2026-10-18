@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Activity, useState } from "react";
 
 import { DeliveryEmptyState } from "./components/delivery-empty-state";
 import { DeliveryExpiredState } from "./components/delivery-expired-state";
@@ -25,17 +25,26 @@ export function DeliveryView() {
   }
 
   const openGallery = (photoId?: string) => {
-    setActiveId(photoId ?? photos[0]?.id);
+    setActiveId(photoId ?? activeId ?? photos[0]?.id);
     setMode("gallery");
   };
 
   return (
     <div className="relative h-full overflow-hidden">
-      {mode === "list" ? (
+      <Activity mode={mode === "list" ? "visible" : "hidden"}>
         <DeliveryList onOpenPhoto={openGallery} photos={photos} selection={selection} title={title} />
-      ) : (
-        <DeliveryGallery initialPhotoId={activeId ?? photos[0]?.id} photos={photos} title={title} token={token} />
-      )}
+      </Activity>
+      <Activity mode={mode === "gallery" ? "visible" : "hidden"}>
+        {activeId ? (
+          <DeliveryGallery
+            activePhotoId={activeId}
+            onSelectPhoto={setActiveId}
+            photos={photos}
+            title={title}
+            token={token}
+          />
+        ) : null}
+      </Activity>
 
       <DeliveryViewToggle mode={mode} onToggle={() => (mode === "list" ? openGallery() : setMode("list"))} />
     </div>

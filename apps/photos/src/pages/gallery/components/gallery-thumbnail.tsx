@@ -13,7 +13,7 @@ export function GalleryThumbnail({ isActive, onSelect, photo }: GalleryThumbnail
       type="button"
       onClick={onSelect}
       className={[
-        "h-full w-full cursor-pointer overflow-hidden rounded border-2 transition-all duration-200 focus:outline-none",
+        "h-full w-full cursor-pointer overflow-hidden rounded border-2 bg-[var(--color-surface-2)] transition-[transform,opacity,border-color] duration-200 focus:outline-none",
         isActive ? "scale-105 opacity-100" : "border-transparent opacity-60 hover:opacity-100",
       ].join(" ")}
       style={
@@ -36,7 +36,10 @@ export function GalleryThumbnail({ isActive, onSelect, photo }: GalleryThumbnail
           isActive ? "grayscale-0" : "grayscale",
         ].join(" ")}
         decoding="async"
-        loading="eager"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.hidden = true;
+        }}
         src={photo.thumbnailSrc}
       />
     </button>

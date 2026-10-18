@@ -24,7 +24,7 @@ export function DeliveryListRow({ photo, selected, disabled, onToggle, onDownloa
 
       <button
         aria-label={`Ver ${photo.title} en la galería`}
-        className="shrink-0 overflow-hidden rounded-[var(--radius-sm)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--color-focus)]"
+        className="shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--color-focus)]"
         onClick={onOpen}
         type="button"
       >
@@ -33,12 +33,20 @@ export function DeliveryListRow({ photo, selected, disabled, onToggle, onDownloa
           className="h-14 w-14 object-cover sm:h-16 sm:w-16"
           decoding="async"
           loading="lazy"
+          onError={(event) => {
+            event.currentTarget.hidden = true;
+          }}
           src={photo.thumbnailSrc}
         />
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[color:var(--color-text)]">{photo.title}</p>
+        <p className="truncate text-sm font-medium text-[color:var(--color-text)]" title={photo.title}>
+          <span className="md:hidden">
+            {photo.title.length > 16 ? `${photo.title.slice(0, 6)}…${photo.title.slice(-9)}` : photo.title}
+          </span>
+          <span className="hidden md:inline">{photo.title}</span>
+        </p>
         <p className="ui-muted text-xs">{formatBytes(photo.sizeBytes)}</p>
       </div>
 

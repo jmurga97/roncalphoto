@@ -1,4 +1,4 @@
-/* Experimental canvas gallery (/canvas) */
+/* Canvas home (/): pan/zoom photo wall + focus stage */
 
 .canvas-root {
   position: relative;
@@ -14,7 +14,6 @@
   cursor: grab;
   touch-action: none;
   background-color: var(--color-bg);
-  transition: background-color 420ms ease;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -23,8 +22,11 @@
   cursor: grabbing;
 }
 
-.canvas-stage[data-selected="true"] {
-  background-color: color-mix(in srgb, var(--color-bg) 30%, #0d0b09);
+.canvas-loading-tile {
+  position: absolute;
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--color-surface-2) 78%, var(--color-bg));
+  box-shadow: var(--shadow-soft);
 }
 
 .canvas-world {
@@ -46,11 +48,9 @@
   contain: layout;
   transition:
     transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 360ms ease,
-    filter 360ms ease;
+    opacity 360ms ease;
 }
 
-.canvas-photo:hover,
 .canvas-photo:focus-visible {
   transform: translateY(-6px) scale(1.045);
   z-index: 10;
@@ -61,13 +61,8 @@
   outline-offset: 4px;
 }
 
-.canvas-photo[data-active="true"] {
-  z-index: 20;
-}
-
-.canvas-stage[data-selected="true"] .canvas-photo:not([data-active="true"]) {
-  opacity: 0.22;
-  filter: grayscale(0.35);
+.canvas-photo[data-dimmed="true"] {
+  opacity: 0.18;
 }
 
 .canvas-photo-frame {
@@ -75,17 +70,38 @@
   display: block;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   border-radius: var(--radius-md);
   background-color: var(--color-surface-2);
   box-shadow: var(--shadow-soft);
   backface-visibility: hidden;
-  transition: box-shadow 220ms ease;
 }
 
-.canvas-photo:hover .canvas-photo-frame,
-.canvas-photo:focus-visible .canvas-photo-frame {
+/* Hover shadow painted once and faded with opacity: a box-shadow transition repaints every frame. */
+.canvas-photo-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   box-shadow: 0 22px 48px rgba(10, 8, 6, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.canvas-photo:focus-visible .canvas-photo-frame::after {
+  opacity: 1;
+}
+
+/* Gated: on touch the faked :hover would leave the tapped tile lifted. */
+@media (hover: hover) and (pointer: fine) {
+  .canvas-photo:hover {
+    transform: translateY(-6px) scale(1.045);
+    z-index: 10;
+  }
+
+  .canvas-photo:hover .canvas-photo-frame::after {
+    opacity: 1;
+  }
 }
 
 .canvas-photo-image {
@@ -93,95 +109,421 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
   object-fit: cover;
   -webkit-user-drag: none;
 }
 
-.canvas-photo-image-full {
-  opacity: 0;
-  transition: opacity 420ms ease;
-}
+/* Floating controls */
 
-.canvas-photo-image-full[data-loaded="true"] {
-  opacity: 1;
-}
-
-.canvas-detail-panel {
+.canvas-overview-button {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 30;
-  width: min(26rem, 90vw);
-  border-left: 1px solid var(--color-border);
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-  transform: translateX(105%);
-  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.canvas-detail-panel[data-open="true"] {
-  transform: translateX(0);
-}
-
-.canvas-back-link {
-  position: absolute;
-  top: 1.25rem;
-  left: 1.25rem;
-  z-index: 40;
+  right: calc(1rem + env(safe-area-inset-right, 0px));
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
   border-radius: 999px;
-  background-color: color-mix(in srgb, var(--color-bg) 72%, transparent);
-  backdrop-filter: blur(8px);
   color: var(--color-text);
   font-size: var(--text-sm);
   font-weight: 600;
-  text-decoration: none;
-  transition: background-color 200ms ease;
+  transition: transform 180ms ease;
 }
 
-.canvas-back-link:hover {
-  background-color: color-mix(in srgb, var(--color-surface) 85%, transparent);
+.canvas-overview-button:active {
+  transform: scale(0.96);
 }
 
 .canvas-hint {
   position: absolute;
-  bottom: 1rem;
+  top: calc(1rem + env(safe-area-inset-top));
   left: 50%;
   z-index: 10;
-  padding: 0.45rem 1rem;
+  max-width: calc(100% - 2rem);
+  padding: 0.5rem 1rem;
   border-radius: 999px;
-  background-color: color-mix(in srgb, var(--color-bg) 65%, transparent);
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   letter-spacing: 0.08em;
+  text-align: center;
   text-transform: uppercase;
   transform: translateX(-50%);
   pointer-events: none;
-  white-space: nowrap;
-  transition: opacity 240ms ease;
+  animation: canvas-fade-in 600ms 900ms ease both;
 }
 
-.canvas-root:has(.canvas-detail-panel[data-open="true"]) .canvas-hint {
-  opacity: 0;
+/* Session stage: the session gallery (scroll-snap) + a full-height info panel */
+
+.canvas-focus {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* Opaque, not frosted: a backdrop blur is re-rendered in the live view-transition snapshot every frame
+     and roughly halved the morph's frame rate; without the blur, translucency only shows the canvas ghosting through. */
+  background-color: color-mix(in srgb, var(--color-bg) 84%, #000 16%);
+  animation: canvas-fade-in var(--duration-stage-open) var(--ease-out) both;
+}
+
+/* With view transitions the root crossfade fades the stage in; this keyframe is the fallback. */
+@supports (view-transition-name: none) {
+  .canvas-focus {
+    animation: none;
+  }
+}
+
+/* Desktop: the gallery fills the space right of the open sidebar card, which carries the session details. */
+main[data-sidebar-desktop-open="true"] .canvas-focus {
+  padding-left: calc(var(--layout-sidebar-width) + var(--layout-float-gap) + env(safe-area-inset-left, 0px));
+}
+
+.canvas-focus-gallery {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvas-next-session {
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.canvas-next-session-mobile {
+  position: absolute;
+  right: calc(1rem + env(safe-area-inset-right, 0px));
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  display: inline-flex;
+  max-width: calc(100% - 2rem);
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+}
+
+.canvas-next-session-desktop {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .canvas-next-session-mobile {
+    display: none;
+  }
+
+  .canvas-next-session-desktop {
+    display: inline-flex;
+  }
+}
+
+/* Slides sit on the stage's own background so the photo side matches the session card beside it. */
+.canvas-focus-gallery [data-gallery-photo-id] {
+  background-color: transparent;
+}
+
+.canvas-focus-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.canvas-focus-handle {
+  display: none;
+}
+
+.canvas-focus-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Desktop with the sidebar collapsed: the details float where the (hidden) sidebar card sits; mirrors .sidebar-card. */
+@media (min-width: 768px) {
+  .canvas-focus:has(> .canvas-focus-info) {
+    padding-left: calc(var(--layout-sidebar-width) + var(--layout-float-gap) + env(safe-area-inset-left, 0px));
+  }
+
+  .canvas-focus > .canvas-focus-info {
+    position: fixed;
+    top: calc(var(--layout-float-gap) * 2 + var(--layout-pill-height) + env(safe-area-inset-top, 0px));
+    bottom: calc(var(--layout-float-gap) + env(safe-area-inset-bottom, 0px));
+    left: calc(var(--layout-float-gap) + env(safe-area-inset-left, 0px));
+    z-index: 40;
+    width: var(--layout-sidebar-width);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 767px) {
-  .canvas-detail-panel {
-    top: auto;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    border-top: 1px solid var(--color-border);
-    border-left: none;
-    transform: translateY(105%);
+  .canvas-focus {
+    z-index: 60;
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
-  .canvas-detail-panel[data-open="true"] {
-    transform: translateY(0);
+  /* Same floating glass card as the mobile sidebar: inset by the float gap, fully rounded. */
+  .canvas-focus-info {
+    gap: 0.85rem;
+    max-height: 70dvh;
+    margin: 0 calc(var(--layout-float-gap) + env(safe-area-inset-right, 0px))
+      calc(var(--layout-float-gap) + env(safe-area-inset-bottom, 0px))
+      calc(var(--layout-float-gap) + env(safe-area-inset-left, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.25rem 1.25rem 1.5rem;
+    border-radius: var(--radius-lg);
+    animation: canvas-sheet-in var(--duration-stage-open) var(--ease-out) both;
+    /* Its own transition layer (SHEET_TRANSITION_CLASSES), painted above the morphing photo. */
   }
+
+  /* Over the stage's flat background the blur shows nothing: the same glass tint, made opaque, so its
+     transition snapshot (which drops backdrop blur) looks identical and hides the photo moving beneath.
+     The next-session pill too: unblurred, its fading snapshot flickers the photo through the glass. */
+  .canvas-focus-info.glass,
+  .canvas-next-session-mobile.glass {
+    background-color: color-mix(
+      in srgb,
+      var(--color-surface) calc(var(--glass-opacity) * 100%),
+      color-mix(in srgb, var(--color-bg) 84%, #000 16%)
+    );
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .canvas-next-session-mobile {
+    right: calc(var(--layout-float-gap) + env(safe-area-inset-right, 0px));
+    bottom: var(--layout-float-gap);
+  }
+
+  /* Tapped photo: the sheet and the next-session pill step aside so the photo fills the phone. */
+  .canvas-focus[data-photo-fullscreen="true"] :is(.canvas-focus-info, .canvas-next-session-mobile) {
+    display: none;
+  }
+
+  .canvas-focus[data-photo-fullscreen="true"] [data-gallery-photo-id] {
+    padding: 0;
+  }
+
+  .canvas-focus-handle {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 0.6rem 0 0.35rem;
+    border: none;
+    background: transparent;
+    touch-action: none;
+  }
+
+  .canvas-focus-handle span {
+    width: 2.5rem;
+    height: 0.3rem;
+    border-radius: 999px;
+    background-color: var(--color-border);
+  }
+
+  .canvas-focus-details {
+    display: none;
+  }
+
+  .canvas-focus-info[data-expanded="true"] .canvas-focus-details {
+    display: flex;
+  }
+}
+
+@keyframes canvas-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes canvas-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* The sheet comes in through its own live slide-in; leaving (photo fullscreen, back to the canvas) it slides out. */
+::view-transition-old(.stage-sheet) {
+  animation-name: canvas-sheet-out;
+}
+
+@keyframes canvas-sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Canvas ↔ session stage: one view transition, one clock. The root crossfade fades the
+   stage layer while the tile morphs (see PHOTO_FOCUS_TRANSITION_NAME). */
+:root:active-view-transition-type(stage-close),
+:root:active-view-transition-type(stage-swap) {
+  --duration-stage: var(--duration-stage-close);
+}
+
+::view-transition-group(.stage-root),
+::view-transition-old(.stage-root),
+::view-transition-new(.stage-root),
+::view-transition-group(.photo-focus),
+::view-transition-old(.photo-focus),
+::view-transition-new(.photo-focus),
+::view-transition-group(.sidebar-card),
+::view-transition-old(.sidebar-card),
+::view-transition-new(.sidebar-card),
+::view-transition-group(.sidebar-pill),
+::view-transition-old(.sidebar-pill),
+::view-transition-new(.sidebar-pill),
+::view-transition-group(.stage-sheet),
+::view-transition-old(.stage-sheet),
+::view-transition-new(.stage-sheet) {
+  animation-duration: var(--duration-stage);
+  animation-timing-function: var(--ease-out);
+}
+
+/* A snapshot drops its backdrop blur, so the glass sidebar re-blurs whatever the group sits over. */
+::view-transition-group(.sidebar-card),
+::view-transition-group(.sidebar-pill) {
+  -webkit-backdrop-filter: blur(12px) saturate(170%);
+  backdrop-filter: blur(12px) saturate(170%);
+}
+
+/* No crossfade: the card swaps its content at once (blending the two glass layers pulses and overlaps the text). */
+::view-transition-old(.sidebar-card),
+::view-transition-old(.sidebar-pill) {
+  display: none;
+}
+
+::view-transition-new(.sidebar-card),
+::view-transition-new(.sidebar-pill) {
+  animation: none;
+}
+
+::view-transition-group(.sidebar-card) {
+  border-radius: var(--radius-lg);
+}
+
+::view-transition-group(.sidebar-pill) {
+  border-radius: 999px;
+}
+
+::view-transition-old(.photo-focus),
+::view-transition-new(.photo-focus) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Opening: only the real photo grows out of the tile, mirroring the close. Crossfading in the
+   blown-up miniature left a translucent ghost over it. */
+@media (prefers-reduced-motion: no-preference) {
+  :root:active-view-transition-type(stage-open)::view-transition-old(.photo-focus) {
+    display: none;
+  }
+
+  :root:active-view-transition-type(stage-open)::view-transition-new(.photo-focus) {
+    animation: none;
+  }
+}
+
+/* Next session inside the stage: the current photo lifts away, the next one rises in. */
+:root:active-view-transition-type(stage-swap)::view-transition-group(.photo-focus) {
+  animation: none;
+}
+
+:root:active-view-transition-type(stage-swap)::view-transition-old(.photo-focus) {
+  object-fit: contain;
+  animation-name: stage-swap-out;
+}
+
+:root:active-view-transition-type(stage-swap)::view-transition-new(.photo-focus) {
+  animation-name: stage-swap-in;
+}
+
+/* Keep the mobile sheet anchored while its session content crossfades. */
+:root:active-view-transition-type(stage-swap)::view-transition-old(.stage-sheet) {
+  animation-name: stage-fade-out;
+}
+
+:root:active-view-transition-type(stage-swap)::view-transition-new(.stage-sheet) {
+  animation-name: stage-fade-in;
+}
+
+:root:active-view-transition-type(stage-swap)::view-transition-old(.stage-sheet),
+:root:active-view-transition-type(stage-swap)::view-transition-new(.stage-sheet) {
+  animation-duration: var(--duration-stage-open);
+}
+
+/* Reduced motion: no travel, the photo crossfades in place while the stage fades. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(.photo-focus),
+  ::view-transition-group(.stage-sheet) {
+    animation: none;
+  }
+
+  ::view-transition-old(.stage-sheet) {
+    animation-name: stage-fade-out;
+  }
+
+  ::view-transition-new(.stage-sheet) {
+    animation-name: stage-fade-in;
+  }
+
+  :root:active-view-transition-type(stage-swap)::view-transition-old(.photo-focus) {
+    animation-name: stage-fade-out;
+  }
+
+  :root:active-view-transition-type(stage-swap)::view-transition-new(.photo-focus) {
+    animation-name: stage-fade-in;
+  }
+}
+
+@keyframes stage-swap-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4%);
+  }
+}
+
+@keyframes stage-swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(4%);
+  }
+}
+
+@keyframes stage-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes stage-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Gallery thumbnails portalled into the bottom of the session panel (desktop only). */
+.canvas-focus-thumbnails:not(:empty) {
+  max-height: min(40dvh, 24rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
 }

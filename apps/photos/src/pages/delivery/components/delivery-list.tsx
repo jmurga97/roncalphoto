@@ -14,8 +14,10 @@ interface DeliveryListProps {
 function buildArchiveName(title: string): string {
   const slug = title
     .trim()
+    .normalize("NFD")
+    .replaceAll(/\p{Diacritic}/gu, "")
     .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, "-")
+    .replaceAll(/[^\p{L}\p{N}]+/gu, "-")
     .replaceAll(/(^-|-$)/g, "");
 
   return `${slug || "entrega"}.zip`;

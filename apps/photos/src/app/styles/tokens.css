@@ -16,6 +16,7 @@
 
 :root,
 html[data-theme="light"] {
+  color-scheme: light;
   --font-display: "Newsreader", "Iowan Old Style", "Times New Roman", serif;
   --font-ui: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
 
@@ -39,10 +40,16 @@ html[data-theme="light"] {
   --color-focus: #a38e76;
 
   --shadow-soft: 0 10px 28px rgba(22, 18, 14, 0.08);
+  --glass-opacity: 0.62;
+  --glass-bg: color-mix(in srgb, var(--color-surface) calc(var(--glass-opacity) * 100%), transparent);
+  --glass-border: rgb(255 255 255 / 0.45);
+  --glass-highlight: rgb(255 255 255 / 0.55);
   --radius-sm: 0.5rem;
   --radius-md: 0.9rem;
   --radius-lg: 1.1rem;
-  --layout-sidebar-width: clamp(28rem, 31vw, 42rem);
+  --layout-sidebar-width: clamp(20rem, 26vw, 26rem);
+  --layout-pill-height: 2.75rem;
+  --layout-float-gap: 1rem;
   --scrollbar-size: 11px;
   --scrollbar-track: color-mix(in srgb, var(--color-surface-2) 58%, transparent);
   --scrollbar-thumb: color-mix(in srgb, var(--color-border) 70%, var(--color-accent));
@@ -50,6 +57,7 @@ html[data-theme="light"] {
 }
 
 html[data-theme="dark"] {
+  color-scheme: dark;
   --color-bg: #171513;
   --color-surface: #1d1b19;
   --color-surface-2: #2a2623;
@@ -60,4 +68,24 @@ html[data-theme="dark"] {
   --color-accent: #c9b296;
   --color-focus: #e7d6bf;
   --shadow-soft: 0 14px 34px rgba(4, 4, 4, 0.35);
+  --glass-opacity: 0.58;
+  --glass-bg: color-mix(in srgb, var(--color-surface) calc(var(--glass-opacity) * 100%), transparent);
+  --glass-border: rgb(255 255 255 / 0.09);
+  --glass-highlight: rgb(255 255 255 / 0.08);
+}
+
+/* Motion (theme-independent) */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --studio-surface-opacity: 0.94;
+  --duration-stage-open: 420ms;
+  --duration-stage-close: 340ms;
+  --duration-stage: var(--duration-stage-open);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-stage-open: 200ms;
+    --duration-stage-close: 200ms;
+  }
 }

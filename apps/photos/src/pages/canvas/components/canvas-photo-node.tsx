@@ -1,27 +1,34 @@
-import { memo } from "react";
+import { memo, ViewTransition } from "react";
+
+import { preloadImage } from "@utils/preload-image";
+import { PHOTO_FOCUS_TRANSITION_NAME, PHOTO_TRANSITION_CLASSES } from "@utils/view-transitions";
 
 import type { CanvasPhotoItem, CanvasPlacement } from "../types";
-import type { FocusEvent, SyntheticEvent } from "react";
+import type { FocusEvent } from "react";
 
 interface CanvasPhotoNodeProps {
-  isActive: boolean;
+  isBackground: boolean;
+  isDimmed: boolean;
+  isTransitionSource: boolean;
   item: CanvasPhotoItem;
   onFocusReveal: (photoId: string) => void;
   onOpen: (photoId: string) => void;
   placement: CanvasPlacement;
-}
-
-function markLoaded(event: SyntheticEvent<HTMLImageElement>) {
-  event.currentTarget.dataset.loaded = "true";
+  shouldLoad: boolean;
 }
 
 export const CanvasPhotoNode = memo(function CanvasPhotoNode({
-  isActive,
+  isBackground,
+  isDimmed,
+  isTransitionSource,
   item,
   onFocusReveal,
   onOpen,
   placement,
+  shouldLoad,
 }: CanvasPhotoNodeProps) {
+  const preloadFull = () => preloadImage(item.fullSrc);
+
   const handleFocus = (event: FocusEvent<HTMLButtonElement>) => {
     if (event.currentTarget.matches(":focus-visible")) {
       onFocusReveal(item.id);
@@ -32,10 +39,12 @@ export const CanvasPhotoNode = memo(function CanvasPhotoNode({
     <button
       aria-label={item.alt}
       className="canvas-photo"
-      data-active={isActive ? "true" : undefined}
       data-canvas-photo={item.id}
+      data-dimmed={isDimmed ? "true" : undefined}
       onClick={() => onOpen(item.id)}
       onFocus={handleFocus}
+      onPointerDown={preloadFull}
+      onPointerEnter={preloadFull}
       style={{
         height: placement.height,
         left: placement.x,
@@ -44,19 +53,36 @@ export const CanvasPhotoNode = memo(function CanvasPhotoNode({
       }}
       type="button"
     >
-      <span className="canvas-photo-frame" style={{ transform: `rotate(${placement.rotation}deg)` }}>
-        <img alt="" className="canvas-photo-image" decoding="async" draggable={false} src={item.miniatureSrc} />
-        {isActive ? (
-          <img
-            alt=""
-            className="canvas-photo-image canvas-photo-image-full"
-            decoding="async"
-            draggable={false}
-            onLoad={markLoaded}
-            src={item.fullSrc}
-          />
-        ) : null}
-      </span>
+      <ViewTransition
+        default="none"
+        key={isTransitionSource ? "source" : "wall"}
+        name={isTransitionSource ? PHOTO_FOCUS_TRANSITION_NAME : undefined}
+        share={isTransitionSource ? PHOTO_TRANSITION_CLASSES : "none"}
+      >
+        <span
+          className="canvas-photo-frame bg-[var(--color-surface-2)]"
+          style={{
+            transform: placement.rotation ? `rotate(${placement.rotation}deg)` : undefined,
+          }}
+        >
+          {shouldLoad ? (
+            <img
+              alt=""
+              className="canvas-photo-image"
+              decoding="async"
+              draggable={false}
+              fetchPriority={isBackground ? "low" : "auto"}
+              height={placement.height}
+              loading="eager"
+              onError={(event) => {
+                event.currentTarget.hidden = true;
+              }}
+              src={item.miniatureSrc}
+              width={placement.width}
+            />
+          ) : null}
+        </span>
+      </ViewTransition>
     </button>
   );
 });

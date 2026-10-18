@@ -1,21 +1,22 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+
+import { resolveGallerySelection } from "@/pages/gallery/utils/resolve-gallery-selection";
 
 import type { DeliveryPhotoViewModel } from "../types";
 import type { GalleryData } from "@/pages/gallery/types";
 
 /**
  * Adapts delivery photos into the route-agnostic GalleryData contract consumed
- * by the shared session GalleryView, tracking the active photo in local state
+ * by the shared session GalleryView, tracking the active photo in parent state
  * instead of the URL (a delivery has no per-photo route).
  */
 export function useDeliveryGalleryData(
   photos: DeliveryPhotoViewModel[],
   title: string,
   token: string,
-  initialPhotoId?: string,
+  activePhotoId: string,
+  setPhotoId: GalleryData["setPhotoId"],
 ): GalleryData {
-  const [activePhotoId, setActivePhotoId] = useState<string | undefined>(initialPhotoId);
-
   const galleryPhotos = useMemo(
     () =>
       photos.map((photo) => ({
@@ -27,21 +28,15 @@ export function useDeliveryGalleryData(
     [photos],
   );
 
-  const selection = useMemo(() => {
-    const index = galleryPhotos.findIndex((photo) => photo.id === activePhotoId);
-    const currentIndex = Math.max(index, 0);
-
-    return {
-      currentIndex,
-      isSelectionValid: index !== -1,
-      normalizedPhotoId: galleryPhotos[currentIndex]?.id,
-    };
-  }, [activePhotoId, galleryPhotos]);
+  const selection = useMemo(
+    () => resolveGallerySelection(galleryPhotos, activePhotoId),
+    [activePhotoId, galleryPhotos],
+  );
 
   return {
     photos: galleryPhotos,
     selection,
-    setPhotoId: setActivePhotoId,
+    setPhotoId,
     sessionSlug: token,
     sessionTitle: title,
   };

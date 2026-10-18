@@ -1,6 +1,6 @@
-import { FOCUS_PADDING, MAX_SCALE, MIN_SCALE } from "../constants";
+import { EDGE_SLACK, FIT_ALL_PADDING, MASONRY_COLUMN_WIDTH, MAX_SCALE, MIN_SCALE } from "../constants";
 
-import type { Bounds, Camera, CanvasPlacement, ReservedViewportSpace, Size } from "../types";
+import type { Bounds, Camera, CanvasPlacement, Size } from "../types";
 
 // Screen space and world space relate as: screen = world * scale + translation.
 
@@ -26,58 +26,78 @@ export function zoomAt(camera: Camera, cursorX: number, cursorY: number, factor:
   };
 }
 
-/**
- * "Cover" fit: fills the whole viewport with content (the block may extend
- * slightly beyond the edges), centered on the content.
- */
-export function fitBoundsCover(bounds: Bounds, viewport: Size): Camera {
-  const contentWidth = bounds.maxX - bounds.minX;
-  const contentHeight = bounds.maxY - bounds.minY;
-
-  if (contentWidth <= 0 || contentHeight <= 0) {
-    return { x: viewport.width / 2, y: viewport.height / 2, scale: 1 };
-  }
-
-  const scale = clampScale(Math.max(viewport.width / contentWidth, viewport.height / contentHeight));
-
-  return {
-    scale,
-    x: viewport.width / 2 - (bounds.minX + contentWidth / 2) * scale,
-    y: viewport.height / 2 - (bounds.minY + contentHeight / 2) * scale,
-  };
+function centerOnWorldPoint(worldX: number, worldY: number, viewport: Size, scale: number): Camera {
+  return { scale, x: viewport.width / 2 - worldX * scale, y: viewport.height / 2 - worldY * scale };
 }
 
 export function cameraCenteredOn(placement: CanvasPlacement, viewport: Size, scale: number): Camera {
-  return {
-    scale,
-    x: viewport.width / 2 - (placement.x + placement.width / 2) * scale,
-    y: viewport.height / 2 - (placement.y + placement.height / 2) * scale,
-  };
+  return centerOnWorldPoint(placement.x + placement.width / 2, placement.y + placement.height / 2, viewport, scale);
 }
 
 /**
- * Camera that centers a photo in the viewport area not covered by the detail
- * panel (reserved space on the right on desktop, bottom on mobile).
+ * Overview camera: centered on the wall at a scale where tiles are `tilePx` wide on screen.
  */
-export function cameraForPhoto(placement: CanvasPlacement, viewport: Size, reserved: ReservedViewportSpace): Camera {
-  const visibleWidth = Math.max(viewport.width - reserved.right, 1);
-  const visibleHeight = Math.max(viewport.height - reserved.bottom, 1);
-  const scale = clampScale(
-    Math.min(visibleWidth / (placement.width * FOCUS_PADDING), visibleHeight / (placement.height * FOCUS_PADDING)),
+export function overviewCamera(bounds: Bounds, viewport: Size, tilePx: number): Camera {
+  return constrainCamera(
+    centerOnWorldPoint(
+      (bounds.minX + bounds.maxX) / 2,
+      (bounds.minY + bounds.maxY) / 2,
+      viewport,
+      tilePx / MASONRY_COLUMN_WIDTH,
+    ),
+    bounds,
+    viewport,
   );
-
-  return {
-    scale,
-    x: visibleWidth / 2 - (placement.x + placement.width / 2) * scale,
-    y: visibleHeight / 2 - (placement.y + placement.height / 2) * scale,
-  };
 }
 
-export function isPlacementVisible(placement: CanvasPlacement, camera: Camera, viewport: Size): boolean {
+// Clamps the viewport center on one axis so the wall covers the viewport,
+// allowing `slack` of overscroll; a wall narrower than the viewport stays centered.
+function clampAxis(center: number, min: number, max: number, halfViewport: number, slack: number): number {
+  const low = min + halfViewport - slack;
+  const high = max - halfViewport + slack;
+
+  return low > high ? (min + max) / 2 : Math.min(Math.max(center, low), high);
+}
+
+/**
+ * Keeps the wall in view: the scale never drops below "the whole wall fits"
+ * and panning stops once the wall's edge is a little inside the viewport.
+ * `insetLeft` is the strip covered by the floating sidebar, which counts as
+ * outside the viewport.
+ */
+export function constrainCamera(camera: Camera, bounds: Bounds, viewport: Size, insetLeft = 0): Camera {
+  const freeWidth = Math.max(viewport.width - insetLeft, 1);
+  const contentWidth = Math.max(bounds.maxX - bounds.minX, 1);
+  const contentHeight = Math.max(bounds.maxY - bounds.minY, 1);
+  const fitAllScale = Math.min(freeWidth / contentWidth, viewport.height / contentHeight) * FIT_ALL_PADDING;
+  const scale = Math.min(Math.max(camera.scale, fitAllScale, MIN_SCALE), MAX_SCALE);
+  const halfWidth = freeWidth / 2 / scale;
+  const halfHeight = viewport.height / 2 / scale;
+  const freeCenterX = insetLeft + freeWidth / 2;
+  const centerX = clampAxis(
+    (freeCenterX - camera.x) / camera.scale,
+    bounds.minX,
+    bounds.maxX,
+    halfWidth,
+    halfWidth * EDGE_SLACK,
+  );
+  const centerY = clampAxis(
+    (viewport.height / 2 - camera.y) / camera.scale,
+    bounds.minY,
+    bounds.maxY,
+    halfHeight,
+    halfHeight * EDGE_SLACK,
+  );
+
+  return { scale, x: freeCenterX - centerX * scale, y: viewport.height / 2 - centerY * scale };
+}
+
+// `insetLeft` is the strip covered by the floating sidebar, as in constrainCamera.
+export function isPlacementVisible(placement: CanvasPlacement, camera: Camera, viewport: Size, insetLeft = 0): boolean {
   const left = placement.x * camera.scale + camera.x;
   const top = placement.y * camera.scale + camera.y;
   const right = left + placement.width * camera.scale;
   const bottom = top + placement.height * camera.scale;
 
-  return right > 0 && bottom > 0 && left < viewport.width && top < viewport.height;
+  return right > insetLeft && bottom > 0 && left < viewport.width && top < viewport.height;
 }

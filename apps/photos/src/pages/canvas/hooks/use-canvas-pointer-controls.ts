@@ -21,7 +21,7 @@ interface PointerGestureState {
 
 interface UseCanvasPointerControlsOptions {
   camera: CanvasCameraControls;
-  onCanvasClick: (event: MouseEvent) => void;
+  onInteract: () => void;
   stageRef: RefObject<HTMLDivElement | null>;
 }
 
@@ -155,26 +155,23 @@ function handlePointerEnd(state: PointerGestureState, event: PointerEvent) {
   }
 }
 
-function handleClickCapture(state: PointerGestureState, onCanvasClick: (event: MouseEvent) => void, event: MouseEvent) {
+function handleClickCapture(state: PointerGestureState, event: MouseEvent) {
   if (state.suppressNextClick) {
     state.suppressNextClick = false;
     event.preventDefault();
     event.stopPropagation();
-    return;
   }
-
-  onCanvasClick(event);
 }
 
 /**
  * Excalidraw-style navigation: drag to pan, wheel/trackpad to pan,
  * ctrl/cmd+wheel or two-finger pinch to zoom toward the cursor.
  */
-export function useCanvasPointerControls({ camera, onCanvasClick, stageRef }: UseCanvasPointerControlsOptions) {
-  const onCanvasClickRef = useRef(onCanvasClick);
+export function useCanvasPointerControls({ camera, onInteract, stageRef }: UseCanvasPointerControlsOptions) {
+  const onInteractRef = useRef(onInteract);
   useEffect(() => {
-    onCanvasClickRef.current = onCanvasClick;
-  }, [onCanvasClick]);
+    onInteractRef.current = onInteract;
+  }, [onInteract]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -191,11 +188,17 @@ export function useCanvasPointerControls({ camera, onCanvasClick, stageRef }: Us
       hasCapture: false,
     };
 
-    const onWheel = (event: WheelEvent) => handleWheel(stage, camera, event);
-    const onPointerDown = (event: PointerEvent) => handlePointerDown(stage, camera, state, event);
+    const onWheel = (event: WheelEvent) => {
+      onInteractRef.current();
+      handleWheel(stage, camera, event);
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      onInteractRef.current();
+      handlePointerDown(stage, camera, state, event);
+    };
     const onPointerMove = (event: PointerEvent) => handlePointerMove(stage, camera, state, event);
     const onPointerEnd = (event: PointerEvent) => handlePointerEnd(state, event);
-    const onClick = (event: MouseEvent) => handleClickCapture(state, onCanvasClickRef.current, event);
+    const onClick = (event: MouseEvent) => handleClickCapture(state, event);
 
     // React's onWheel cannot reliably preventDefault (passive listeners).
     stage.addEventListener("wheel", onWheel, { passive: false });

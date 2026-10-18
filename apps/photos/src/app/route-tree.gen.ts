@@ -9,17 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as CanvasRouteImport } from './routes/canvas'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as DeliveryTokenRouteImport } from './routes/delivery.$token'
 import { Route as AppSessionSlugRouteImport } from './routes/_app.session.$slug'
 
-const CanvasRoute = CanvasRouteImport.update({
-  id: '/canvas',
-  path: '/canvas',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -42,12 +36,10 @@ const AppSessionSlugRoute = AppSessionSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/canvas': typeof CanvasRoute
   '/delivery/$token': typeof DeliveryTokenRoute
   '/session/$slug': typeof AppSessionSlugRoute
 }
 export interface FileRoutesByTo {
-  '/canvas': typeof CanvasRoute
   '/delivery/$token': typeof DeliveryTokenRoute
   '/': typeof AppIndexRoute
   '/session/$slug': typeof AppSessionSlugRoute
@@ -55,20 +47,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
-  '/canvas': typeof CanvasRoute
   '/delivery/$token': typeof DeliveryTokenRoute
   '/_app/': typeof AppIndexRoute
   '/_app/session/$slug': typeof AppSessionSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/canvas' | '/delivery/$token' | '/session/$slug'
+  fullPaths: '/' | '/delivery/$token' | '/session/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/canvas' | '/delivery/$token' | '/' | '/session/$slug'
+  to: '/delivery/$token' | '/' | '/session/$slug'
   id:
     | '__root__'
     | '/_app'
-    | '/canvas'
     | '/delivery/$token'
     | '/_app/'
     | '/_app/session/$slug'
@@ -76,19 +66,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
-  CanvasRoute: typeof CanvasRoute
   DeliveryTokenRoute: typeof DeliveryTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/canvas': {
-      id: '/canvas'
-      path: '/canvas'
-      fullPath: '/canvas'
-      preLoaderRoute: typeof CanvasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -134,7 +116,6 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
-  CanvasRoute: CanvasRoute,
   DeliveryTokenRoute: DeliveryTokenRoute,
 }
 export const routeTree = rootRouteImport

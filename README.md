@@ -141,7 +141,7 @@ External services are separate repositories reached through Cloudflare service b
 ```text
 packages/db/src/schema/*.ts       table definitions (camelCase TS keys, snake_case SQL columns)
         │ $inferSelect
-packages/db/src/mappers.ts        toPhoto / toSession / toDelivery → non-nullable domain shapes
+packages/db/src/mappers.ts        toPhoto / toSessionSummary / toSession / toDelivery → non-nullable domain shapes
         │ returned by repositories → services → procedures
 apps/api/src/trpc/router.ts       AppRouter plus inputs and outputs inferred from its procedures
         │ import type (no runtime code crosses the boundary)
@@ -249,21 +249,38 @@ await invalidatePortfolio(); // sessions, photos and tags reference each other
 ```
 
 - `lib/api/client.ts` in each app creates the tRPC client and the options proxy. The API origin is
-  `VITE_API_URL`, else `http://localhost:8787` under `vite dev`, else `https://api.murga.ing`.
+  `VITE_API_URL`, else `http://localhost:8787` under `vite dev`, else the API Worker hostname for the public site (`https://roncalphoto-api.murgapja-fee.workers.dev`)
+  or `https://api.murga.ing` for the admin.
 - The public app sends requests with `credentials: "omit"`; the admin with `"include"`.
 - `@roncal/ui#createQueryClient`: `staleTime` 60 s, one retry, no refetch on focus/reconnect.
 - Admin `invalidatePortfolio()` invalidates every tRPC query (`trpc.pathKey()`), after awaiting the
   mutation, then the editor seeds the detail cache with the returned record.
 
-**Public app (`apps/photos`).** Routes: `/` (session grid), `/session/:slug?photo=<id>` (gallery),
-`/canvas?photo=<id>` (pan/zoom wall of all photos), `/delivery/:token` (client delivery with list
+**Public app (`apps/photos`).** Routes: `/?photo=<id>&tag=<slug>` (canvas: pan/zoom wall of every
+photo in a new random order per visit; `photo` opens that photo's session over it),
+`/session/:slug?photo=<id>` (the same canvas with that session's stage open, at its first photo when
+`photo` is omitted; opening any photo navigates here), `/delivery/:token` (client delivery with list
 and gallery views and ZIP download via `client-zip`). Notable decisions:
 
-- The gallery uses CSS scroll-snap plus an `IntersectionObserver`, keeping scroll, keyboard
-  (arrows, Escape) and the `?photo=` search param in sync.
-- The sidebar has independent desktop/mobile open flags; on mobile it is an overlay with focus trap
-  and Escape to close. Layout is fixed to `100vh`.
-- `index.html` applies the persisted theme before React mounts (no theme flash).
+- The canvas is rendered by the `/_app` layout route, not by its children, so moving between `/` and
+  `/session/:slug` keeps the same wall instead of remounting it.
+- The edge Worker (`apps/photos/worker`) server-renders `/` and `/session/:slug` for crawlers
+  (title, description, canonical, Open Graph image, JSON-LD and a static photo list). Unknown or
+  empty sessions return 404. `/sitemap.xml` lists the home page and every session with its images
+  (`/image-sitemap.xml` 301s there).
+
+- The canvas camera is clamped to the wall (`constrainCamera`), starts at a readable overview scale
+  and has a "Vista general" reset.
+- Clicking a photo opens a session stage over the canvas: the shared `GalleryView` (CSS scroll-snap
+  plus an `IntersectionObserver`, keeping scroll, keyboard and `?photo=` in sync) positioned on that
+  photo, next to a full-height panel with session (title, tags, description) and photo info. The
+  tile and the slide share the `photo-focus` view-transition name so the photo morphs between them.
+- The sidebar is a floating glass card anchored to a pill (top-left on desktop, bottom sheet on
+  mobile), with independent desktop/mobile open flags. It lists sessions, a tag filter and about;
+  hovering a session dims the other photos, clicking it opens that session at its first photo.
+  Layout is fixed to `100vh`.
+- The theme follows `prefers-color-scheme` unless set with Cmd/Ctrl+1 (light) or Cmd/Ctrl+2 (dark);
+  `index.html` applies it before React mounts (no theme flash).
 - View-model hooks (`use-*-view-model.ts`) adapt API shapes to component props.
 
 **Admin (`apps/photos-admin`).** Routes under the `_auth` layout require a Better Auth session
@@ -383,7 +400,17 @@ type Photo = {
   sortOrder: number;
   metadata: PhotoMetadata;
 };
-type Session = { id; slug; title; description; createdAt: string; tags: Tag[]; photos: Photo[] }; // tags by name
+type SessionSummary = {
+  id;
+  slug;
+  title;
+  description;
+  createdAt: string;
+  tags: Tag[];
+  photoCount: number;
+  firstPhotoId?: string;
+};
+type Session = SessionSummary & { photos: Photo[] };
 type Delivery = {
   id;
   token;
@@ -401,17 +428,18 @@ All procedures live under `/trpc` (HTTP batching enabled, no transformer: plain 
 
 | Procedure              | Access    | Input                                                                                                          | Output                                                                       |
 | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `sessions.list`        | public    | —                                                                                                              | `Session[]` (newest first)                                                   |
+| `sessions.list`        | public    | —                                                                                                              | `SessionSummary[]` (newest first, no photo payloads)                         |
+| `sessions.canvas`      | public    | —                                                                                                              | `Session[]` (photos for the public canvas)                                   |
 | `sessions.get`         | public    | `{ slug }`                                                                                                     | `Session` · `NOT_FOUND`                                                      |
 | `sessions.create`      | protected | `{ title, description, tagIds[], slug? }`                                                                      | `Session`                                                                    |
 | `sessions.update`      | protected | `{ slug, data: Partial<create input> }`                                                                        | `Session` (may have a new slug)                                              |
 | `sessions.delete`      | protected | `{ slug }`                                                                                                     | `{ id }` (photos/tags links cascade)                                         |
-| `photos.list`          | public    | —                                                                                                              | `Photo[]`                                                                    |
+| `photos.list`          | public    | `{ limit?, offset?, search? }` (limit ≤ 100, search ≤ 200 chars)                                               | `{ items: Photo[], total }`                                                  |
 | `photos.get`           | public    | `{ id }`                                                                                                       | `Photo`                                                                      |
 | `photos.update`        | protected | `{ id, data: Partial<{ sessionId, url, miniature, alt, about, sortOrder, metadata }> }`                        | `Photo`                                                                      |
 | `photos.delete`        | protected | `{ id }`                                                                                                       | `{ id }`                                                                     |
 | `tags.list`            | public    | —                                                                                                              | `Tag[]` (by name)                                                            |
-| `tags.get`             | public    | `{ slug }`                                                                                                     | `{ tag, sessions: Session[] }`                                               |
+| `tags.get`             | public    | `{ slug }`                                                                                                     | `{ tag, sessions: SessionSummary[] }`                                        |
 | `photoUploads.create`  | protected | `{ idempotencyKey, data: { sessionId, alt, about, sortOrder?, metadata?, filename, contentType, sizeBytes } }` | `{ uploadId, photoId, status, upload: { url, expiresAt, headers } \| null }` |
 | `photoUploads.get`     | protected | `{ uploadId }`                                                                                                 | `{ uploadId, photoId, status, error, photo: Photo \| null }`                 |
 | `photoUploads.retry`   | protected | `{ uploadId }`                                                                                                 | same as `get`                                                                |
@@ -419,6 +447,8 @@ All procedures live under `/trpc` (HTTP batching enabled, no transformer: plain 
 
 Input rules worth knowing:
 
+- Session titles are limited to 120 characters; descriptions and photo descriptions to 5,000;
+  photo alt text to 200; tag names to 40.
 - Session `slug` is optional: it is derived from the title (`"Atardecer en Ávila"` →
   `atardecer-en-avila`), and a taken slug gets a suffix (`-2`, `-3`…). Duplicate `tagIds` are
   removed.
@@ -720,6 +750,8 @@ site.
 - **Legacy `photo_upload_jobs` table** is still in the schema. Once the
   `roncalphoto-image-optimizer` Worker is deleted from Cloudflare, remove the table from
   `packages/db/src/schema/photo-uploads.ts` and run `bun run db:generate -- --name drop_photo_upload_jobs`.
-- Production API origin: the frontends default to `https://api.murga.ing` while
+- Admin API origin: the admin defaults to `https://api.murga.ing` while
   `apps/api/wrangler.toml` sets `BETTER_AUTH_URL` to the `workers.dev` hostname; confirm which one is
-  canonical and align both (or set `VITE_API_URL` in the frontend builds).
+  canonical and align both (or set `VITE_API_URL` in the frontend builds). The public site defaults
+  to `https://roncalphoto-api.murgapja-fee.workers.dev`, matching the configured API Worker.
+- Public SEO routes and launch configuration: see [docs/seo.md](docs/seo.md).
