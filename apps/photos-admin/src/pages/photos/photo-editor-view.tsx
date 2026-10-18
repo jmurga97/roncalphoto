@@ -26,8 +26,16 @@ const photoSchema = z.object({
   sessionId: z.string().trim().min(1, { error: "Selecciona una sesión." }),
   url: urlField("Introduce la URL de la imagen principal."),
   miniature: urlField("Introduce la URL de la miniatura."),
-  alt: z.string().trim().min(1, { error: "Escribe un texto alternativo" }),
-  about: z.string().trim().min(1, { error: "Escribe una descripción" }),
+  alt: z
+    .string()
+    .trim()
+    .min(1, { error: "Escribe un texto alternativo" })
+    .max(200, { error: "Máximo 200 caracteres." }),
+  about: z
+    .string()
+    .trim()
+    .min(1, { error: "Escribe una descripción" })
+    .max(5000, { error: "Máximo 5.000 caracteres." }),
   sortOrder: z
     .string()
     .trim()
@@ -220,12 +228,14 @@ export function PhotoEditorView() {
               <div className="admin-form-grid">
                 <FormTextInput<PhotoFormValues>
                   label="Texto alternativo"
+                  maxLength={200}
                   name="alt"
                   placeholder="Retrato editorial a contraluz"
                   required
                 />
                 <FormTextarea<PhotoFormValues>
                   label="Descripción"
+                  maxLength={5000}
                   name="about"
                   placeholder="Contexto, intención, dirección o apuntes de la imagen."
                   required

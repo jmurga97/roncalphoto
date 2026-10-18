@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RelationshipPanel, ResourceEditor, StatusText, TagList } from "@jmurga97/components";
+import { Button, ConfirmAction, RelationshipPanel, ResourceEditor, StatusText, TagList } from "@jmurga97/components";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -21,9 +21,13 @@ import { invalidatePortfolio, trpc } from "@lib/api/client";
 import type { RouterInputs, Session, Tag } from "@roncal/api/router";
 
 const sessionSchema = z.object({
-  title: z.string().trim().min(1, { error: "El título es obligatorio." }),
+  title: z.string().trim().min(1, { error: "El título es obligatorio." }).max(120, { error: "Máximo 120 caracteres." }),
   slug: z.string().trim(),
-  description: z.string().trim().min(1, { error: "La descripción es obligatoria." }),
+  description: z
+    .string()
+    .trim()
+    .min(1, { error: "La descripción es obligatoria." })
+    .max(5000, { error: "Máximo 5.000 caracteres." }),
   tagIds: z.array(z.string()).min(1, { error: "Selecciona al menos un tag." }),
 });
 
@@ -147,6 +151,7 @@ function SessionEditorForm({
 }) {
   const navigate = useNavigate();
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [isBackConfirmOpen, setBackConfirmOpen] = useState(false);
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(sessionSchema),
     defaultValues: toSessionFormValues(initialSession),
@@ -154,6 +159,12 @@ function SessionEditorForm({
   const { clearErrors, formState, reset } = form;
   const selectedTagIds = useWatch({ control: form.control, name: "tagIds" });
   const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
+  const relatedPhotoCount = initialSession?.photos.length ?? 0;
+  const relatedPhotoLabel = relatedPhotoCount === 1 ? "foto relacionada" : "fotos relacionadas";
+  const sessionStatus =
+    mode === "create"
+      ? "La sesión se publicará con su slug final al primer guardado."
+      : `${relatedPhotoCount} ${relatedPhotoLabel}`;
   const serverError = getServerError(form);
   const editorStatus = getEditorStatus({
     deletePending,
@@ -178,6 +189,28 @@ function SessionEditorForm({
           className="admin-resource-editor"
           deleting={deletePending}
           dirty={formState.isDirty}
+          resourceTitle={
+            <span className="grid justify-items-start gap-2">
+              <Button
+                nativeButton={false}
+                render={
+                  <Link
+                    to="/sessions"
+                    onClick={(event) => {
+                      if (!formState.isDirty) return;
+                      event.preventDefault();
+                      setBackConfirmOpen(true);
+                    }}
+                  />
+                }
+                size="sm"
+                variant="ghost"
+              >
+                ← Sesiones
+              </Button>
+              <span>{mode === "create" ? "Nueva sesión" : (initialSession?.title ?? "Sesión")}</span>
+            </span>
+          }
           onCancel={() => {
             clearErrors("root");
 
@@ -190,7 +223,6 @@ function SessionEditorForm({
           }}
           onDelete={mode === "edit" ? () => setDeleteConfirmOpen(true) : undefined}
           onSave={submitResource}
-          resourceTitle={mode === "create" ? "Nueva sesión" : (initialSession?.title ?? "Sesión")}
           saveLabel="Guardar cambios"
           cancelLabel="Descartar cambios"
           deleteLabel="Eliminar"
@@ -206,15 +238,7 @@ function SessionEditorForm({
             <div className="admin-aside-stack">
               <section className="admin-editor-section">
                 <div className="admin-kicker">Sesión</div>
-                <StatusText
-                  label={
-                    mode === "create"
-                      ? "La sesión se publicará con su slug final al primer guardado."
-                      : `${initialSession?.photos.length ?? 0} fotos relacionadas`
-                  }
-                  polite
-                  tone="neutral"
-                />
+                <StatusText label={sessionStatus} polite tone="neutral" />
               </section>
               <section className="admin-editor-section">
                 <div className="admin-kicker">Etiquetas</div>
@@ -249,6 +273,19 @@ function SessionEditorForm({
                 open={isDeleteConfirmOpen}
                 pending={deletePending}
               />
+              <ConfirmAction
+                cancelLabel="Seguir editando"
+                confirmLabel="Descartar cambios"
+                message="Los cambios sin guardar se perderán al volver a sesiones."
+                onCancel={() => setBackConfirmOpen(false)}
+                onConfirm={() => {
+                  setBackConfirmOpen(false);
+                  void navigate({ to: "/sessions" });
+                }}
+                onOpenChange={setBackConfirmOpen}
+                open={isBackConfirmOpen}
+                title="¿Descartar cambios?"
+              />
             </div>
           }
         >
@@ -258,6 +295,7 @@ function SessionEditorForm({
               <div className="admin-form-grid admin-form-grid--two">
                 <FormTextInput<SessionFormValues>
                   label="Título"
+                  maxLength={120}
                   name="title"
                   placeholder="Editorial al atardecer"
                   required
@@ -276,6 +314,7 @@ function SessionEditorForm({
               <div className="admin-kicker">Contenido</div>
               <FormTextarea<SessionFormValues>
                 label="Descripción"
+                maxLength={5000}
                 name="description"
                 placeholder="<p>Describe la sesión, intención, localización o tratamiento visual.</p>"
                 required

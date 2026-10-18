@@ -13,8 +13,8 @@ const metadataText = z
 /** Editable photo content, shared by `photos.update` and `photoUploads.create`. */
 export const photoContentInput = z.object({
   sessionId: z.string().trim().min(1),
-  alt: z.string().trim().min(1),
-  about: z.string().trim().min(1),
+  alt: z.string().trim().min(1).max(200),
+  about: z.string().trim().min(1).max(5000),
   sortOrder: z.number().int().optional(),
   metadata: z
     .object({

@@ -6,6 +6,7 @@ import type { FieldPath, FieldValues } from "react-hook-form";
 interface FormTextareaProps<TValues extends FieldValues> {
   hint?: string;
   label: string;
+  maxLength?: number;
   name: FieldPath<TValues>;
   optional?: boolean;
   placeholder?: string;
@@ -16,6 +17,7 @@ interface FormTextareaProps<TValues extends FieldValues> {
 export function FormTextarea<TValues extends FieldValues>({
   hint,
   label,
+  maxLength,
   name,
   optional = false,
   placeholder,
@@ -41,6 +43,7 @@ export function FormTextarea<TValues extends FieldValues>({
       <div ref={(node) => field.ref(node ? { focus: () => node.querySelector("textarea")?.focus() } : null)}>
         <Textarea
           invalid={fieldState.invalid}
+          maxLength={maxLength}
           name={field.name}
           onBlur={field.onBlur}
           onValueChange={(value) => {

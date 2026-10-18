@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const tags = sqliteTable(
   "tags",
@@ -8,7 +8,10 @@ export const tags = sqliteTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
   },
-  (table) => [uniqueIndex("tags_slug_unique").on(table.slug)],
+  (table) => [
+    uniqueIndex("tags_slug_unique").on(table.slug),
+    check("tags_name_max_length", sql`length(${table.name}) <= 40`),
+  ],
 );
 
 export const sessions = sqliteTable(

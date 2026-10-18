@@ -7,6 +7,7 @@ interface FormTextInputProps<TValues extends FieldValues> {
   autocomplete?: string;
   hint?: string;
   label: string;
+  maxLength?: number;
   name: FieldPath<TValues>;
   optional?: boolean;
   placeholder?: string;
@@ -18,6 +19,7 @@ export function FormTextInput<TValues extends FieldValues>({
   autocomplete,
   hint,
   label,
+  maxLength,
   name,
   optional = false,
   placeholder,
@@ -43,6 +45,7 @@ export function FormTextInput<TValues extends FieldValues>({
       <Input
         autoComplete={autocomplete}
         invalid={fieldState.invalid}
+        maxLength={maxLength}
         name={field.name}
         onBlur={field.onBlur}
         onValueChange={(value) => {

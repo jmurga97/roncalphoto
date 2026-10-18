@@ -37,8 +37,8 @@ export function usePhotoUpload() {
 
     const data: RouterInputs["photoUploads"]["create"]["data"] = {
       sessionId,
-      alt: item.title.trim() || item.fileName,
-      about: item.title.trim() || item.fileName,
+      alt: (item.title.trim() || item.fileName).slice(0, 200),
+      about: (item.title.trim() || item.fileName).slice(0, 200),
       filename: item.fileName,
       contentType,
       sizeBytes: item.fileSize,
