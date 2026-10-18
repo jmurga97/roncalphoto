@@ -40,7 +40,9 @@ export function DeliveriesListView() {
             placeholder="Buscar por cliente, email o título"
             value={searchValue}
           />
-          <span className="ming-toolbar__end ming-data">{filteredDeliveries.length} entregas</span>
+          <span className="ming-toolbar__end ming-data">
+            {filteredDeliveries.length} {filteredDeliveries.length === 1 ? "entrega" : "entregas"}
+          </span>
         </div>
         <DeliveriesResourceList deliveries={filteredDeliveries} refetching={isFetching} />
       </section>

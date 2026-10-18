@@ -31,7 +31,9 @@ export function TagsListView() {
             placeholder="Buscar por nombre o slug"
             value={searchValue}
           />
-          <span className="ming-toolbar__end ming-data">{filteredTags.length} etiquetas</span>
+          <span className="ming-toolbar__end ming-data">
+            {filteredTags.length} {filteredTags.length === 1 ? "etiqueta" : "etiquetas"}
+          </span>
         </div>
         <ResourceTable
           ariaLabel="Etiquetas"

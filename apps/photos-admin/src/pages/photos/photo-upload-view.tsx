@@ -93,7 +93,7 @@ export function PhotoUploadView() {
           setErrors((current) => ({ ...current, [item.id]: getErrorMessage(error) }));
         }
       }
-      setProgress(`${uploaded} de ${items.length} fotos subidas`);
+      setProgress(`${uploaded} de ${items.length} ${items.length === 1 ? "foto subida" : "fotos subidas"}`);
       if (uploaded === items.length) {
         setSessionLocked(false);
       }
