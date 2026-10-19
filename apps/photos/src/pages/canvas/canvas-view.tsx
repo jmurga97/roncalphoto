@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { CanvasOverviewIcon } from "@components/canvas-overview-icon";
 import { MOBILE_MEDIA_QUERY } from "@utils/media-queries";
@@ -23,7 +23,7 @@ import { useCanvasViewModel } from "./hooks/use-canvas-view-model";
 import { cameraCenteredOn, constrainCamera, isPlacementVisible, overviewCamera, panBy } from "./utils/camera-math";
 import { computeContentBounds } from "./utils/compute-canvas-layout";
 
-import type { Camera, Size } from "./types";
+import type { Camera, CanvasPlacement, Size } from "./types";
 
 export function CanvasView() {
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +72,25 @@ export function CanvasView() {
     () => overviewCamera(bounds, getViewportSize(), isMobile ? OVERVIEW_TILE_PX_MOBILE : OVERVIEW_TILE_PX_DESKTOP),
     [bounds, getViewportSize, isMobile],
   );
+
+  // Tiles in the opening overview load in the first render, ahead of the observer, nearest the centre first
+  // (the LCP candidates). Measured on the window: the stage is not mounted yet, and the observer catches misses.
+  const [openingPhotoIds] = useState(() => {
+    if (requestedPhotoId) return [];
+
+    const viewport = { width: window.innerWidth, height: window.innerHeight };
+    const overview = overviewCamera(bounds, viewport, isMobile ? OVERVIEW_TILE_PX_MOBILE : OVERVIEW_TILE_PX_DESKTOP);
+    const distanceToCentre = (placement: CanvasPlacement) =>
+      Math.hypot(
+        (placement.x + placement.width / 2) * overview.scale + overview.x - viewport.width / 2,
+        (placement.y + placement.height / 2) * overview.scale + overview.y - viewport.height / 2,
+      );
+
+    return placements
+      .filter((placement) => isPlacementVisible(placement, overview, viewport))
+      .toSorted((a, b) => distanceToCentre(a) - distanceToCentre(b))
+      .map(({ photoId }) => photoId);
+  });
 
   // Places the overview (again if the wall or breakpoint changes). The first
   // time it drifts in briefly to hint that the wall can move.
@@ -177,6 +196,7 @@ export function CanvasView() {
         onOpenPhoto={setPhotoId}
         onRevealPhoto={revealPhoto}
         placementsById={placementsById}
+        openingPhotoIds={openingPhotoIds}
         selectedPhotoId={selectedPhotoId}
         stageRef={stageRef}
         transitionPhotoId={transitionPhotoId}

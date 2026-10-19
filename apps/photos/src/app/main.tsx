@@ -6,8 +6,21 @@ import { CanvasLoadingState } from "@/pages/canvas/components/canvas-loading-sta
 import { AppProviders } from "@app/providers";
 import { routeTree } from "@app/route-tree.gen";
 import { RouteErrorState } from "@components/error/error-state";
+import { trpc } from "@lib/api/client";
+import { INITIAL_DATA_ELEMENT_ID } from "@lib/api/initial-data";
 import { queryClient } from "@lib/query-client";
 import "./styles/global.css";
+
+import type { InitialData } from "@lib/api/initial-data";
+
+// Inlined by the edge worker: the canvas loader then resolves at once, without the skeleton or an API round trip.
+const initialData = document.querySelector(`#${INITIAL_DATA_ELEMENT_ID}`)?.textContent;
+
+if (initialData) {
+  const { canvas, list } = JSON.parse(initialData) as InitialData;
+  queryClient.setQueryData(trpc.sessions.canvas.queryKey(), canvas);
+  queryClient.setQueryData(trpc.sessions.list.queryKey(), list);
+}
 
 const router = createRouter({
   routeTree,

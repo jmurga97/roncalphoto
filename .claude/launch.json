@@ -27,6 +27,12 @@
         "API_URL:http://localhost:8787"
       ],
       "port": 8788
+    },
+    {
+      "name": "photos-worker-prod-api",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd", "apps/photos", "preview", "--port", "8789"],
+      "port": 8789
     }
   ]
 }

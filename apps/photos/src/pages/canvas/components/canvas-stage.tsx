@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CanvasPhotoNode } from "./canvas-photo-node";
+import { HIGH_PRIORITY_TILE_COUNT } from "../constants";
 import { useCanvasPointerControls } from "../hooks/use-canvas-pointer-controls";
 
 import type { CanvasCameraControls } from "../hooks/use-canvas-camera";
@@ -14,6 +15,7 @@ interface CanvasStageProps {
   onInteract: () => void;
   onOpenPhoto: (photoId: string) => void;
   onRevealPhoto: (photoId: string) => void;
+  openingPhotoIds: string[];
   placementsById: Map<string, CanvasPlacement>;
   selectedPhotoId?: string;
   stageRef: RefObject<HTMLDivElement | null>;
@@ -28,6 +30,7 @@ export function CanvasStage({
   onInteract,
   onOpenPhoto,
   onRevealPhoto,
+  openingPhotoIds,
   placementsById,
   selectedPhotoId,
   stageRef,
@@ -35,7 +38,9 @@ export function CanvasStage({
   worldRef,
 }: CanvasStageProps) {
   useCanvasPointerControls({ camera, onInteract, stageRef });
-  const [loadedPhotoIds, setLoadedPhotoIds] = useState(() => new Set<string>());
+  const [loadedPhotoIds, setLoadedPhotoIds] = useState(() => new Set(openingPhotoIds));
+  // Only a few: every high-priority image shares the same bandwidth as the LCP one.
+  const highPriorityIds = useMemo(() => new Set(openingPhotoIds.slice(0, HIGH_PRIORITY_TILE_COUNT)), [openingPhotoIds]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -81,6 +86,7 @@ export function CanvasStage({
             <CanvasPhotoNode
               isBackground={Boolean(selectedPhotoId)}
               isDimmed={isDimmed(item)}
+              isPriority={highPriorityIds.has(item.id)}
               isTransitionSource={!selectedPhotoId && item.id === transitionPhotoId}
               item={item}
               key={item.id}

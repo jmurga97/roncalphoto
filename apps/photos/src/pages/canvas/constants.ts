@@ -22,6 +22,8 @@ export const DRIFT_OFFSET_PX = 90;
 export const REVEAL_ANIMATION_MS = 320;
 // Longest wait for the full photo before opening; past it the stage opens without the morph.
 export const OPEN_DECODE_TIMEOUT_MS = 200;
+// Tiles nearest the centre of the opening overview fetched with fetchpriority="high".
+export const HIGH_PRIORITY_TILE_COUNT = 4;
 
 export const CLICK_DRAG_TOLERANCE_PX = 5;
 // A fingertip wobbles more than a mouse: below this a touch is still a tap.

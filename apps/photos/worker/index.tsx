@@ -2,10 +2,12 @@ import { createTRPCClient, httpBatchLink, TRPCClientError } from "@trpc/client";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DEFAULT_API_URL } from "../src/lib/api/config";
+import { INITIAL_DATA_ELEMENT_ID } from "../src/lib/api/initial-data";
 import { StudioContent } from "../src/components/studio/studio-content";
 import { SERVICES, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "../src/lib/seo/content";
 import { parseRichText, RichTextRenderer } from "../src/utils/render-rich-text";
 
+import type { InitialData } from "../src/lib/api/initial-data";
 import type { AppRouter, Session } from "@roncal/api/router";
 import type { RichTextInline } from "../src/utils/render-rich-text";
 
@@ -304,11 +306,39 @@ async function pageFor(path: string, env: PhotosEnv): Promise<Page | undefined> 
   return slug ? sessionPage(slug, env) : undefined;
 }
 
+/** The canvas queries inlined for the first render, plus early connections to the photo hosts it loads first. */
+async function canvasHead(env: PhotosEnv) {
+  try {
+    const api = apiClient(env);
+    const [canvas, list] = await Promise.all([api.sessions.canvas.query(), api.sessions.list.query()]);
+    const data: InitialData = { canvas, list };
+    const imageOrigins = new Set(
+      canvas
+        .flatMap((session) => session.photos.map((photo) => photo.miniature))
+        .filter(isAbsoluteUrl)
+        .map((url) => new URL(url).origin),
+    );
+    const preconnects = [...imageOrigins]
+      .slice(0, 3)
+      .map((origin) => `<link rel="preconnect" href="${escapeMarkup(origin)}" />`)
+      .join("");
+    const json = JSON.stringify(data).replaceAll("<", "\\u003c");
+
+    return `${preconnects}<script id="${INITIAL_DATA_ELEMENT_ID}" type="application/json">${json}</script>`;
+  } catch (error) {
+    // The client fetches the data itself: at least open that connection early.
+    console.error("Could not inline the canvas data", error);
+    return `<link rel="preconnect" href="${escapeMarkup(env.API_URL ?? DEFAULT_API_URL)}" crossorigin />`;
+  }
+}
+
 async function htmlResponse(request: Request, env: PhotosEnv, path: string) {
   const template = await env.ASSETS.fetch(new Request(new URL("/index.html", request.url)));
   if (!template.ok) return template;
 
-  const page = (await pageFor(path, env)) ?? {
+  const showsCanvas = PUBLIC_PATHS.includes(path) || SESSION_PATH.test(path);
+  const [found, canvasMarkup] = await Promise.all([pageFor(path, env), showsCanvas ? canvasHead(env) : ""]);
+  const page = found ?? {
     status: 404,
     head: "<title>Página no encontrada | RoncalPhoto</title>",
     body: '<main class="p-8"><h1>Página no encontrada</h1><a href="/">Volver al portfolio</a></main>',
@@ -319,7 +349,10 @@ async function htmlResponse(request: Request, env: PhotosEnv, path: string) {
   let html = (await template.text())
     .replace(/<title>[\s\S]*?<\/title>/, "")
     .replace(/<meta\s+name="description"[^>]*>/, "")
-    .replace("</head>", `${page.head}<meta name="robots" content="${robots}" /></head>`);
+    .replace(
+      "</head>",
+      `${page.head}${page.status === 200 ? canvasMarkup : ""}<meta name="robots" content="${robots}" /></head>`,
+    );
 
   if (page.status === 404) {
     html = html

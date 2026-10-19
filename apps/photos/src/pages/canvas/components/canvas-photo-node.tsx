@@ -9,6 +9,7 @@ import type { FocusEvent } from "react";
 interface CanvasPhotoNodeProps {
   isBackground: boolean;
   isDimmed: boolean;
+  isPriority: boolean;
   isTransitionSource: boolean;
   item: CanvasPhotoItem;
   onFocusReveal: (photoId: string) => void;
@@ -20,6 +21,7 @@ interface CanvasPhotoNodeProps {
 export const CanvasPhotoNode = memo(function CanvasPhotoNode({
   isBackground,
   isDimmed,
+  isPriority,
   isTransitionSource,
   item,
   onFocusReveal,
@@ -28,6 +30,7 @@ export const CanvasPhotoNode = memo(function CanvasPhotoNode({
   shouldLoad,
 }: CanvasPhotoNodeProps) {
   const preloadFull = () => preloadImage(item.fullSrc);
+  const loadPriority = isPriority ? "high" : "auto";
 
   const handleFocus = (event: FocusEvent<HTMLButtonElement>) => {
     if (event.currentTarget.matches(":focus-visible")) {
@@ -73,7 +76,7 @@ export const CanvasPhotoNode = memo(function CanvasPhotoNode({
               // blank for a frame, a visible flash on Safari. Miniatures are cheap to decode.
               decoding="sync"
               draggable={false}
-              fetchPriority={isBackground ? "low" : "auto"}
+              fetchPriority={isBackground ? "low" : loadPriority}
               height={placement.height}
               loading="eager"
               onError={(event) => {
