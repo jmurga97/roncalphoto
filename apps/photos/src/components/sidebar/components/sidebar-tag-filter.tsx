@@ -47,7 +47,8 @@ export function SidebarTagFilter() {
           return (
             <li className="min-w-0" key={tag.id}>
               <Link
-                aria-pressed={isActive}
+                // A link cannot be "pressed"; aria-current marks the active filter among its siblings.
+                aria-current={isActive ? "true" : undefined}
                 className={[
                   TAG_CHIP_CLASS,
                   "min-w-0 max-w-full truncate",

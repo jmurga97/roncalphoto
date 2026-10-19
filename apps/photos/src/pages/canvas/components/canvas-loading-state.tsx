@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 import { useSidebarOpen } from "@app/store";
 import { CanvasOverviewIcon } from "@components/canvas-overview-icon";
-import { trpc } from "@lib/api/client";
 import { MOBILE_MEDIA_QUERY } from "@utils/media-queries";
 import { useMediaQuery } from "@utils/use-media-query";
 
@@ -11,7 +9,10 @@ import { OVERVIEW_TILE_PX_DESKTOP, OVERVIEW_TILE_PX_MOBILE } from "../constants"
 import { constrainCamera, overviewCamera } from "../utils/camera-math";
 import { computeCanvasLayout, computeContentBounds } from "../utils/compute-canvas-layout";
 
-const FALLBACK_PHOTO_COUNT = 32;
+// Fixed on purpose: sizing it from the session count re-lays the tiles out when that arrives, a large layout shift.
+const PLACEHOLDER_COUNT = 32;
+const PLACEHOLDERS = computeCanvasLayout(Array.from({ length: PLACEHOLDER_COUNT }, (_, index) => `loading-${index}`));
+const PLACEHOLDER_BOUNDS = computeContentBounds(PLACEHOLDERS);
 
 interface CanvasLoadingStateProps {
   label?: string;
@@ -22,13 +23,6 @@ export function CanvasLoadingState({ label = "Cargando contenido..." }: CanvasLo
   const worldRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
   const isSidebarOpen = useSidebarOpen();
-  const { data: sessions } = useQuery(trpc.sessions.list.queryOptions());
-  const photoCount = sessions?.reduce((count, session) => count + session.photoCount, 0) ?? FALLBACK_PHOTO_COUNT;
-  const placements = useMemo(
-    () => computeCanvasLayout(Array.from({ length: photoCount }, (_, index) => `loading-${index}`)),
-    [photoCount],
-  );
-  const bounds = useMemo(() => computeContentBounds(placements), [placements]);
 
   useLayoutEffect(() => {
     const stage = stageRef.current;
@@ -46,8 +40,8 @@ export function CanvasLoadingState({ label = "Cargando contenido..." }: CanvasLo
           ? sidebar.getBoundingClientRect().right
           : 0;
       const camera = constrainCamera(
-        overviewCamera(bounds, viewport, isMobile ? OVERVIEW_TILE_PX_MOBILE : OVERVIEW_TILE_PX_DESKTOP),
-        bounds,
+        overviewCamera(PLACEHOLDER_BOUNDS, viewport, isMobile ? OVERVIEW_TILE_PX_MOBILE : OVERVIEW_TILE_PX_DESKTOP),
+        PLACEHOLDER_BOUNDS,
         viewport,
         insetLeft,
       );
@@ -60,7 +54,7 @@ export function CanvasLoadingState({ label = "Cargando contenido..." }: CanvasLo
     updateCamera();
 
     return () => observer.disconnect();
-  }, [bounds, isMobile, isSidebarOpen]);
+  }, [isMobile, isSidebarOpen]);
 
   return (
     <div aria-busy="true" className="canvas-root">
@@ -69,7 +63,7 @@ export function CanvasLoadingState({ label = "Cargando contenido..." }: CanvasLo
       </p>
       <div aria-hidden="true" className="canvas-stage pointer-events-none" ref={stageRef}>
         <div className="canvas-world" ref={worldRef}>
-          {placements.map((placement) => (
+          {PLACEHOLDERS.map((placement) => (
             <div
               className="canvas-loading-tile animate-pulse motion-reduce:animate-none"
               key={placement.photoId}
