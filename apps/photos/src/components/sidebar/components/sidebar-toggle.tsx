@@ -30,7 +30,8 @@ export function SidebarToggle() {
         type="button"
         className="sidebar-pill glass cursor-pointer"
         data-sidebar-toggle="true"
-        aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+        // Starts with the visible "MGRE" so voice control users can say what they see.
+        aria-label={isOpen ? "MGRE, cerrar menú" : "MGRE, abrir menú"}
         aria-expanded={isOpen}
         aria-controls="photos-sidebar"
         onClick={toggleSidebar}

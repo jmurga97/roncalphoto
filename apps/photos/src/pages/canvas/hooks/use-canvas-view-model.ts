@@ -4,9 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 
 import { useHighlightedSessionSlug } from "@app/store";
 import { trpc } from "@lib/api/client";
+import { initialCanvasSeed } from "@lib/api/initial-data";
 
-import { computeCanvasLayout } from "../utils/compute-canvas-layout";
-import { mulberry32 } from "../utils/seeded-random";
+import { buildCanvasWall, randomSeed } from "../utils/canvas-wall";
 
 import type { CanvasPhotoItem, CanvasPlacement } from "../types";
 import type { Session } from "@roncal/api/router";
@@ -28,34 +28,6 @@ interface SetPhotoOptions {
   replace?: boolean;
 }
 
-function toCanvasItems(sessions: Session[]): CanvasPhotoItem[] {
-  return sessions.flatMap((session) => {
-    const sessionTagSlugs = session.tags.map((tag) => tag.slug);
-
-    return session.photos.map((sessionPhoto) => ({
-      alt: sessionPhoto.alt,
-      fullSrc: sessionPhoto.url,
-      id: sessionPhoto.id,
-      miniatureSrc: sessionPhoto.miniature,
-      sessionSlug: session.slug,
-      sessionTagSlugs,
-    }));
-  });
-}
-
-// Fisher-Yates driven by a seeded PRNG, so a background refetch keeps the order of this visit.
-function shuffle<T>(values: T[], seed: number): T[] {
-  const random = mulberry32(seed);
-  const shuffled = [...values];
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
-  }
-
-  return shuffled;
-}
-
 // On `/session/$slug` the stage shows that session: the requested photo if it belongs to it, else its first.
 function routePhotoId(sessions: Session[], slug?: string, photoId?: string) {
   if (!slug) {
@@ -73,12 +45,11 @@ export function useCanvasViewModel(): CanvasViewModel {
   const navigate = appRouteApi.useNavigate();
   const { data: sessions } = useSuspenseQuery(trpc.sessions.canvas.queryOptions());
   const highlightedSessionSlug = useHighlightedSessionSlug();
-  // oxlint-disable-next-line sonarjs/pseudo-random -- Decorative order, a new one on every visit.
-  const [seed] = useState(() => Math.floor(Math.random() * 4_294_967_296));
+  // The edge worker's seed when it sent one: it already preloaded the photo that seed puts in the centre.
+  const [seed] = useState(() => initialCanvasSeed() ?? randomSeed());
 
-  const items = useMemo(() => shuffle(toCanvasItems(sessions), seed), [seed, sessions]);
+  const { items, placements } = useMemo(() => buildCanvasWall(sessions, seed), [seed, sessions]);
   const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
-  const placements = useMemo(() => computeCanvasLayout(items.map((item) => item.id)), [items]);
   const placementsById = useMemo(
     () => new Map(placements.map((placement) => [placement.photoId, placement])),
     [placements],

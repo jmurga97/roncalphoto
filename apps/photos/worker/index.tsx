@@ -3,11 +3,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { DEFAULT_API_URL } from "../src/lib/api/config";
 import { INITIAL_DATA_ELEMENT_ID } from "../src/lib/api/initial-data";
+import { ASPECT_BUCKETS, MASONRY_COLUMN_WIDTH } from "../src/pages/canvas/constants";
+import { buildCanvasWall, randomSeed } from "../src/pages/canvas/utils/canvas-wall";
+import { computeContentBounds } from "../src/pages/canvas/utils/compute-canvas-layout";
 import { StudioContent } from "../src/components/studio/studio-content";
 import { SERVICES, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "../src/lib/seo/content";
 import { parseRichText, RichTextRenderer } from "../src/utils/render-rich-text";
 
 import type { InitialData } from "../src/lib/api/initial-data";
+import type { CanvasPlacement } from "../src/pages/canvas/types";
 import type { AppRouter, Session } from "@roncal/api/router";
 import type { RichTextInline } from "../src/utils/render-rich-text";
 
@@ -306,8 +310,35 @@ async function pageFor(path: string, env: PhotosEnv): Promise<Page | undefined> 
   return slug ? sessionPage(slug, env) : undefined;
 }
 
+const TALLEST_TILE = MASONRY_COLUMN_WIDTH / Math.min(...ASPECT_BUCKETS);
+const OPENING_SEED_ATTEMPTS = 24;
+
+/**
+ * Picks the wall's shuffle so the tile at its centre, where the opening view is centred, is a portrait: the
+ * largest tile size, so the LCP element on any viewport. Its photo can then be preloaded from the HTML.
+ */
+function openingWall(canvas: Session[]) {
+  let best = { seed: 0, height: 0, src: "" };
+
+  for (let attempt = 0; attempt < OPENING_SEED_ATTEMPTS && best.height < TALLEST_TILE; attempt += 1) {
+    const seed = randomSeed();
+    const { items, placements } = buildCanvasWall(canvas, seed);
+    const bounds = computeContentBounds(placements);
+    const distance = ({ x, y, width, height }: CanvasPlacement) =>
+      Math.hypot(x + width / 2 - (bounds.minX + bounds.maxX) / 2, y + height / 2 - (bounds.minY + bounds.maxY) / 2);
+    const centre = placements.reduce((nearest, placement) =>
+      distance(placement) < distance(nearest) ? placement : nearest,
+    );
+    const src = items.find((item) => item.id === centre.photoId)?.miniatureSrc ?? "";
+
+    if (centre.height > best.height) best = { seed, height: centre.height, src };
+  }
+
+  return best;
+}
+
 /** The canvas queries inlined for the first render, plus early connections to the photo hosts it loads first. */
-async function canvasHead(env: PhotosEnv) {
+async function canvasHead(env: PhotosEnv, preloadCentre: boolean) {
   try {
     const api = apiClient(env);
     const [canvas, list] = await Promise.all([api.sessions.canvas.query(), api.sessions.list.query()]);
@@ -323,8 +354,14 @@ async function canvasHead(env: PhotosEnv) {
       .map((origin) => `<link rel="preconnect" href="${escapeMarkup(origin)}" />`)
       .join("");
     const json = JSON.stringify(data).replaceAll("<", "\\u003c");
+    const opening = canvas.some((session) => session.photos.length > 0) ? openingWall(canvas) : undefined;
+    const preload =
+      preloadCentre && opening?.src
+        ? `<link rel="preload" as="image" href="${escapeMarkup(opening.src)}" fetchpriority="high" />`
+        : "";
+    const seed = opening ? ` data-canvas-seed="${opening.seed}"` : "";
 
-    return `${preconnects}<script id="${INITIAL_DATA_ELEMENT_ID}" type="application/json">${json}</script>`;
+    return `${preconnects}${preload}<script id="${INITIAL_DATA_ELEMENT_ID}"${seed} type="application/json">${json}</script>`;
   } catch (error) {
     // The client fetches the data itself: at least open that connection early.
     console.error("Could not inline the canvas data", error);
@@ -332,12 +369,28 @@ async function canvasHead(env: PhotosEnv) {
   }
 }
 
+const STYLESHEET_LINK = /<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/;
+
+/** The stylesheet (~12 KB gzipped) inlined, so the first paint does not wait on a second request. */
+async function inlineStylesheet(html: string, request: Request, env: PhotosEnv) {
+  const link = STYLESHEET_LINK.exec(html);
+  if (!link) return html;
+
+  const response = await env.ASSETS.fetch(new Request(new URL(link[1], request.url)));
+  const css = response.ok ? await response.text() : "";
+  // Font URLs in it are root-relative, so they resolve the same from the page.
+  return css && !css.includes("</style") ? html.replace(link[0], `<style>${css}</style>`) : html;
+}
+
 async function htmlResponse(request: Request, env: PhotosEnv, path: string) {
   const template = await env.ASSETS.fetch(new Request(new URL("/index.html", request.url)));
   if (!template.ok) return template;
 
   const showsCanvas = PUBLIC_PATHS.includes(path) || SESSION_PATH.test(path);
-  const [found, canvasMarkup] = await Promise.all([pageFor(path, env), showsCanvas ? canvasHead(env) : ""]);
+  const [found, canvasMarkup] = await Promise.all([
+    pageFor(path, env),
+    showsCanvas ? canvasHead(env, PUBLIC_PATHS.includes(path)) : "",
+  ]);
   const page = found ?? {
     status: 404,
     head: "<title>Página no encontrada | RoncalPhoto</title>",
@@ -346,7 +399,7 @@ async function htmlResponse(request: Request, env: PhotosEnv, path: string) {
   const isPrivate = path.startsWith("/delivery/");
   const isCanonicalHost = new URL(request.url).hostname === new URL(SITE_URL).hostname;
   const robots = page.indexable && isCanonicalHost ? INDEX_RULES : PRIVATE_RULES;
-  let html = (await template.text())
+  let html = (await inlineStylesheet(await template.text(), request, env))
     .replace(/<title>[\s\S]*?<\/title>/, "")
     .replace(/<meta\s+name="description"[^>]*>/, "")
     .replace(
