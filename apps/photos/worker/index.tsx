@@ -329,7 +329,8 @@ async function htmlResponse(request: Request, env: PhotosEnv, path: string) {
   if (page.body) {
     html = html.replace(
       '<div id="root" class="h-full"></div>',
-      page.status === 404 ? page.body : `<div id="root" class="h-full overflow-y-auto">${page.body}</div>`,
+      // Crawler-only markup: visible, it flashes on slow phones until React replaces the root.
+      page.status === 404 ? page.body : `<div id="root" class="h-full"><div class="sr-only">${page.body}</div></div>`,
     );
   }
 

@@ -35,7 +35,8 @@ export function GallerySlide({ isActive, isTransitionTarget = false, layout, pho
             className="max-h-full max-w-full object-contain"
             // React only names a nested boundary for a mutation inside it, not for a move caused by a distant parent.
             data-layout={layout}
-            decoding="async"
+            // The morph target is remounted for the transition; decoded async, Safari snapshots it empty.
+            decoding={isTransitionTarget ? "sync" : "async"}
             fetchPriority={isActive ? "high" : "auto"}
             loading="eager"
             onError={(event) => {

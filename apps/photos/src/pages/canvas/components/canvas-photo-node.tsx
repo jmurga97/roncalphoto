@@ -69,7 +69,9 @@ export const CanvasPhotoNode = memo(function CanvasPhotoNode({
             <img
               alt=""
               className="canvas-photo-image"
-              decoding="async"
+              // The tile remounts when it becomes (or stops being) the morph source; async decoding paints it
+              // blank for a frame, a visible flash on Safari. Miniatures are cheap to decode.
+              decoding="sync"
               draggable={false}
               fetchPriority={isBackground ? "low" : "auto"}
               height={placement.height}

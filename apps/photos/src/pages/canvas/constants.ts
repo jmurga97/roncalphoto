@@ -24,6 +24,8 @@ export const REVEAL_ANIMATION_MS = 320;
 export const OPEN_DECODE_TIMEOUT_MS = 200;
 
 export const CLICK_DRAG_TOLERANCE_PX = 5;
+// A fingertip wobbles more than a mouse: below this a touch is still a tap.
+export const TAP_DRAG_TOLERANCE_PX = 12;
 export const KEYBOARD_PAN_STEP_PX = 80;
 export const WHEEL_ZOOM_SENSITIVITY = 0.01;
 export const SWIPE_THRESHOLD_PX = 50;

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { CLICK_DRAG_TOLERANCE_PX, WHEEL_ZOOM_SENSITIVITY } from "../constants";
+import { CLICK_DRAG_TOLERANCE_PX, TAP_DRAG_TOLERANCE_PX, WHEEL_ZOOM_SENSITIVITY } from "../constants";
 import { panBy, zoomAt } from "../utils/camera-math";
 
 import type { CanvasCameraControls } from "./use-canvas-camera";
@@ -13,7 +13,10 @@ interface PointerPoint {
 
 interface PointerGestureState {
   pointers: Map<number, PointerPoint>;
+  start: PointerPoint;
+  // Farthest the gesture got from its start: finger jitter adds up along the path, not in displacement.
   dragDistance: number;
+  dragTolerance: number;
   didPinch: boolean;
   suppressNextClick: boolean;
   hasCapture: boolean;
@@ -64,7 +67,9 @@ function handlePointerDown(
   state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
   if (state.pointers.size === 1) {
+    state.start = { x: event.clientX, y: event.clientY };
     state.dragDistance = 0;
+    state.dragTolerance = event.pointerType === "mouse" ? CLICK_DRAG_TOLERANCE_PX : TAP_DRAG_TOLERANCE_PX;
     state.didPinch = false;
     state.hasCapture = false;
     return;
@@ -129,11 +134,14 @@ function handlePointerMove(
   const deltaX = event.clientX - previous.x;
   const deltaY = event.clientY - previous.y;
   state.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-  state.dragDistance += Math.hypot(deltaX, deltaY);
+  state.dragDistance = Math.max(
+    state.dragDistance,
+    Math.hypot(event.clientX - state.start.x, event.clientY - state.start.y),
+  );
 
   // Capture only once the gesture is clearly a drag: capturing on pointerdown
   // would redirect the resulting click away from the photo tiles.
-  if (!state.hasCapture && state.dragDistance >= CLICK_DRAG_TOLERANCE_PX) {
+  if (!state.hasCapture && state.dragDistance >= state.dragTolerance) {
     capturePointer(stage, event.pointerId);
     state.hasCapture = true;
   }
@@ -150,7 +158,7 @@ function handlePointerEnd(state: PointerGestureState, event: PointerEvent) {
     return;
   }
 
-  if (state.dragDistance >= CLICK_DRAG_TOLERANCE_PX || state.didPinch) {
+  if (state.dragDistance >= state.dragTolerance || state.didPinch) {
     state.suppressNextClick = true;
   }
 }
@@ -182,7 +190,9 @@ export function useCanvasPointerControls({ camera, onInteract, stageRef }: UseCa
 
     const state: PointerGestureState = {
       pointers: new Map(),
+      start: { x: 0, y: 0 },
       dragDistance: 0,
+      dragTolerance: CLICK_DRAG_TOLERANCE_PX,
       didPinch: false,
       suppressNextClick: false,
       hasCapture: false,
