@@ -27,7 +27,7 @@
     "@types/bun": "^1.3.6",
     "drizzle-kit": "^0.31.9",
     "typescript": "^5.9.3",
-    "wrangler": "^4.60.0",
+    "wrangler": "^4.151.3",
     "@cloudflare/workers-types": "^4.20260502.0"
   },
   "exports": {
